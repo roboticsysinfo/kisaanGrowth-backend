@@ -12,6 +12,9 @@ const farmSchema = new mongoose.Schema(
       required: true,
       maxlength: 500, // Optional: Limit the length of the address
     },
+    city: {type: String, required: true},
+    district: {type: String, required: true},
+    village: {type: String},
     land_size: {
       type: Number,
       required: true,

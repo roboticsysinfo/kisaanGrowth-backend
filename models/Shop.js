@@ -24,6 +24,14 @@ const shopSchema = new mongoose.Schema(
     shop_location: {
       type: String, // Optional: include the location of the shop
     },
+    pricing_preference: {
+      type: String,
+      enum: ["fixed_price", "negotiation_price"]
+    },
+    preferred_buyers: {
+      type: String,
+      enum: ["retail_customers", "wholesalers", "restaurants", "hotels"]
+    }
 
   },
   {
