@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
-const { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory } = require('../controllers/categoryController');
+const { createCrop, getAllCrops, updateCrop, deleteCrop, getCropById } = require('../controllers/cropController');
 
 
 
-router.post('/category', protect(['admin', 'farmer', 'sub_admin']), createCategory); 
-router.get('/categories',  getAllCategories);  
-router.get('/category/:id', protect(['admin', 'farmer', 'sub_admin']), getCategoryById); 
-router.put('/category/:id', protect(['admin', 'farmer', 'sub_admin']), updateCategory); 
-router.delete('/category/:id', protect(['admin', 'farmer', 'sub_admin']),  deleteCategory); 
+router.post('/create-crop', protect(['admin', 'farmer', 'sub_admin']), createCrop); 
+router.get('/crops', protect, getAllCrops);  
+router.get('/crop/:id', protect(['admin', 'farmer', 'sub_admin']), getCropById); 
+router.put('/crop/:id', protect(['admin', 'farmer', 'sub_admin']), updateCrop); 
+router.delete('/crop/:id', protect(['admin', 'farmer', 'sub_admin']),  deleteCrop); 
 
 module.exports = router;

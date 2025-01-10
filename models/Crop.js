@@ -7,6 +7,10 @@ const productSchema = new mongoose.Schema(
       ref: 'User', // Reference to the farmer in the Users collection
       required: true,
     },
+    farm_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Farm', // Reference to the Farm collection
+    },
     shop_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shop', // Reference to the Shops collection
@@ -20,6 +24,7 @@ const productSchema = new mongoose.Schema(
     season: {
       type: String,
       maxlength: 50, // Optional, limit for crop availability season
+      required: true
     },
     category_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +35,7 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0, // Ensure price cannot be negative
     },
-    quantity_available: {
+    quantity: {
       type: Number,
       required: true,
       min: 0, // Ensure quantity cannot be negative
@@ -46,9 +51,10 @@ const productSchema = new mongoose.Schema(
     },
     harvest_date: {
       type: Date, // Optional: capture harvest date for crops
+      required: true
     },
-    image_url: {
-      type: String, // URL to the product/crop image
+    crop_image: {
+      type: [String], // URL to the product/crop image
     },
   },
   {

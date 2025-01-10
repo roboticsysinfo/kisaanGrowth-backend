@@ -3,7 +3,10 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 require('dotenv').config();
 const userRoutes = require('./routes/userRoutes')
+const categoryRoutes = require('./routes/categoryRoutes')
 const cropRoutes = require('./routes/cropRoutes')
+const farmRoutes = require('./routes/farmRoutes')
+
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -37,7 +40,9 @@ app.get('/', (req, res) => {
 
 // ========= Routes=============
 app.use('/api', userRoutes);
+app.use('/api', categoryRoutes);
 app.use('/api', cropRoutes);
+app.use('/api', farmRoutes)
 // ========= Routes end=============
 
 app.listen(port, () => {

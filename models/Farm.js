@@ -4,7 +4,7 @@ const farmSchema = new mongoose.Schema(
   {
     farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Farmer', // Assuming the farmer is linked to the Users table
+      ref: 'User', // Assuming the farmer is linked to the Users table
       required: true,
     },
     farm_address: {
@@ -12,7 +12,6 @@ const farmSchema = new mongoose.Schema(
       required: true,
       maxlength: 500, // Optional: Limit the length of the address
     },
-    city: {type: String, required: true},
     district: {type: String, required: true},
     village: {type: String},
     land_size: {
@@ -25,12 +24,21 @@ const farmSchema = new mongoose.Schema(
       enum: ['organic', 'conventional'], // Restrict values to organic or conventional
       required: true,
     },
-    certifications: {
+    certification_name: {
       type: String, // Store certifications or memberships as text
       maxlength: 1000, // Optional: Limit the text length
     },
+    certification_image:{
+      type: String,
+      default: "https://placehold.co/100x100"
+    },
+    description:{
+      type: String,
+      maxlength: 1000
+    },
     farm_photos: {
       type: [String], // Store an array of file paths or URLs for farm photos
+      default: "https://placehold.co/100x100"
     },
   },
   {

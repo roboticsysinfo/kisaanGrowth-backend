@@ -1,113 +1,112 @@
-const Crop = require('../models/Crop')
+const Crop = require('../models/Crop');
 
-
-// Add new Crop
+// Create a new crop
 const createCrop = async (req, res) => {
-  const { name, email, password, phoneNumber, address, role } = req.body;
-
   try {
+    const { farmer_id, farm_id, shop_id, name, season, category_id, price_per_unit, quantity, unit, description, harvest_date, crop_image } = req.body;
 
-    // Create a new user
-    const user = new User({ name, email, password, phoneNumber, address, role });
-    await user.save();
+    const newCrop = new Crop({
+      farmer_id,
+      farm_id,
+      shop_id,
+      name,
+      season,
+      category_id,
+      price_per_unit,
+      quantity,
+      unit,
+      description,
+      harvest_date,
+      crop_image
+    });
 
-    // Send response
-    res.status(201).json({ message: 'User registered successfully', user });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    await newCrop.save();
+    res.status(201).json({
+      message: 'Crop created successfully',
+      crop: newCrop,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// User Login (with role-based access)
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-  
-      // Check if password matches
-      const isMatch = await user.comparePassword(password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-  
-      // Generate JWT token
-      const token = generateToken(user._id, user.role);
-  
-      res.status(200).json({ message: 'Login successful', token });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  };
 
-// Get all users (Admin only)
-const getAllUsers = async (req, res) => {
+// Get all crops
+const getAllCrops = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    const crops = await Crop.find().populate('farmer_id farm_id shop_id category_id');
+    res.status(200).json(crops);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Get a user by ID (Admin or the user themself)
-const getUserById = async (req, res) => {
+
+// Get a crop by ID
+const getCropById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const { id } = req.params;
+    const crop = await Crop.findById(id).populate('farmer_id farm_id shop_id category_id');
+
+    if (!crop) {
+      return res.status(404).json({ message: 'Crop not found' });
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+
+    res.status(200).json(crop);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Update user details (Admin or the user themself)
-const updateUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
 
+// Update a crop
+const updateCrop = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const { id } = req.params;
+    const { name, season, category_id, price_per_unit, quantity, unit, description, harvest_date, crop_image } = req.body;
+
+    const updatedCrop = await Crop.findByIdAndUpdate(
+      id,
+      { name, season, category_id, price_per_unit, quantity, unit, description, harvest_date, crop_image },
+      { new: true }
+    );
+
+    if (!updatedCrop) {
+      return res.status(404).json({ message: 'Crop not found' });
     }
 
-    user.name = name || user.name;
-    user.email = email || user.email;
-    if (password) {
-      user.password = password;
-    }
-    user.role = role || user.role;
-
-    await user.save();
-    res.status(200).json({ message: 'User updated successfully', user });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(200).json({
+      message: 'Crop updated successfully',
+      crop: updatedCrop,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// Delete user (Admin only)
-const deleteUser = async (req, res) => {
+// Delete a crop
+const deleteCrop = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const { id } = req.params;
+
+    const deletedCrop = await Crop.findByIdAndDelete(id);
+
+    if (!deletedCrop) {
+      return res.status(404).json({ message: 'Crop not found' });
     }
-    res.status(200).json({ message: 'User deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+
+    res.status(200).json({
+      message: 'Crop deleted successfully',
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 module.exports = {
-  registerUser,
-  loginUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
+  createCrop,
+  getAllCrops,
+  getCropById,
+  updateCrop,
+  deleteCrop
 };

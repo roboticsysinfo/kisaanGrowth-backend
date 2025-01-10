@@ -6,7 +6,7 @@ const farmerSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phoneNumber: {type: Number, required: true},
-    profile_photo: { type: String},
+    profile_photo: { type: String, default: "https://placehold.co/100x100"},
     registration_date: { type: Date, default: Date.now },
   },
   {
