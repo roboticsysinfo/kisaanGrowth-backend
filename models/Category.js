@@ -9,6 +9,10 @@ const categorySchema = new mongoose.Schema(
         unique: true, // Ensure category names are unique
         maxlength: 100, // Optional, character limit for category name
       },
+      category_image: {
+          type: String,
+          default: "https://placehold.co/100x100"
+      }
     },
     {
       timestamps: true, // Automatically includes `createdAt` and `updatedAt`

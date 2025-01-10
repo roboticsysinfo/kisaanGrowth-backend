@@ -3,6 +3,7 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 require('dotenv').config();
 const userRoutes = require('./routes/userRoutes')
+const cropRoutes = require('./routes/cropRoutes')
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
 
 // ========= Routes=============
 app.use('/api', userRoutes);
+app.use('/api', cropRoutes);
 // ========= Routes end=============
 
 app.listen(port, () => {
