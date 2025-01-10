@@ -4,8 +4,11 @@ const connectDB = require('./config/database');
 require('dotenv').config();
 const userRoutes = require('./routes/userRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
-const cropRoutes = require('./routes/cropRoutes')
+const productRoutes = require('./routes/productRoutes')
 const farmRoutes = require('./routes/farmRoutes')
+const reviewRoutes = require('./routes/reviewRoutes')
+const shopRoutes = require('./routes/shopRoutes')
+
 
 
 const app = express();
@@ -41,8 +44,10 @@ app.get('/', (req, res) => {
 // ========= Routes=============
 app.use('/api', userRoutes);
 app.use('/api', categoryRoutes);
-app.use('/api', cropRoutes);
-app.use('/api', farmRoutes)
+app.use('/api', productRoutes);
+app.use('/api', farmRoutes);
+app.use('/api', reviewRoutes)
+app.use('/api', shopRoutes)
 // ========= Routes end=============
 
 app.listen(port, () => {
