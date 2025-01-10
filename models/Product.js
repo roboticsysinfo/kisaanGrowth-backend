@@ -62,6 +62,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-const Crop = mongoose.model('Crop', productSchema);
+const Product = mongoose.model('Crop', productSchema);
 
-module.exports = Crop;
+module.exports = Product;
