@@ -1,4 +1,4 @@
-const Shop = require('../models/Sop');
+const Shop = require('../models/Shop');
 
 
 // Create Post Shop

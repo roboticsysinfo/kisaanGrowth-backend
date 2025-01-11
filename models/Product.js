@@ -30,6 +30,10 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category', // Reference to the Categories collection
     },
+    sub_category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SubCategory', // Reference to the Categories collection
+    },
     price_per_unit: {
       type: Number,
       required: true,
@@ -62,6 +66,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-const Product = mongoose.model('Crop', productSchema);
+const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;

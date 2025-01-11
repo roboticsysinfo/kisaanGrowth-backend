@@ -8,6 +8,7 @@ const productRoutes = require('./routes/productRoutes')
 const farmRoutes = require('./routes/farmRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const shopRoutes = require('./routes/shopRoutes')
+const subCategoryRoutes = require('./routes/subCategoryRoutes')
 
 
 
@@ -48,6 +49,7 @@ app.use('/api', productRoutes);
 app.use('/api', farmRoutes);
 app.use('/api', reviewRoutes)
 app.use('/api', shopRoutes)
+app.use('/api', subCategoryRoutes)
 // ========= Routes end=============
 
 app.listen(port, () => {
