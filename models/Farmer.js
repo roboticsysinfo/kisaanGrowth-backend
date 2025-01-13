@@ -2,10 +2,15 @@ const mongoose = require('mongoose');
 
 const farmerSchema = new mongoose.Schema(
   {
+    farmer_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference to the Users collection
+        required: true,
+    },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    phoneNumber: {type: Number, required: true},
+    phoneNumber: { type: Number, required: true },
     profile_photo: { type: String, default: "https://placehold.co/100x100"},
     registration_date: { type: Date, default: Date.now },
   },
