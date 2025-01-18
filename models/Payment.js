@@ -4,7 +4,7 @@ const paymentSchema = new mongoose.Schema(
   {
     farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the farmer in the Users collection
+      ref: 'Cusomter', // Reference to the farmer in the Users collection
       required: true,
     },
     bank_name: {

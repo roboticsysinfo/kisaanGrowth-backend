@@ -16,7 +16,7 @@ const createProduct = async (req, res) => {
       unit,
       description,
       harvest_date,
-      product_image,
+      product_image
     } = req.body;
 
     const newProduct = new Product({
@@ -32,8 +32,9 @@ const createProduct = async (req, res) => {
       unit,
       description,
       harvest_date,
-      product_image,
+      product_image : req.file ? `${req.file.filename}` : undefined,
     });
+
 
     await newProduct.save();
     res.status(201).json({
@@ -53,7 +54,7 @@ const getAllProducts = async (req, res) => {
 
     // Get products with selected fields and pagination
     const products = await Product.find()
-      .select('name price_per_unit quantity category_id sub_category_id farmer_id shop_id') // Select only necessary fields
+      .select('name price_per_unit quantity category_id sub_category_id farmer_id shop_id product_image') // Select only necessary fields
       .populate('farmer_id', 'name')  // Populate only the necessary fields for farmer
       .populate('farm_id', 'name farm_location')    // Populate only necessary fields for farm
       .populate('category_id', 'name')   // Populate only necessary fields for category

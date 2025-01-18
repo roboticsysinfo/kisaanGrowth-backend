@@ -4,7 +4,7 @@ const productSchema = new mongoose.Schema(
   {
     farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the farmer in the Users collection
+      ref: 'Farmer', // Reference to the farmer in the Users collection
       required: true,
     },
     farm_id: {
@@ -14,6 +14,7 @@ const productSchema = new mongoose.Schema(
     shop_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shop', // Reference to the Shops collection
+      required: true
     },
     name: {
       type: String,
@@ -57,8 +58,8 @@ const productSchema = new mongoose.Schema(
       type: Date, // Optional: capture harvest date for crops
       required: true
     },
-    crop_image: {
-      type: [String], // URL to the product/crop image
+    product_image: {
+      type: String, // URL to the product image
     },
   },
   {

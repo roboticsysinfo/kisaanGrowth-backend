@@ -11,7 +11,6 @@ const categorySchema = new mongoose.Schema(
       },
       category_image: {
           type: String,
-          default: "https://placehold.co/100x100"
       }
     },
     {

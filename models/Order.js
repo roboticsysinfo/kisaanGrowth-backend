@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the Users collection
+      ref: 'Customer', // Reference to the Users collection
       required: true,
     },
     total_price: {

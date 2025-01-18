@@ -2,13 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 require('dotenv').config();
-const userRoutes = require('./routes/userRoutes')
+const path = require('path');
+const adminRoutes = require('./routes/adminRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
 const productRoutes = require('./routes/productRoutes')
 const farmRoutes = require('./routes/farmRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const shopRoutes = require('./routes/shopRoutes')
 const subCategoryRoutes = require('./routes/subCategoryRoutes')
+const farmerRoutes = require('./routes/farmerRoutes')
 
 
 
@@ -35,7 +37,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 connectDB();
 
@@ -44,13 +46,18 @@ app.get('/', (req, res) => {
 })
 
 // ========= Routes=============
-app.use('/api', userRoutes);
+
+app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', farmRoutes);
 app.use('/api', reviewRoutes)
 app.use('/api', shopRoutes)
 app.use('/api', subCategoryRoutes)
+app.use('/api', farmerRoutes)
+
+
+
 // ========= Routes end=============
 
 app.listen(port, () => {

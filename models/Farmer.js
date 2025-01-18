@@ -1,24 +1,52 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid"); // Use UUID for unique registration numbers
 
+// Farmer Schema
 const farmerSchema = new mongoose.Schema(
   {
-    farmer_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the Users collection
-        required: true,
-    },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phoneNumber: { type: Number, required: true },
-    profile_photo: { type: String, default: "https://placehold.co/100x100"},
-    registration_date: { type: Date, default: Date.now },
+    address: { type: String, required: true },
+    isKYCVerified: { type: Boolean, default: false },
+    aadharCard: {
+      type: String,
+      unique: true,
+      required: true,
+      validate: {
+        validator: function (v) {
+          return /^\d{12}$/.test(v); // Ensures Aadhar is exactly 12 digits
+        },
+        message: "Aadhar card must be a 12-digit number",
+      },
+    },
+    registrationNumber: { type: String, unique: true }, // Auto-generated
+    kycRequested: { type: Boolean, default: false }, // For KYC requests
   },
-  {
-    timestamps: true, // Automatically includes `createdAt` and `updatedAt`
-  }
+  { timestamps: true }
 );
 
-const Farmer = mongoose.model('Farmer', farmerSchema);
+// Auto-generate Registration Number
+farmerSchema.pre("save", async function (next) {
+  if (!this.registrationNumber) {
+    this.registrationNumber = `FRM-${Date.now()}-${uuidv4().slice(0, 6).toUpperCase()}`;
+  }
+
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+  next();
+});
+
+// Compare Password
+farmerSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+const Farmer = mongoose.model("Farmer", farmerSchema);
 
 module.exports = Farmer;

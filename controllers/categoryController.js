@@ -4,7 +4,15 @@ const Category = require("../models/Category");
 // Create a category
 const createCategory = async (req, res) => {
   try {
-    const category = new Category(req.body);
+
+    const {
+      name,
+    } = req.body;
+
+    const category = new Category({
+      name,
+      category_image : req.file ? req.file.filename : undefined,
+    });
     await category.save();
     res.status(201).json(category);
   } catch (error) {

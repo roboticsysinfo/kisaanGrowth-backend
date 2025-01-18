@@ -1,12 +1,10 @@
 const Farm = require('../models/Farm')
 
 
-
-
 // Create Farm
 const createFarm = async (req, res) => {
     try {
-      const { farmer_id, name, land_size, farming_type, certification_name, certification_image, farm_address, farm_photos, description, village, district} = req.body;
+      const { farmer_id, name, land_size, farming_type, farm_address, farm_photos, description, village, district} = req.body;
   
       const newFarm = new Farm({
         farmer_id,

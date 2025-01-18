@@ -4,7 +4,7 @@ const deliveryPreferenceSchema = new mongoose.Schema(
   {
     farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the farmer in the Users collection
+      ref: 'Farmer', // Reference to the farmer in the Users collection
       required: true,
     },
     delivery_method: {

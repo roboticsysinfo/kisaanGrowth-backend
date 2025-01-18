@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const shopSchema = new mongoose.Schema(
   {
-    user_id: {
+    farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the Users collection
+      ref: 'Farmer', // Reference to the Users collection
       required: true,
     },
     shop_name: {
@@ -31,7 +31,15 @@ const shopSchema = new mongoose.Schema(
     preferred_buyers: {
       type: String,
       enum: ["retail_customers", "wholesalers", "restaurants", "hotels"]
-    }
+    },
+    certification_name: {
+      type: String, // Store certifications or memberships as text
+      maxlength: 1000, // Optional: Limit the text length
+    },
+    certification_image:{
+      type: String,
+      default: "https://placehold.co/100x100"
+    },
 
   },
   {

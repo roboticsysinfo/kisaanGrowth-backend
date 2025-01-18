@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middlewares/authMiddleware');
+const { authorize } = require('../middlewares/authMiddleware');
 const { createFarm, getAllFarms, getFarmById, updateFarm, deletedFarm } = require('../controllers/farmController');
 
 
 // Create Farm Route 
-router.post('/create-farm', protect(['admin', 'farmer', 'sub_admin']), createFarm); 
+router.post('/create-farm', authorize(['admin', 'farmer', 'sub_admin']), createFarm); 
 // Get All Farms
-router.get('/farms', protect, getAllFarms);  
+router.get('/farms', authorize, getAllFarms);  
 // Get Farm by Id
-router.get('/farm/:id', protect(['admin', 'farmer', 'sub_admin']), getFarmById);
+router.get('/farm/:id', authorize(['admin', 'farmer', 'sub_admin']), getFarmById);
 // Update Farm 
-router.put('/farm/:id', protect(['admin', 'farmer', 'sub_admin']), updateFarm); 
+router.put('/farm/:id', authorize(['admin', 'farmer', 'sub_admin']), updateFarm); 
 // Delete Farm
-router.delete('/farm/:id', protect(['admin', 'farmer', 'sub_admin']),  deletedFarm); 
+router.delete('/farm/:id', authorize(['admin', 'farmer', 'sub_admin']),  deletedFarm); 
 
 module.exports = router;
