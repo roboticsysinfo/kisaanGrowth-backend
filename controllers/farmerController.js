@@ -1,18 +1,46 @@
 const Farmer = require("../models/Farmer");
 const generateToken = require("../utils/jwtGenerator");
+const multer = require('multer')
+const path = require('path');
+
+
+// Define storage configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Directory where files will be saved
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Ensure unique filenames
+  },
+});
+
+// Filter to only allow specific file types (optional)
+const fileFilter = (req, file, cb) => {
+  const fileTypes = /jpeg|jpg|png/; // Adjust for the file types you need
+  const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimeType = fileTypes.test(file.mimetype);
+  
+  if (extName && mimeType) {
+    return cb(null, true);
+  }
+  cb(new Error('Invalid file type. Only JPG, JPEG, and PNG are allowed.'));
+};
+
+// Initialize multer with storage and file filter options
+const upload = multer({ storage, fileFilter });
 
 
 // Farmer Registration Controller
+
 const registerFarmer = async (req, res) => {
   const { name, email, password, phoneNumber, address, aadharCard } = req.body;
+  const uploadAadharCard = req.file ? req.file.path : undefined;
 
   try {
-    // Validate required fields
-    if (!name || !email || !password || !phoneNumber || !address || !aadharCard) {
+    if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check for duplicate email or Aadhar
     const existingFarmer = await Farmer.findOne({
       $or: [{ email }, { aadharCard }],
     });
@@ -22,7 +50,6 @@ const registerFarmer = async (req, res) => {
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
 
-    // Create a new Farmer
     const newFarmer = new Farmer({
       name,
       email,
@@ -32,6 +59,7 @@ const registerFarmer = async (req, res) => {
       aadharCard,
       isKYCVerified: false, // Default
       kycRequested: true, // Automatically request KYC
+      uploadAadharCard,  // Ensure file path is set correctly
     });
 
     await newFarmer.save();
@@ -46,6 +74,7 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
+
 
 // Farmer Login
 const farmerLogin = async (req, res) => {
@@ -115,4 +144,14 @@ const requestKYC = async (req, res) => {
   }
 };
 
-module.exports = { registerFarmer, farmerLogin, requestKYC };
+
+const getAllFarmers = async (req, res) => {
+  try {
+    const farmers = await Farmer.find({}, '-password'); // Exclude password field
+    res.status(200).json(farmers);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { registerFarmer, farmerLogin, requestKYC, getAllFarmers, upload };

@@ -43,6 +43,16 @@ const loginAdmin = async (req, res) => {
   }
 };
 
+const getAllAdmins = async (req, res) => {
+  try {
+    const admins = await Admin.find().select("-password"); // Include role field
+    res.status(200).json({ admins });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch admins", error: error.message });
+  }
+};
+
+
 
 // Approve KYC verification
 const approveKYC = async (req, res) => {
@@ -63,6 +73,55 @@ const approveKYC = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+const deleteAdmin = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const admin = await Admin.findById(id);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    await admin.remove(); // Remove the admin from the database
+
+    res.status(200).json({ message: "Admin deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete admin", error: error.message });
+  }
+};
+
+
+const updateAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password } = req.body;
+
+  try {
+    const admin = await Admin.findById(id);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Update the fields if provided
+    admin.name = name || admin.name;
+    admin.email = email || admin.email;
+
+    // If a new password is provided, hash and update it
+    if (password) {
+      const bcrypt = require("bcryptjs");
+      const salt = await bcrypt.genSalt(10);
+      admin.password = await bcrypt.hash(password, salt);
+    }
+
+    await admin.save(); // Save the updated admin
+
+    res.status(200).json({ message: "Admin updated successfully", admin });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update admin", error: error.message });
+  }
+};
+
 
 // Reject KYC verification
 const rejectKYC = async (req, res) => {
@@ -97,4 +156,13 @@ const getKYCRequests = async (req, res) => {
   }
 };
 
-module.exports = { registerAdmin, loginAdmin, approveKYC, rejectKYC, getKYCRequests };
+module.exports = {
+  registerAdmin,
+  loginAdmin,
+  approveKYC,
+  rejectKYC,
+  getKYCRequests,
+  getAllAdmins,
+  deleteAdmin,
+  updateAdmin
+};

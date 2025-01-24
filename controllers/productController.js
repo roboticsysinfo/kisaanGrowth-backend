@@ -1,50 +1,47 @@
 const Product = require('../models/Product');
+const Shop = require('../models/Shop');
+const Farm = require('../models/Farm')
 
 // Create a new product
 const createProduct = async (req, res) => {
   try {
-    const {
-      farmer_id,
-      farm_id,
-      shop_id,
-      name,
-      season,
-      sub_category_id,
-      category_id,
-      price_per_unit,
-      quantity,
-      unit,
-      description,
-      harvest_date,
-      product_image
-    } = req.body;
 
+    if (!req.user || !req.user._id) {
+      return res.status(400).json({ message: 'Farmer ID is required' });
+    }
+
+    const farmerId = req.user._id;
+
+    // Fetch farm and shop based on farmer_id
+    let farm = await Farm.findOne({ farmer_id: farmerId });
+    let shop = await Shop.findOne({ farmer_id: farmerId });
+
+    if (!farm) {
+      farm = await Farm.create({ farmer_id: farmerId, name: 'Default Farm' });
+    }
+    if (!shop) {
+      shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
+    }
+
+    // Proceed to create the product
     const newProduct = new Product({
-      farmer_id,
-      farm_id,
-      shop_id,
-      name,
-      season,
-      category_id,
-      sub_category_id,
-      price_per_unit,
-      quantity,
-      unit,
-      description,
-      harvest_date,
-      product_image : req.file ? `${req.file.filename}` : undefined,
+      ...req.body,
+      farmer_id: farmerId, // Attach farmer_id to the product
+      farm_id: farm._id,    // Attach farm_id to the product
+      shop_id: shop._id,    // Attach shop_id to the product
     });
-
 
     await newProduct.save();
-    res.status(201).json({
-      message: 'Product created successfully',
-      product: newProduct,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(201).json({ message: 'Product added successfully', product: newProduct });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+
 
 // // Get all products
 const getAllProducts = async (req, res) => {
@@ -54,11 +51,10 @@ const getAllProducts = async (req, res) => {
 
     // Get products with selected fields and pagination
     const products = await Product.find()
-      .select('name price_per_unit quantity category_id sub_category_id farmer_id shop_id product_image') // Select only necessary fields
+      .select('name price_per_unit quantity category_id farmer_id shop_id product_image') // Select only necessary fields
       .populate('farmer_id', 'name')  // Populate only the necessary fields for farmer
       .populate('farm_id', 'name farm_location')    // Populate only necessary fields for farm
       .populate('category_id', 'name')   // Populate only necessary fields for category
-      .populate('sub_category_id', 'name') // Populate only necessary fields for sub-category
       .skip(skip) // Implement pagination (skip records)
       .limit(Number(limit)) // Limit the number of records returned
       .lean(); // Makes the query faster by returning plain JavaScript objects
@@ -76,9 +72,6 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
 
 
 // Get a product by ID

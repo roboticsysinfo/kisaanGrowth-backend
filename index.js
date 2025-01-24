@@ -20,8 +20,7 @@ const port = process.env.PORT || 5000;
 const corsOptions = {
   origin: (origin, callback) => {
       const allowedOrigins = [
-          "", // Your production frontend URL
-          "http://localhost:3000",              // Your local development frontend
+        `${process.env.REACT_APP_URI}`
       ];
 
       // Allow requests with no origin (like mobile apps or Postman)

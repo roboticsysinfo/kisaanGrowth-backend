@@ -31,18 +31,35 @@ const getAllCategories =  async (req, res) => {
 }
 
 // Update a category
-const updateCategory =  async (req, res) => {
+const updateCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
+    const updates = {
+      name: req.body.name,
+    };
+
+    // Check if a file was uploaded and include it in the updates
+    if (req.file) {
+      updates.category_image = req.file.filename;
+    }
+
+    // Perform the update
+    const category = await Category.findByIdAndUpdate(req.params.id, updates, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate the updates
     });
-    if (!category) return res.status(404).json({ message: "Category not found" });
+
+    // If category not found, return 404
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Respond with the updated category
     res.status(200).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+};
+
 
 // Delete a category
 const deleteCategory = async (req, res) => {

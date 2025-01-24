@@ -5,7 +5,7 @@ const { createProduct, getAllProducts, getProductById, updateProduct, deleteProd
 const upload = require('../middlewares/upload');
 
 
-router.post('/create-product', upload.single('product_image'), authorize(['admin', 'farmer', 'sub_admin']), createProduct); 
+router.post('/create-product', upload.single('product_image'), authorize([ 'farmer']), createProduct); 
 router.get('/products', getAllProducts);  
 router.get('/product/:id', authorize(['admin', 'farmer', 'sub_admin']), getProductById); 
 router.put('/product/:id', authorize(['admin', 'farmer', 'sub_admin']), updateProduct); 

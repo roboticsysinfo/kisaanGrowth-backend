@@ -22,6 +22,10 @@ const farmerSchema = new mongoose.Schema(
         message: "Aadhar card must be a 12-digit number",
       },
     },
+    uploadAadharCard: {
+      type: String,
+      required: true
+    },
     registrationNumber: { type: String, unique: true }, // Auto-generated
     kycRequested: { type: Boolean, default: false }, // For KYC requests
   },
