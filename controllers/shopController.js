@@ -2,22 +2,42 @@ const Shop = require('../models/Shop'); // Adjust the path as needed
 const Product = require('../models/Product')
 const multer = require('multer');
 const path = require('path');
+const { default: mongoose } = require('mongoose');
 
-// Multer configuration for file uploads
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Set upload directory
+    cb(null, 'uploads/'); // Directory where files will be stored
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname)); // Rename file with timestamp
   },
 });
-const upload = multer({ storage });
 
-// Create a new shop
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png/;
+    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = fileTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Images only!'));
+    }
+  },
+});
+
+
+// Create Shop 
 const createShop = async (req, res) => {
   try {
     const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
+    
+    console.log(farmerId)
+
     const {
       shop_name,
       phoneNumber,
@@ -28,9 +48,20 @@ const createShop = async (req, res) => {
       shop_description,
       pricing_preference,
       preferred_buyers,
-      village_name
+      village_name,
     } = req.body;
 
+    // // Validate required fields
+    // if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
+    //   return res.status(400).json({ message: "Missing required fields" });
+    // }
+
+    // Process file uploads
+    const shop_image = req.files?.shop_image ? req.files.shop_image.map(file => file.path) : [];
+    const shop_cover_image = req.files?.shop_cover_image?.[0]?.path || null;
+    const shop_profile_image = req.files?.shop_profile_image?.[0]?.path || null;
+
+    // Create a new shop
     const shop = new Shop({
       farmer_id: farmerId,
       shop_name,
@@ -43,28 +74,46 @@ const createShop = async (req, res) => {
       pricing_preference,
       preferred_buyers,
       village_name,
-      shop_image: req.files.shop_image ? req.files.shop_image.map(file => file.path) : [],
-      shop_cover_image: req.files.shop_cover_image ? req.files.shop_cover_image[0].path : null,
-      shop_profile_image: req.files.shop_profile_image ? req.files.shop_profile_image[0].path : null,
+      shop_image,
+      shop_cover_image,
+      shop_profile_image,
     });
 
     const savedShop = await shop.save();
-    res.status(201).json(savedShop);
+    res.status(201).json({ success: true, data: savedShop });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+// Get all shops for a farmer
+const getAllShops = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
+    const shops = await Shop.find()
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const totalShops = await Shop.countDocuments(); // Count the total number of shops
+
+    res.status(200).json({
+      success: true,
+      data: shops,
+      pagination: {
+        totalShops,
+        currentPage: page,
+        totalPages: Math.ceil(totalShops / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get all shops for a farmer
-const getFarmerShops = async (req, res) => {
-  try {
-    const farmerId = req.user._id;
-    const shops = await Shop.find({ farmer_id: farmerId });
-    res.status(200).json(shops);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+
+
+
 
 // Update a shop
 const updateShop = async (req, res) => {
@@ -173,7 +222,7 @@ module.exports={
   createShop,
   updateShop,
   deleteShop,
-  getFarmerShops,
+  getAllShops,
   getShopsByLocation,
   getShopsByCategory,
   searchShops

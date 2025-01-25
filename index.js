@@ -11,7 +11,7 @@ const reviewRoutes = require('./routes/reviewRoutes')
 const shopRoutes = require('./routes/shopRoutes')
 const subCategoryRoutes = require('./routes/subCategoryRoutes')
 const farmerRoutes = require('./routes/farmerRoutes')
-
+const stateCityRoutes = require('./routes/stateCityRoutes')
 
 
 const app = express();
@@ -44,8 +44,13 @@ app.get('/', (req, res) => {
     res.send('Hello Kissan Growth')
 })
 
-// ========= Routes=============
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  next();
+});
 
+// ========= Routes=============
+app.use('/api', stateCityRoutes)
 app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
@@ -54,6 +59,7 @@ app.use('/api', reviewRoutes)
 app.use('/api', shopRoutes)
 app.use('/api', subCategoryRoutes)
 app.use('/api', farmerRoutes)
+
 
 
 

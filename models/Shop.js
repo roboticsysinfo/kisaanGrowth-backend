@@ -5,7 +5,6 @@ const shopSchema = new mongoose.Schema(
     farmer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Farmer', // Reference to the Users collection
-      required: true,
     },
     shop_name: {
       type: String,
