@@ -35,8 +35,14 @@ const upload = multer({
 const createShop = async (req, res) => {
   try {
     const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
-    
-    console.log(farmerId)
+
+    // Check if the farmer already has a shop
+    const existingShop = await Shop.findOne({ farmer_id: farmerId });
+
+    if (existingShop) {
+      // If a shop already exists for the farmer, send an error message
+      return res.status(400).json({ message: "You can only create one shop. Please update your existing shop details." });
+    }
 
     const {
       shop_name,
@@ -51,10 +57,10 @@ const createShop = async (req, res) => {
       village_name,
     } = req.body;
 
-    // // Validate required fields
-    // if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
-    //   return res.status(400).json({ message: "Missing required fields" });
-    // }
+    // Validate required fields
+    if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     // Process file uploads
     const shop_image = req.files?.shop_image ? req.files.shop_image.map(file => file.path) : [];
@@ -217,7 +223,7 @@ const searchShops = async (req, res) => {
   }
 };
 
-module.exports={
+module.exports = {
   upload,
   createShop,
   updateShop,
