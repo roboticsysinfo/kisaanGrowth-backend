@@ -15,10 +15,9 @@ const authorize = (allowedRoles) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Ensure no redundant key addition
       let user = null;
       if (decoded.role === "admin" && allowedRoles.includes("admin")) {
-        user = await Admin.findById(decoded.userId); // Use decoded.userId instead of adding userId again
+        user = await Admin.findById(decoded.userId);
       } else if (decoded.role === "farmer" && allowedRoles.includes("farmer")) {
         user = await Farmer.findById(decoded.userId);
       } else if (decoded.role === "customer" && allowedRoles.includes("customer")) {
@@ -29,9 +28,9 @@ const authorize = (allowedRoles) => {
         return res.status(403).json({ message: "Forbidden: Access denied" });
       }
 
-      // Attach user info to request object
+      // Attach user info + role to request
       req.user = user;
-      req.role = decoded.role;
+      req.user.role = decoded.role; // ✅ Fix
 
       next(); // Proceed to the next middleware or route handler
     } catch (error) {
@@ -39,7 +38,5 @@ const authorize = (allowedRoles) => {
     }
   };
 };
-
-
 
 module.exports = { authorize };

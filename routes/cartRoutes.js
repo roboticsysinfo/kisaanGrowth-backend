@@ -4,15 +4,15 @@ const { authorize } = require('../middlewares/authMiddleware'); // Protect route
 const router = express.Router();
 
 // Get all items in the cart (protected)
-router.get('/cart-items', authorize, getCart);
+router.get('/cart-items', authorize(['customer']), getCart);
 
 // Add a product to the cart (protected)
-router.post('/add-to-cart', authorize, addToCart);
+router.post('/add-to-cart', authorize(['customer']), addToCart);
 
 // Update quantity of a product in the cart (protected)
-router.put('/update_item/:itemId', authorize, updateCartItem);
+router.put('/update-item/:itemId', authorize(['customer']), updateCartItem);
 
 // Remove a product from the cart (protected)
-router.delete('/remove_item/:itemId', authorize, removeFromCart);
+router.delete('/remove-item/:itemId', authorize(['customer']), removeFromCart);
 
 module.exports = router;

@@ -7,10 +7,7 @@ const productSchema = new mongoose.Schema(
       ref: 'Farmer', // Reference to the farmer in the Users collection
       required: true,
     },
-    farm_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Farm', // Reference to the Farm collection
-    },
+
     shop_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shop', // Reference to the Shops collection
@@ -30,10 +27,6 @@ const productSchema = new mongoose.Schema(
     category_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category', // Reference to the Categories collection
-    },
-    sub_category_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'SubCategory', // Reference to the Categories collection
     },
     price_per_unit: {
       type: Number,

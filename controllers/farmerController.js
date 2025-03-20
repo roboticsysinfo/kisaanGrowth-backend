@@ -108,7 +108,7 @@ const farmerLogin = async (req, res) => {
     res.status(200).json({
       message: "Farmer login successful",
       token,
-      user: {
+      farmer: {
         id: farmer._id,
         name: farmer.name,
         email: farmer.email,

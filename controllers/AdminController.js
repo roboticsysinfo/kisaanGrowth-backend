@@ -57,15 +57,16 @@ const getAllAdmins = async (req, res) => {
 // Approve KYC verification
 const approveKYC = async (req, res) => {
   try {
-    const farmer = await Farmer.findById(req.params.farmerId);
+    console.log("Request params:", req.params); // Debugging line
+
+    const farmer = await Farmer.findById(req.params.id);
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    // Approve KYC and set the field to true
     farmer.isKYCVerified = true;
-    farmer.kycRequested = false; // Reset the request status
+    farmer.kycRequested = false;
     await farmer.save();
 
     res.status(200).json({ message: "KYC verified successfully" });
@@ -73,6 +74,7 @@ const approveKYC = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 
 const deleteAdmin = async (req, res) => {

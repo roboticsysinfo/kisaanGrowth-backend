@@ -2,7 +2,7 @@ const Shop = require('../models/Shop'); // Adjust the path as needed
 const Product = require('../models/Product')
 const multer = require('multer');
 const path = require('path');
-const { default: mongoose } = require('mongoose');
+const mongoose  = require('mongoose');
 
 
 const storage = multer.diskStorage({
@@ -93,6 +93,29 @@ const createShop = async (req, res) => {
 };
 
 
+// Get Shop by Farmer ID
+const getShopByFarmerId = async (req, res) => {
+  try {
+    const farmerId = req.user._id; 
+    // Assuming farmer_id is fetched from the authenticated user
+    
+
+    // Find the shop by the farmer's ID
+    const shop = await Shop.findOne({ farmer_id: farmerId });
+
+    if (!shop) {
+      // If no shop is found for the farmer, return an error message
+      return res.status(404).json({ message: "No shop found for this farmer." });
+    }
+
+    // Return the found shop
+    res.status(200).json({ success: true, data: shop });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 // Get all shops for a farmer
 const getAllShops = async (req, res) => {
   try {
@@ -116,9 +139,6 @@ const getAllShops = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
 
 
 // Update a shop
@@ -188,6 +208,67 @@ const getShopsByCategory = async (req, res) => {
 };
 
 
+// Get Shop by Shop ID
+const getShopById = async (req, res) => {
+  try {
+    console.log("Full req.params:", req.params); // ✅ Check full params object
+
+    const { id } = req.params;
+
+    // ✅ Check if 'id' is coming or not
+    if (!id) {
+      console.error("🚨 Shop ID is missing in req.params!");
+      return res.status(400).json({ success: false, message: "Shop ID is required" });
+    }
+
+    console.log("Fetching Shop with ID:", id);
+
+    console.time("fetchShop");
+    const shop = await Shop.findById(id).populate("farmer_id").lean();
+    console.timeEnd("fetchShop");
+
+    if (!shop) {
+      console.error("🚨 Shop not found for ID:", id);
+      return res.status(404).json({ success: false, message: "Shop not found" });
+    }
+
+    res.status(200).json({ success: true, shop });
+  } catch (error) {
+    console.error("❌ Error fetching shop:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
+const getProductsByShopId = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    console.log("Received Shop ID:", shopId);
+
+    if (!mongoose.Types.ObjectId.isValid(shopId)) {
+      return res.status(400).json({ message: "Invalid Shop ID" });
+    }
+
+    const products = await Product.find({ shop_id: shopId })
+      .populate("shop_id", "shop_name") // Shop model se shop_name fetch karega
+      .select("name price_per_unit quantity unit harvest_date product_image");
+      // Sirf required fields return karega
+
+    console.log("Fetched Products:", products);
+
+    if (!products.length) {
+      return res.status(404).json({ message: "No products found for this shop" });
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products by shop ID:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+
 // Search shops by keyword, location, and category
 const searchShops = async (req, res) => {
   try {
@@ -231,5 +312,8 @@ module.exports = {
   getAllShops,
   getShopsByLocation,
   getShopsByCategory,
-  searchShops
+  getShopByFarmerId,
+  searchShops,
+  getShopById,
+  getProductsByShopId
 }

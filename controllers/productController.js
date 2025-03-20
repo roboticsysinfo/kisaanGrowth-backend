@@ -12,23 +12,18 @@ const createProduct = async (req, res) => {
 
     const farmerId = req.user._id;
 
-    // Fetch farm and shop based on farmer_id
-    let farm = await Farm.findOne({ farmer_id: farmerId });
+    // Fetch shop based on farmer_id
     let shop = await Shop.findOne({ farmer_id: farmerId });
 
-    if (!farm) {
-      farm = await Farm.create({ farmer_id: farmerId, name: 'Default Farm' });
-    }
     if (!shop) {
       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
     }
 
-    // Proceed to create the product
+    // Create the product without farm_id
     const newProduct = new Product({
       ...req.body,
       farmer_id: farmerId, // Attach farmer_id to the product
-      farm_id: farm._id,    // Attach farm_id to the product
-      shop_id: shop._id,    // Attach shop_id to the product
+      shop_id: shop._id,   // Attach shop_id to the product
     });
 
     await newProduct.save();
@@ -42,26 +37,24 @@ const createProduct = async (req, res) => {
 
 
 
-
-// // Get all products
 const getAllProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 20
+    const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
-
-    // Get products with selected fields and pagination
+    
+    // console.log("Query Params:", req.query); // Log query params
+    
     const products = await Product.find()
-      .select('name price_per_unit quantity category_id farmer_id shop_id product_image') // Select only necessary fields
-      .populate('farmer_id', 'name')  // Populate only the necessary fields for farmer
-      .populate('farm_id', 'name farm_location')    // Populate only necessary fields for farm
-      .populate('category_id', 'name')   // Populate only necessary fields for category
-      .skip(skip) // Implement pagination (skip records)
-      .limit(Number(limit)) // Limit the number of records returned
-      .lean(); // Makes the query faster by returning plain JavaScript objects
+      .select('name price_per_unit quantity category_id farmer_id shop_id product_image description season harvest_date')
+      .populate('farmer_id', 'name')
+      .populate('category_id', 'name')
+      .skip(skip)
+      .limit(Number(limit))
+      .lean();
 
-    // Count total number of products to calculate total pages
+    // console.log("Products Found:", products); // Log products
+    
     const totalCount = await Product.countDocuments();
-
     res.status(200).json({
       products,
       totalCount,
@@ -74,6 +67,7 @@ const getAllProducts = async (req, res) => {
 };
 
 
+
 // Get a product by ID
 const getProductById = async (req, res) => {
   try {
@@ -81,10 +75,8 @@ const getProductById = async (req, res) => {
 
     const product = await Product.findById(id)
       .populate('farmer_id')
-      .populate('farm_id')
       .populate('shop_id')
       .populate('category_id')
-      .populate('sub_category_id');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -95,6 +87,28 @@ const getProductById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+const getProductByFarmerId = async (req, res) => {
+  try {
+    const farmerId = req.user._id; 
+    // Assuming farmer_id is fetched from the authenticated user
+    
+    // Find the product by the farmer's ID
+    const product = await Product.findOne({ farmer_id: farmerId });
+
+    if (!product) {
+      // If no product is found for the farmer, return an error message
+      return res.status(404).json({ message: "No Product found for this farmer." });
+    }
+
+    // Return the found product
+    res.status(200).json({ success: true, data: product });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 // Update a product
 const updateProduct = async (req, res) => {
@@ -182,4 +196,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductsBySubCategory, 
+  getProductByFarmerId
 };

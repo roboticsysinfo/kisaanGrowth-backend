@@ -9,9 +9,11 @@ const productRoutes = require('./routes/productRoutes')
 const farmRoutes = require('./routes/farmRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const shopRoutes = require('./routes/shopRoutes')
-const subCategoryRoutes = require('./routes/subCategoryRoutes')
 const farmerRoutes = require('./routes/farmerRoutes')
 const stateCityRoutes = require('./routes/stateCityRoutes')
+const customerRoutes = require('./routes/customerRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const requestOrderRoutes = require("./routes/requestOrderRoutes");
 
 
 const app = express();
@@ -36,6 +38,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // URL parameters parsing
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 connectDB();
@@ -57,8 +60,10 @@ app.use('/api', productRoutes);
 app.use('/api', farmRoutes);
 app.use('/api', reviewRoutes)
 app.use('/api', shopRoutes)
-app.use('/api', subCategoryRoutes)
 app.use('/api', farmerRoutes)
+app.use('/api', customerRoutes)
+app.use('/api', cartRoutes);
+app.use('/api', requestOrderRoutes)
 
 
 

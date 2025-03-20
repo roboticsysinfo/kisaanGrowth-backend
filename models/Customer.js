@@ -8,7 +8,7 @@ const customerSchema = new mongoose.Schema({
   password: { type: String, required: true },
   phoneNumber: {type: Number, required: true},
   address: {type: String, required: true},
-
+  profile_image: {type: String, default: 'https://avatar.iran.liara.run/public/boy'},
 },{
   timestamps: true
 });
