@@ -1,6 +1,5 @@
 const Product = require('../models/Product');
 const Shop = require('../models/Shop');
-const Farm = require('../models/Farm')
 
 // Create a new product
 const createProduct = async (req, res) => {
@@ -41,19 +40,20 @@ const getAllProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
-    
+
     // console.log("Query Params:", req.query); // Log query params
-    
+
     const products = await Product.find()
       .select('name price_per_unit quantity category_id farmer_id shop_id product_image description season harvest_date')
       .populate('farmer_id', 'name')
       .populate('category_id', 'name')
+      .populate('shop_id', 'shop_name')
       .skip(skip)
       .limit(Number(limit))
       .lean();
 
     // console.log("Products Found:", products); // Log products
-    
+
     const totalCount = await Product.countDocuments();
     res.status(200).json({
       products,
@@ -91,9 +91,9 @@ const getProductById = async (req, res) => {
 
 const getProductByFarmerId = async (req, res) => {
   try {
-    const farmerId = req.user._id; 
+    const farmerId = req.user._id;
     // Assuming farmer_id is fetched from the authenticated user
-    
+
     // Find the product by the farmer's ID
     const product = await Product.findOne({ farmer_id: farmerId });
 
@@ -165,19 +165,23 @@ const deleteProduct = async (req, res) => {
 };
 
 // Get products by subcategory ID
-const getProductsBySubCategory = async (req, res) => {
+const getProductsByCategory = async (req, res) => {
+  
   try {
-    const { sub_category_id } = req.params;
 
-    const products = await Product.find({ sub_category_id })
+    const { categoryId } = req.params;
+
+    console.log("category_id", categoryId)
+
+    const products = await Product.find({ category_id: req.params.categoryId })
       .populate('farmer_id')
-      .populate('farm_id')
       .populate('shop_id')
-      .populate('category_id')
-      .populate('sub_category_id');
+      .populate('category_id');
+
+    console.log("products by category", products);
 
     if (!products || products.length === 0) {
-      return res.status(404).json({ message: 'No products found for this subcategory' });
+      return res.status(404).json({ message: 'No products found for this Category' });
     }
 
     res.status(200).json({
@@ -187,6 +191,7 @@ const getProductsBySubCategory = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+
 };
 
 module.exports = {
@@ -195,6 +200,6 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
-  getProductsBySubCategory, 
+  getProductsByCategory,
   getProductByFarmerId
 };

@@ -99,7 +99,6 @@ const getShopByFarmerId = async (req, res) => {
     const farmerId = req.user._id; 
     // Assuming farmer_id is fetched from the authenticated user
     
-
     // Find the shop by the farmer's ID
     const shop = await Shop.findOne({ farmer_id: farmerId });
 
@@ -175,21 +174,32 @@ const deleteShop = async (req, res) => {
   }
 };
 
-// Get shops by location (city or state)
+// Get shops by location city 
 const getShopsByLocation = async (req, res) => {
   try {
-    const { city_district, state } = req.query; // Query parameters for location
-    const query = {};
+    const { city_district } = req.query;
 
-    if (city_district) query.city_district = city_district;
-    if (state) query.state = state;
+    if (!city_district) {
+      return res.status(400).json({ message: "City/District is required" });
+    }
 
-    const shops = await Shop.find(query);
-    res.status(200).json(shops);
+    // Case-insensitive search using regex
+    const shops = await Shop.find({
+      city_district: { $regex: new RegExp(`^${city_district}$`, "i") },
+    });
+
+    if (shops.length === 0) {
+      return res.status(200).json({ shops: [], message: "No shops found in this district" });
+    }
+
+    res.status(200).json({ shops });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Error fetching shops:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 // Get shops by category (preferred_buyers or pricing_preference)
 const getShopsByCategory = async (req, res) => {

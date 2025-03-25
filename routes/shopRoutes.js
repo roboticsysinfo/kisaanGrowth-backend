@@ -39,7 +39,9 @@ router.post(
 
   router.delete('/shop/:id', authorize(['farmer', 'admin', 'sub_admin']), deleteShop);
 
-router.get('/shop/location', authorize, getShopsByLocation); // Get shops by location
+
+router.get('/shop-by-location', getShopsByLocation); // Get shops by location
+
 router.get('/shop/category', authorize, getShopsByCategory); // Get shops by category
 router.get('/shop/search', authorize, searchShops);
 

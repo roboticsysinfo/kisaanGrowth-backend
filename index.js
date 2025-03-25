@@ -14,6 +14,10 @@ const stateCityRoutes = require('./routes/stateCityRoutes')
 const customerRoutes = require('./routes/customerRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const requestOrderRoutes = require("./routes/requestOrderRoutes");
+const siteDetailsRoutes = require("./routes/siteDetailsRoutes");
+const bannerRoutes = require('./routes/bannerRoutes')
+const blogCategoryRoutes = require('./routes/blogCategoryRoutes');
+const blogRoutes = require('./routes/blogRoutes')
 
 
 const app = express();
@@ -64,6 +68,10 @@ app.use('/api', farmerRoutes)
 app.use('/api', customerRoutes)
 app.use('/api', cartRoutes);
 app.use('/api', requestOrderRoutes)
+app.use('/api', siteDetailsRoutes)
+app.use('/api', bannerRoutes)
+app.use('/api', blogCategoryRoutes)
+app.use('/api', blogRoutes)
 
 
 
