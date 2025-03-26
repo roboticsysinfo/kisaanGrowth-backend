@@ -221,7 +221,6 @@ const getShopsByCategory = async (req, res) => {
 // Get Shop by Shop ID
 const getShopById = async (req, res) => {
   try {
-    console.log("Full req.params:", req.params); // ✅ Check full params object
 
     const { id } = req.params;
 
@@ -231,7 +230,6 @@ const getShopById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Shop ID is required" });
     }
 
-    console.log("Fetching Shop with ID:", id);
 
     console.time("fetchShop");
     const shop = await Shop.findById(id).populate("farmer_id").lean();
@@ -253,7 +251,6 @@ const getShopById = async (req, res) => {
 const getProductsByShopId = async (req, res) => {
   try {
     const { shopId } = req.params;
-    console.log("Received Shop ID:", shopId);
 
     if (!mongoose.Types.ObjectId.isValid(shopId)) {
       return res.status(400).json({ message: "Invalid Shop ID" });
@@ -264,7 +261,6 @@ const getProductsByShopId = async (req, res) => {
       .select("name price_per_unit quantity unit harvest_date product_image");
       // Sirf required fields return karega
 
-    console.log("Fetched Products:", products);
 
     if (!products.length) {
       return res.status(404).json({ message: "No products found for this shop" });

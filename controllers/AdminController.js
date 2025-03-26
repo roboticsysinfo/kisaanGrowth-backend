@@ -57,7 +57,6 @@ const getAllAdmins = async (req, res) => {
 // Approve KYC verification
 const approveKYC = async (req, res) => {
   try {
-    console.log("Request params:", req.params); // Debugging line
 
     const farmer = await Farmer.findById(req.params.id);
 

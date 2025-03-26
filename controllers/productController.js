@@ -41,8 +41,6 @@ const getAllProducts = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
 
-    // console.log("Query Params:", req.query); // Log query params
-
     const products = await Product.find()
       .select('name price_per_unit quantity category_id farmer_id shop_id product_image description season harvest_date')
       .populate('farmer_id', 'name')
@@ -52,7 +50,6 @@ const getAllProducts = async (req, res) => {
       .limit(Number(limit))
       .lean();
 
-    // console.log("Products Found:", products); // Log products
 
     const totalCount = await Product.countDocuments();
     res.status(200).json({
@@ -171,14 +168,11 @@ const getProductsByCategory = async (req, res) => {
 
     const { categoryId } = req.params;
 
-    console.log("category_id", categoryId)
-
     const products = await Product.find({ category_id: req.params.categoryId })
       .populate('farmer_id')
       .populate('shop_id')
       .populate('category_id');
 
-    console.log("products by category", products);
 
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'No products found for this Category' });

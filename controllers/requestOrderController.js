@@ -127,8 +127,6 @@ const approveRequest = async (req, res) => {
 
     const { requestId } = req.params;
 
-    console.log(" bapprove request order id", requestId)
-
     // Check if user is admin or farmer
     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "admin")) {
       return res.status(403).json({ message: "Access denied" });
@@ -137,7 +135,6 @@ const approveRequest = async (req, res) => {
     // Find request order
     let requestOrder = await RequestOrder.findById(requestId).populate("product_id");
 
-    console.log("bapprove request order", requestOrder)
 
     if (!requestOrder) {
       return res.status(404).json({ message: "Request not found" });

@@ -13,8 +13,6 @@ exports.getBanners = async (req, res) => {
 
 // Add a new banner
 exports.addBanner = async (req, res) => {
-    console.log("🔥 Received Body Data:", req.body);
-    console.log("📸 Received File:", req.file); // Check if file is received
 
     const { title, category } = req.body;
     const banner_image = req.file ? req.file.filename : null; // Save only filename

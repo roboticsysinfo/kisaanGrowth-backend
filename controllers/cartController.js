@@ -35,7 +35,6 @@ const addToCart = async (req, res) => {
     // Find Logged in customer
     let userCart = await Cart.findOne({ user: req.user.id });
 
-    console.log("User Cart", userCart);
 
     // If Cart not fine , make new one
     if (!userCart) {
