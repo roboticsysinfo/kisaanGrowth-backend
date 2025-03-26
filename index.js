@@ -26,8 +26,7 @@ const port = process.env.PORT || 5000;
 const corsOptions = {
   origin: (origin, callback) => {
       const allowedOrigins = [
-        // "https://kissangrowth.netlify.app",
-        "http://localhost:3000"
+        "https://kissangrowth.netlify.app"
       ];
 
       // Allow requests with no origin (like mobile apps or Postman)
