@@ -15,7 +15,8 @@ const siteDetailsSchema = new mongoose.Schema({
     ],
     about: {
         title: { type: String, default: null }, 
-        content: { type: String, default: null }
+        content: { type: String, default: null },
+        footer_text: { type: String, default: null}
     },
     banners: [
         {

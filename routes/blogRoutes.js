@@ -27,7 +27,7 @@ router.get("/blog/:id", getBlogById);
 router.put("/update-blog/:id", authorize(["admin"]), updateBlog);
 
 // ✅ Delete a blog (Admin only)
-router.delete("/delete-blogs/:id", authorize(["admin"]), deleteBlog);
+router.delete("/delete-blog/:id", authorize(["admin"]), deleteBlog);
 
 
 router.put("/blog/view/:id", blogViewCount);

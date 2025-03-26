@@ -123,14 +123,15 @@ const updateSiteAbout = async (req, res) => {
 
         if (!siteDetails) return res.status(404).json({ message: "Site details not found" });
 
-        const { title, content } = req.body; // Destructure request body
+        const { title, content , footer_text} = req.body; // Destructure request body
 
-        if (!title || !content) {
-            return res.status(400).json({ message: "Title and content are required" });
+        if (!title || !content || !footer_text) {
+            return res.status(400).json({ message: "Title or content and Footer Text are required" });
         }
 
         siteDetails.about.title = title;
         siteDetails.about.content = content;
+        siteDetails.about.footer_text = footer_text;
 
 
         await siteDetails.save();
