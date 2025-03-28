@@ -29,7 +29,6 @@ const fileFilter = (req, file, cb) => {
 // Initialize multer with storage and file filter options
 const upload = multer({ storage, fileFilter });
 
-
 // Farmer Registration Controller
 
 const registerFarmer = async (req, res) => {
@@ -154,4 +153,85 @@ const getAllFarmers = async (req, res) => {
   }
 };
 
-module.exports = { registerFarmer, farmerLogin, requestKYC, getAllFarmers, upload };
+
+const sendOTPToFarmer = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  try {
+    if (!phoneNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
+    }
+
+    // Check if farmer exists
+    const farmer = await Farmer.findOne({ phoneNumber });
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    // Fixed Dummy OTP
+    const otp = "1234";
+
+    // Log OTP (for debugging)
+    console.log(`Sending OTP ${otp} to ${phoneNumber}`);
+
+    // Normally, you would send OTP via SMS here
+    res.status(200).json({ message: "OTP sent successfully", otp });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+
+};
+
+const farmerLoginWithOTP = async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  try {
+    if (!phoneNumber || !otp) {
+      return res.status(400).json({ message: "Phone number and OTP are required" });
+    }
+
+    // Dummy OTP check
+    if (otp !== "1234") {
+      return res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    // Find farmer by phone number
+    const farmer = await Farmer.findOne({ phoneNumber });
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    // Check if the farmer is KYC verified
+    if (!farmer.isKYCVerified) {
+      return res.status(403).json({ message: "Your KYC is not verified yet" });
+    }
+
+    // Generate JWT token
+    const token = generateToken(farmer._id, "farmer");
+
+    res.status(200).json({
+      message: "Farmer login successful",
+      token,
+      farmer: {
+        id: farmer._id,
+        name: farmer.name,
+        phoneNumber: farmer.phoneNumber,
+        role: "farmer",
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+module.exports = { 
+  registerFarmer, 
+  farmerLogin, 
+  requestKYC, 
+  getAllFarmers, 
+  upload ,
+  farmerLoginWithOTP,
+  sendOTPToFarmer 
+};
