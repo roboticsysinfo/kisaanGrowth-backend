@@ -171,9 +171,6 @@ const sendOTPToFarmer = async (req, res) => {
     // Fixed Dummy OTP
     const otp = "1234";
 
-    // Log OTP (for debugging)
-    console.log(`Sending OTP ${otp} to ${phoneNumber}`);
-
     // Normally, you would send OTP via SMS here
     res.status(200).json({ message: "OTP sent successfully", otp });
   } catch (error) {

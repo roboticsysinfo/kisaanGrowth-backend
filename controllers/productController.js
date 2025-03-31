@@ -34,8 +34,6 @@ const createProduct = async (req, res) => {
   }
 };
 
-
-
 const getAllProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -62,8 +60,6 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 // Get a product by ID
 const getProductById = async (req, res) => {

@@ -34,12 +34,15 @@ const corsOptions = {
       if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
       } else {
-          callback(new Error("Not allowed by CORS"));
+          callback(null, true); // Allow all origins (temporary fix for mobile apps)
       }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-  credentials: true,                         // Allow credentials (cookies, auth headers)
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
 };
+
+app.use(cors(corsOptions));
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
