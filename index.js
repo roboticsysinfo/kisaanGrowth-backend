@@ -24,24 +24,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: (origin, callback) => {
-      const allowedOrigins = [
-        "https://kissangrowth.netlify.app",
-        "http://localhost:3000"
-      ];
-
-      // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-      } else {
-          callback(null, true); // Allow all origins (temporary fix for mobile apps)
-      }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
+  origin: "*", // Allow all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
+  credentials: true, // Allow credentials (cookies, auth headers)
 };
 
 app.use(cors(corsOptions));
+
 
 
 app.use(cors(corsOptions));
