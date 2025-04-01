@@ -4,7 +4,6 @@ const Shop = require('../models/Shop');
 // Create a new product
 const createProduct = async (req, res) => {
   try {
-
     if (!req.user || !req.user._id) {
       return res.status(400).json({ message: 'Farmer ID is required' });
     }
@@ -18,13 +17,22 @@ const createProduct = async (req, res) => {
       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
     }
 
-    // Create the product without farm_id
-    const newProduct = new Product({
+    // Build the product object
+    const newProductData = {
       ...req.body,
-      farmer_id: farmerId, // Attach farmer_id to the product
-      shop_id: shop._id,   // Attach shop_id to the product
-    });
+      farmer_id: farmerId,
+      shop_id: shop._id,
+    };
 
+    // If there's a file, add it to the product data
+    if (req.file) {
+      newProductData.product_image = `/uploads/${req.file.filename}`; // Save the image path
+    }
+
+    // Create the product
+    const newProduct = new Product(newProductData);
+
+    // Save the product to the database
     await newProduct.save();
     res.status(201).json({ message: 'Product added successfully', product: newProduct });
 
@@ -33,6 +41,7 @@ const createProduct = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 const getAllProducts = async (req, res) => {
   try {
@@ -83,12 +92,18 @@ const getProductById = async (req, res) => {
 
 
 const getProductByFarmerId = async (req, res) => {
+
   try {
+
     const farmerId = req.user._id;
     // Assuming farmer_id is fetched from the authenticated user
 
+    console.log("backend req farmerId", farmerId)
+
     // Find the product by the farmer's ID
     const product = await Product.findOne({ farmer_id: farmerId });
+
+    console.log("backend api product", product)
 
     if (!product) {
       // If no product is found for the farmer, return an error message
@@ -97,9 +112,11 @@ const getProductByFarmerId = async (req, res) => {
 
     // Return the found product
     res.status(200).json({ success: true, data: product });
+    
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+  
 };
 
 
