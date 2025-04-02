@@ -92,7 +92,9 @@ const getProductById = async (req, res) => {
 
 
 const getProductByFarmerId = async (req, res) => {
+  
   try {
+
     const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
 
     // Find all products by the farmer's ID and populate the category name
@@ -108,10 +110,8 @@ const getProductByFarmerId = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+
 };
-
-
-
 
 // Update a product
 const updateProduct = async (req, res) => {

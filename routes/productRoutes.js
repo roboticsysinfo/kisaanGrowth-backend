@@ -9,7 +9,7 @@ router.post('/create-product', upload.single('product_image'), authorize([ 'farm
 
 router.get('/products', getAllProducts);  
 
-router.get('/product/:id', authorize(['admin', 'customer', 'sub_admin']), getProductById); 
+router.get('/product/:id', getProductById); 
 
 router.put('/product/:id', authorize(['admin', 'farmer', 'sub_admin']), updateProduct); 
 
