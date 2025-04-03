@@ -35,7 +35,9 @@ const farmerSchema = new mongoose.Schema(
 // Auto-generate Registration Number
 farmerSchema.pre("save", async function (next) {
   if (!this.registrationNumber) {
-    this.registrationNumber = `FRM-${Date.now()}-${uuidv4().slice(0, 6).toUpperCase()}`;
+    const timestampPart = Date.now().toString().slice(-4); // Last 4 digits of timestamp
+    const uuidPart = uuidv4().slice(0, 6).toUpperCase(); // First 6 characters of UUID
+    this.registrationNumber = `FRM-${timestampPart}${uuidPart}`;
   }
 
   if (this.isModified("password")) {

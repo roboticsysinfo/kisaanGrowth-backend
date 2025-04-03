@@ -74,8 +74,10 @@ const registerFarmer = async (req, res) => {
   }
 };
 
+
 const getFarmerById = async (req, res) => {
   try {
+    
     const farmerId = req.params.id;
 
     // Find farmer by ID and exclude password

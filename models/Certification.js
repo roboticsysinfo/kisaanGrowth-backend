@@ -6,6 +6,7 @@ const certificationSchema = new mongoose.Schema({
         type: String, 
         required: true
       },
+      
       certification_image:{
         type: String,
         required: true,

@@ -56,19 +56,17 @@ app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', farmRoutes);
-app.use('/api', reviewRoutes)
-app.use('/api', shopRoutes)
-app.use('/api', farmerRoutes)
-app.use('/api', customerRoutes)
+app.use('/api', reviewRoutes);
+app.use('/api', shopRoutes);
+app.use('/api', farmerRoutes);
+app.use('/api', customerRoutes);
 app.use('/api', cartRoutes);
-app.use('/api', requestOrderRoutes)
-app.use('/api', siteDetailsRoutes)
-app.use('/api', bannerRoutes)
-app.use('/api', blogCategoryRoutes)
-app.use('/api', blogRoutes)
-app.use('/api', deliveryPreferenceRoutes)
-
-
+app.use('/api', requestOrderRoutes);
+app.use('/api', siteDetailsRoutes);
+app.use('/api', bannerRoutes);
+app.use('/api', blogCategoryRoutes);
+app.use('/api', blogRoutes);
+app.use('/api', deliveryPreferenceRoutes);
 
 
 // ========= Routes end=============
