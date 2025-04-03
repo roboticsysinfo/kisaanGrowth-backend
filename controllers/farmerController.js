@@ -74,6 +74,24 @@ const registerFarmer = async (req, res) => {
   }
 };
 
+const getFarmerById = async (req, res) => {
+  try {
+    const farmerId = req.params.id;
+
+    // Find farmer by ID and exclude password
+    const farmer = await Farmer.findById(farmerId).select("-password");
+
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    res.status(200).json(farmer);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 // Farmer Login
 const farmerLogin = async (req, res) => {
@@ -118,6 +136,34 @@ const farmerLogin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+const updateFarmerById = async (req, res) => {
+  try {
+    const farmerId = req.params.id;
+    const updates = req.body; // Data to be updated
+
+    // Find the farmer and update the fields
+    const updatedFarmer = await Farmer.findByIdAndUpdate(
+      farmerId,
+      updates,
+      { new: true, runValidators: true } // Return updated doc & validate input
+    ).select("-password");
+
+    if (!updatedFarmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    res.status(200).json({
+      message: "Farmer updated successfully",
+      farmer: updatedFarmer,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 // Request KYC verification
 const requestKYC = async (req, res) => {
@@ -228,6 +274,8 @@ module.exports = {
   farmerLogin, 
   requestKYC, 
   getAllFarmers, 
+  getFarmerById,
+  updateFarmerById,
   upload ,
   farmerLoginWithOTP,
   sendOTPToFarmer 

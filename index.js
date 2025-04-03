@@ -17,7 +17,8 @@ const requestOrderRoutes = require("./routes/requestOrderRoutes");
 const siteDetailsRoutes = require("./routes/siteDetailsRoutes");
 const bannerRoutes = require('./routes/bannerRoutes')
 const blogCategoryRoutes = require('./routes/blogCategoryRoutes');
-const blogRoutes = require('./routes/blogRoutes')
+const blogRoutes = require('./routes/blogRoutes');
+const deliveryPreferenceRoutes = require('./routes/deliveryPreferenceRoutes')
 
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api', siteDetailsRoutes)
 app.use('/api', bannerRoutes)
 app.use('/api', blogCategoryRoutes)
 app.use('/api', blogRoutes)
+app.use('/api', deliveryPreferenceRoutes)
 
 
 
