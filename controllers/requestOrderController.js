@@ -54,6 +54,7 @@ const createRequestOrder = async (req, res) => {
 
 };
 
+
 const getFarmerRequests = async (req, res) => {
   try {
 
@@ -114,6 +115,7 @@ const getFarmerRequests = async (req, res) => {
   }
 };
 
+
 const getFarmerOrderRequestbyId = async (req, res) => {
   try {
     const { farmerId } = req.params;
@@ -131,37 +133,6 @@ const getFarmerOrderRequestbyId = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 };
-
-// const approveRequest = async (req, res) => {
-
-//   try {
-
-//     const { requestId } = req.params;
-
-//     // Check if user is admin or farmer
-//     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "admin")) {
-//       return res.status(403).json({ message: "Access denied" });
-//     }
-
-//     // Find request order
-//     let requestOrder = await RequestOrder.findById(requestId).populate("product_id");
-
-
-//     if (!requestOrder) {
-//       return res.status(404).json({ message: "Request not found" });
-//     }
-
-//     // Update status to approved
-//     requestOrder.status = "accepted";
-//     await requestOrder.save();
-
-//     res.status(200).json({ message: "Request approved successfully", requestOrder });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-
-// };
 
 
 // Approve Request by Farmer
@@ -241,6 +212,42 @@ const getCustomerOrders = async (req, res) => {
 
 };
 
+
+// const cancelRequest = async (req, res) => {
+//   try {
+//     const { requestId } = req.params;
+
+//     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "customer")) {
+//       return res.status(403).json({ message: "Access denied" });
+//     }
+
+//     // Find request
+//     let requestOrder = await RequestOrder.findById(requestId);
+
+//     if (!requestOrder) {
+//       return res.status(404).json({ message: "Request not found" });
+//     }
+
+//     // Only farmer or customer who created the request can cancel it
+//     if (
+//       (req.user.role === "farmer" && requestOrder.farmer_id.toString() !== req.user._id.toString()) ||
+//       (req.user.role === "customer" && requestOrder.customer_id.toString() !== req.user._id.toString())
+//     ) {
+//       return res.status(403).json({ message: "You are not authorized to cancel this request" });
+//     }
+
+//     // Update status to cancelled
+//     requestOrder.status = "cancelled";
+//     await requestOrder.save();
+
+//     res.status(200).json({ message: "Request cancelled successfully", requestOrder });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
 const cancelRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
@@ -249,17 +256,20 @@ const cancelRequest = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    // Find request
-    let requestOrder = await RequestOrder.findById(requestId);
+    // Find request with necessary details for notification
+    let requestOrder = await RequestOrder.findById(requestId)
+      .populate("product_id")
+      .populate("customer_id")
+      .populate("farmer_id");
 
     if (!requestOrder) {
       return res.status(404).json({ message: "Request not found" });
     }
 
-    // Only farmer or customer who created the request can cancel it
+    // Authorization check
     if (
-      (req.user.role === "farmer" && requestOrder.farmer_id.toString() !== req.user._id.toString()) ||
-      (req.user.role === "customer" && requestOrder.customer_id.toString() !== req.user._id.toString())
+      (req.user.role === "farmer" && requestOrder.farmer_id._id.toString() !== req.user._id.toString()) ||
+      (req.user.role === "customer" && requestOrder.customer_id._id.toString() !== req.user._id.toString())
     ) {
       return res.status(403).json({ message: "You are not authorized to cancel this request" });
     }
@@ -268,12 +278,37 @@ const cancelRequest = async (req, res) => {
     requestOrder.status = "cancelled";
     await requestOrder.save();
 
+    // ✅ Send Notification
+    let recipientId, recipientType, actorType, message;
+
+    if (req.user.role === "farmer") {
+      recipientId = requestOrder.customer_id._id;
+      recipientType = "customer";
+      actorType = "farmer";
+      message = `Your order request for ${requestOrder.product_id?.name} has been cancelled by the farmer.`;
+    } else {
+      recipientId = requestOrder.farmer_id._id;
+      recipientType = "farmer";
+      actorType = "customer";
+      message = `The customer has cancelled the order request for ${requestOrder.product_id?.name}.`;
+    }
+
+    await sendNotification(
+      recipientId,           // userId
+      recipientType,         // userType
+      "order",               // type
+      message,               // message
+      req.user._id,          // actorId
+      actorType              // actorType
+    );
+
     res.status(200).json({ message: "Request cancelled successfully", requestOrder });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 module.exports = {

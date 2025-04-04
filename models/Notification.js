@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 
+
 const notificationSchema = new mongoose.Schema({
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true, // jisko notification dikhani hai
     refPath: "userType",
   },
-  
+
   userType: {
     type: String,
     enum: ["farmer", "customer"],

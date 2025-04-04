@@ -53,7 +53,6 @@ const loginCustomer = async (req, res) => {
   }
 };
 
-
 // Get Customer Details by ID
 const getCustomerById = async (req, res) => {
   try {
