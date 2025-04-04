@@ -1,48 +1,6 @@
 const { sendNotification } = require("../helper/sendNotification");
 const RequestOrder = require("../models/RequestOrder");
 
-// Create a new request order
-// const createRequestOrder = async (req, res) => {
-//   try {
-
-//     const { farmer_id, product_id, quantity_requested, unit, notes, phoneNumber } = req.body;
-
-//     if (!req.user || !req.user._id) {
-//       return res.status(401).json({ message: "Unauthorized" });
-//     }
-
-//     const customer_id = req.user._id; // Customer ID from logged-in user
-
-//     // Validate required fields
-//     if (!farmer_id || !product_id || !quantity_requested || !unit) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-
-//     // Create new request order
-//     const newRequest = new RequestOrder({
-//       customer_id,
-//       farmer_id,
-//       product_id,
-//       quantity_requested,
-//       unit,
-//       notes,
-//       phoneNumber
-//     });
-
-//     await newRequest.save();
-
-//     res.status(201).json({
-//       message: "Request sent to farmer successfully",
-//       request: newRequest,
-//     });
-
-//   } catch (error) {
-//     console.error("Error creating request order:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-
-// };
-
 
 // Create a new request order
 const createRequestOrder = async (req, res) => {
@@ -95,7 +53,6 @@ const createRequestOrder = async (req, res) => {
   }
 
 };
-
 
 const getFarmerRequests = async (req, res) => {
   try {
@@ -175,6 +132,39 @@ const getFarmerOrderRequestbyId = async (req, res) => {
   }
 };
 
+// const approveRequest = async (req, res) => {
+
+//   try {
+
+//     const { requestId } = req.params;
+
+//     // Check if user is admin or farmer
+//     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "admin")) {
+//       return res.status(403).json({ message: "Access denied" });
+//     }
+
+//     // Find request order
+//     let requestOrder = await RequestOrder.findById(requestId).populate("product_id");
+
+
+//     if (!requestOrder) {
+//       return res.status(404).json({ message: "Request not found" });
+//     }
+
+//     // Update status to approved
+//     requestOrder.status = "accepted";
+//     await requestOrder.save();
+
+//     res.status(200).json({ message: "Request approved successfully", requestOrder });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+
+// };
+
+
+// Approve Request by Farmer
 const approveRequest = async (req, res) => {
 
   try {
@@ -187,23 +177,33 @@ const approveRequest = async (req, res) => {
     }
 
     // Find request order
-    let requestOrder = await RequestOrder.findById(requestId).populate("product_id");
-
+    let requestOrder = await RequestOrder.findById(requestId)
+      .populate("product_id")
+      .populate("customer_id");
 
     if (!requestOrder) {
       return res.status(404).json({ message: "Request not found" });
     }
 
-    // Update status to approved
+    // Update status to accepted
     requestOrder.status = "accepted";
     await requestOrder.save();
+
+    // ✅ Send notification to customer
+    await sendNotification(
+      requestOrder.customer_id._id,       // userId: Customer who should get notification
+      "customer",                         // userType
+      "order",                            // type
+      `Your request for ${requestOrder.product_id?.name} has been accepted by the farmer.`,  // message
+      req.user._id,                       // actorId (farmer who approved)
+      "farmer"                            // actorType
+    );
 
     res.status(200).json({ message: "Request approved successfully", requestOrder });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-
 };
 
 
@@ -276,4 +276,11 @@ const cancelRequest = async (req, res) => {
 };
 
 
-module.exports = { createRequestOrder, getFarmerRequests, getFarmerOrderRequestbyId, approveRequest, getCustomerOrders, cancelRequest };
+module.exports = {
+  createRequestOrder,
+  getFarmerRequests,
+  getFarmerOrderRequestbyId,
+  approveRequest,
+  getCustomerOrders,
+  cancelRequest
+};
