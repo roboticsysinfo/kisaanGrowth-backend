@@ -18,6 +18,6 @@ router.put("/approve/:requestId", authorize(['farmer', 'admin']), approveRequest
 // Get My Orders (Customer)
 router.get("/my-orders", authorize(['customer']), getCustomerOrders);
 
-router.put("/cancel/:requestId", authorize(['farmer', 'customer']), cancelRequest);
+router.put("/cancel/:requestId", authorize(['farmer', 'customer', 'admin']), cancelRequest);
 
 module.exports = router;

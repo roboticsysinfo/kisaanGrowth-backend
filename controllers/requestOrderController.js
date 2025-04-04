@@ -252,6 +252,8 @@ const cancelRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
 
+    console.log("order request id", requestId)
+
     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "customer")) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -261,6 +263,8 @@ const cancelRequest = async (req, res) => {
       .populate("product_id")
       .populate("customer_id")
       .populate("farmer_id");
+
+    console.log("request Order find", requestOrder)
 
     if (!requestOrder) {
       return res.status(404).json({ message: "Request not found" });
@@ -278,8 +282,10 @@ const cancelRequest = async (req, res) => {
     requestOrder.status = "cancelled";
     await requestOrder.save();
 
+
     // ✅ Send Notification
     let recipientId, recipientType, actorType, message;
+    
 
     if (req.user.role === "farmer") {
       recipientId = requestOrder.customer_id._id;
@@ -308,7 +314,6 @@ const cancelRequest = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 
 module.exports = {
