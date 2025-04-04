@@ -1,3 +1,4 @@
+const { sendNotification } = require("../helper/sendNotification");
 const Review = require("../models/Review");
 const Shop = require("../models/Shop");
 
@@ -43,7 +44,9 @@ const createReview = async (req, res) => {
       return res.status(404).json({ message: "Shop not found" });
     }
 
-    const farmerId = shop.owner_id; // Fetching farmer's ID from shop
+    const userId = shop.owner_id; // Fetching farmer's ID from shop\
+
+    console.log("Notification Rec id", userId)
 
     const newReview = new Review({
       shop_id,
@@ -52,9 +55,11 @@ const createReview = async (req, res) => {
       comment,
     });
 
+    console.log("New Review", newReview)
+
     await newReview.save();
 
-    await sendNotification(farmerId, "review", "A new review has been submitted on your shop.");
+    await sendNotification(userId, "review", "A new review has been submitted on your shop.");
     
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
