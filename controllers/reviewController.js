@@ -1,6 +1,35 @@
 const Review = require("../models/Review");
+const Shop = require("../models/Shop");
 
 // ✅ Create a Review
+// const createReview = async (req, res) => {
+//   try {
+//     const { shop_id, rating, comment } = req.body;
+
+//     const farmerId =  req.user_id
+
+//     if (!shop_id || !rating) {
+//       return res.status(400).json({ message: "Shop ID and rating are required" });
+//     }
+
+//     const newReview = new Review({
+//       shop_id,
+//       user_id: req.user._id, // Assuming user is authenticated
+//       rating,
+//       comment,
+//     });
+
+//     await newReview.save();
+
+//     await sendNotification(farmerId, "review", "A new review has been submitted on your shop.");
+//     res.status(201).json({ message: "Review submitted successfully", review: newReview });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+
+// };
+
 const createReview = async (req, res) => {
   try {
     const { shop_id, rating, comment } = req.body;
@@ -8,6 +37,13 @@ const createReview = async (req, res) => {
     if (!shop_id || !rating) {
       return res.status(400).json({ message: "Shop ID and rating are required" });
     }
+
+    const shop = await Shop.findById(shop_id);
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    const farmerId = shop.owner_id; // Fetching farmer's ID from shop
 
     const newReview = new Review({
       shop_id,
@@ -18,13 +54,16 @@ const createReview = async (req, res) => {
 
     await newReview.save();
 
+    await sendNotification(farmerId, "review", "A new review has been submitted on your shop.");
+    
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-
 };
+
+
 
 // ✅ Get All Reviews for a Shop
 const getAllReviews = async (req, res) => {
