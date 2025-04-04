@@ -44,7 +44,7 @@ const createReview = async (req, res) => {
       return res.status(404).json({ message: "Shop not found" });
     }
 
-    const userId = shop.owner_id; // Fetching farmer's ID from shop\
+    const userId = shop.farmer_id; // Fetching farmer's ID from shop\
 
     console.log("Notification Rec id", userId)
 
@@ -54,8 +54,6 @@ const createReview = async (req, res) => {
       rating,
       comment,
     });
-
-    console.log("New Review", newReview)
 
     await newReview.save();
 
