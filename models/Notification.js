@@ -6,9 +6,10 @@ const notificationSchema = new mongoose.Schema({
     required: true, // jisko notification dikhani hai
     refPath: "userType",
   },
+  
   userType: {
     type: String,
-    enum: ["Farmer", "Customer"],
+    enum: ["farmer", "customer"],
     required: true,
   },
 
@@ -19,7 +20,7 @@ const notificationSchema = new mongoose.Schema({
   },
   actorType: {
     type: String,
-    enum: ["Farmer", "Customer"],
+    enum: ["farmer", "customer"],
     required: true,
   },
 

@@ -13,10 +13,10 @@ const getNotifications = async (req, res) => {
         notifications.map(async (notification) => {
           let userName = "Unknown";
   
-          if (notification.actorType === "Farmer") {
+          if (notification.actorType === "farmer") {
             const farmer = await Farmer.findById(notification.actorId);
             if (farmer) userName = farmer.name;
-          } else if (notification.actorType === "Customer") {
+          } else if (notification.actorType === "customer") {
             const customer = await Customer.findById(notification.actorId);
             if (customer) userName = customer.name;
           }

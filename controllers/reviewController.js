@@ -2,7 +2,7 @@ const { sendNotification } = require("../helper/sendNotification");
 const Review = require("../models/Review");
 const Shop = require("../models/Shop");
 
-// SUbmit REview or Create Review for Shop
+
 const createReview = async (req, res) => {
   try {
     const { shop_id, rating, comment } = req.body;
@@ -12,32 +12,34 @@ const createReview = async (req, res) => {
     }
 
     const shop = await Shop.findById(shop_id);
+
     if (!shop) {
       return res.status(404).json({ message: "Shop not found" });
     }
 
-    const receiverId = shop.farmer_id; // Notification kis farmer ko dikhani hai
-    const actorId = req.user._id;      // Review dene wala (customer)
-    const actorType = req.user.role;   // 'Customer' ya 'Farmer', assume `req.user.role` available hai
+    const userId = shop.farmer_id; // Fetching farmer's ID from shop
+
+    console.log("Notification Rec id", userId);
 
     const newReview = new Review({
       shop_id,
-      user_id: actorId, // Review creator
+      user_id: req.user._id, // Assuming user is authenticated
       rating,
       comment,
     });
 
     await newReview.save();
 
-    // Send notification to farmer with actor info
-    await sendNotification({
-      userId: receiverId,
-      userType: "Farmer",
-      actorId,
-      actorType,
-      type: "review",
-      message: "A new review has been submitted on your shop."
-    });
+    // Pass reviewer ID as actorId
+    await sendNotification(
+      userId, 
+      "farmer", 
+      "review", 
+      "You’ve Received a New Review!", 
+      req.user._id,   // ✅ Actor ID
+      req.user.role   // ✅ Actor Type (customer ya farmer)
+    );
+    
 
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
@@ -57,7 +59,7 @@ const getAllReviews = async (req, res) => {
       return res.status(400).json({ message: "Shop ID is required" });
     }
 
-    const reviews = await Review.find({ shop_id }).populate("user_id", "name"); 
+    const reviews = await Review.find({ shop_id }).populate("user_id", "name");
 
     // ✅ Calculate Overall Rating
     const totalReviews = reviews.length;
@@ -95,23 +97,23 @@ const getReviewById = async (req, res) => {
 // ✅ Get Reviews by Customer ID
 const getReviewsByCustomerId = async (req, res) => {
 
-    try {
-      const { customerId } = req.params;
-  
-      if (!customerId) {
-        return res.status(400).json({ message: "Customer ID is required" });
-      }
-  
-      // Fetch reviews based on user_id (customer ID)
-      const reviews = await Review.find({ user_id: customerId }).populate("shop_id", "shop_name");
-  
-      res.status(200).json(reviews);
-    } catch (error) {
-      console.error("Error fetching reviews by customer ID:", error);
-      res.status(500).json({ message: "Server error" });
+  try {
+    const { customerId } = req.params;
+
+    if (!customerId) {
+      return res.status(400).json({ message: "Customer ID is required" });
     }
 
-  };
+    // Fetch reviews based on user_id (customer ID)
+    const reviews = await Review.find({ user_id: customerId }).populate("shop_id", "shop_name");
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error("Error fetching reviews by customer ID:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+
+};
 
 
 // ✅ Update Review
