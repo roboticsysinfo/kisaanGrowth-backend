@@ -1,16 +1,59 @@
+const { sendNotification } = require("../helper/sendNotification");
 const RequestOrder = require("../models/RequestOrder");
+
+// Create a new request order
+// const createRequestOrder = async (req, res) => {
+//   try {
+
+//     const { farmer_id, product_id, quantity_requested, unit, notes, phoneNumber } = req.body;
+
+//     if (!req.user || !req.user._id) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const customer_id = req.user._id; // Customer ID from logged-in user
+
+//     // Validate required fields
+//     if (!farmer_id || !product_id || !quantity_requested || !unit) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     // Create new request order
+//     const newRequest = new RequestOrder({
+//       customer_id,
+//       farmer_id,
+//       product_id,
+//       quantity_requested,
+//       unit,
+//       notes,
+//       phoneNumber
+//     });
+
+//     await newRequest.save();
+
+//     res.status(201).json({
+//       message: "Request sent to farmer successfully",
+//       request: newRequest,
+//     });
+
+//   } catch (error) {
+//     console.error("Error creating request order:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+
+// };
+
 
 // Create a new request order
 const createRequestOrder = async (req, res) => {
   try {
-
     const { farmer_id, product_id, quantity_requested, unit, notes, phoneNumber } = req.body;
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const customer_id = req.user._id; // Customer ID from logged-in user
+    const customer_id = req.user._id;
 
     // Validate required fields
     if (!farmer_id || !product_id || !quantity_requested || !unit) {
@@ -29,6 +72,17 @@ const createRequestOrder = async (req, res) => {
     });
 
     await newRequest.save();
+
+    // ✅ Send notification to the farmer
+    const message = "You received a new order request.";
+    await sendNotification(
+      farmer_id,       // userId (farmer who should get notified)
+      "farmer",        // userType
+      "order",         // type of notification
+      message,         // message to display
+      customer_id,     // actorId (customer who made the request)
+      "customer"       // actorType
+    );
 
     res.status(201).json({
       message: "Request sent to farmer successfully",
