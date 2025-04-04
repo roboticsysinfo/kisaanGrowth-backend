@@ -9,7 +9,7 @@ router.get("/notifications", authorize(['farmer', 'customer', 'admin']), getNoti
 
 
 //  Mark notification as read
-router.put("/notification/read/:id", authorize(['farmer', 'customer', 'admin']), markAsRead);
+router.put("/notification/read/:notificationId", authorize(['farmer', 'customer', 'admin']), markAsRead);
 
 
 module.exports = router;
