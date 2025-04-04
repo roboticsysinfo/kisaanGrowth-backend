@@ -4,7 +4,7 @@ const sendNotification = async (userId, userType, type, message) => {
 
   try {
 
-    const notification = new Notification({ userId, userType, type, message });
+    const notification = new Notification({ userId, userType, actorId, actorType, type, message });
 
     await notification.save();
 
