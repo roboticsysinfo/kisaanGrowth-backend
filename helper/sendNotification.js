@@ -1,6 +1,6 @@
 const Notification = require("../models/Notification");
 
-const sendNotification = async (userId, userType, type, message) => {
+const sendNotification = async (userId, userType, actorId, actorType, type, message) => {
 
   try {
 

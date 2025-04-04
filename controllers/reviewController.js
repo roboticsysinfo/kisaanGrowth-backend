@@ -2,35 +2,7 @@ const { sendNotification } = require("../helper/sendNotification");
 const Review = require("../models/Review");
 const Shop = require("../models/Shop");
 
-// ✅ Create a Review
-// const createReview = async (req, res) => {
-//   try {
-//     const { shop_id, rating, comment } = req.body;
-
-//     const farmerId =  req.user_id
-
-//     if (!shop_id || !rating) {
-//       return res.status(400).json({ message: "Shop ID and rating are required" });
-//     }
-
-//     const newReview = new Review({
-//       shop_id,
-//       user_id: req.user._id, // Assuming user is authenticated
-//       rating,
-//       comment,
-//     });
-
-//     await newReview.save();
-
-//     await sendNotification(farmerId, "review", "A new review has been submitted on your shop.");
-//     res.status(201).json({ message: "Review submitted successfully", review: newReview });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-
-// };
-
+// SUbmit REview or Create Review for Shop
 const createReview = async (req, res) => {
   try {
     const { shop_id, rating, comment } = req.body;
@@ -44,27 +16,36 @@ const createReview = async (req, res) => {
       return res.status(404).json({ message: "Shop not found" });
     }
 
-    const userId = shop.farmer_id; // Fetching farmer's ID from shop\
-
-    console.log("Notification Rec id", userId)
+    const receiverId = shop.farmer_id; // Notification kis farmer ko dikhani hai
+    const actorId = req.user._id;      // Review dene wala (customer)
+    const actorType = req.user.role;   // 'Customer' ya 'Farmer', assume `req.user.role` available hai
 
     const newReview = new Review({
       shop_id,
-      user_id: req.user._id, // Assuming user is authenticated
+      user_id: actorId, // Review creator
       rating,
       comment,
     });
 
     await newReview.save();
 
-    await sendNotification(userId, "Farmer", "review", "A new review has been submitted on your shop.");
-    
+    // Send notification to farmer with actor info
+    await sendNotification({
+      userId: receiverId,
+      userType: "Farmer",
+      actorId,
+      actorType,
+      type: "review",
+      message: "A new review has been submitted on your shop."
+    });
+
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 // ✅ Get All Reviews for a Shop
