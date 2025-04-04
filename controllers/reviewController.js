@@ -59,7 +59,7 @@ const createReview = async (req, res) => {
 
     await newReview.save();
 
-    await sendNotification(userId, "review", "A new review has been submitted on your shop.");
+    await sendNotification(userId, "Farmer", "review", "A new review has been submitted on your shop.");
     
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
@@ -67,7 +67,6 @@ const createReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 
 // ✅ Get All Reviews for a Shop
