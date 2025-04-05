@@ -20,7 +20,7 @@ const createHelpSupportTicket = async (req, res) => {
 
     await ticket.save();
 
-    res.status(201).json({ message: "Support ticket submitted successfully" });
+    res.status(201).json({ message: "Ticket submitted! We’ll get back to you very shortly." });
   } catch (error) {
     console.error("Support ticket error:", error);
     res.status(500).json({ message: "Server error" });
