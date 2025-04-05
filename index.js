@@ -15,11 +15,13 @@ const customerRoutes = require('./routes/customerRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const requestOrderRoutes = require("./routes/requestOrderRoutes");
 const siteDetailsRoutes = require("./routes/siteDetailsRoutes");
-const bannerRoutes = require('./routes/bannerRoutes')
+const bannerRoutes = require('./routes/bannerRoutes');
 const blogCategoryRoutes = require('./routes/blogCategoryRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const deliveryPreferenceRoutes = require('./routes/deliveryPreferenceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const helpSupportRoutes = require('./routes/helpSupportRoutes');
+const adminMessageRoutes = require('./routes/adminMessageRoutes')
 
 
 const app = express();
@@ -41,20 +43,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // URL parameters parsing
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
 connectDB();
-
 
 app.get('/', (req, res) => {
     res.send('Hello Kissan Growth')
 })
 
-
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-cache');
   next();
 });
-
 
 // ========= Routes=============
 app.use('/api', stateCityRoutes)
@@ -74,6 +72,8 @@ app.use('/api', blogCategoryRoutes);
 app.use('/api', blogRoutes);
 app.use('/api', deliveryPreferenceRoutes);
 app.use('/api', notificationRoutes);
+app.use('/api', helpSupportRoutes);
+app.use('/api', adminMessageRoutes)
 
 // ========= Routes end=============
 
