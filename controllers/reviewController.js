@@ -49,7 +49,6 @@ const createReview = async (req, res) => {
 };
 
 
-
 // ✅ Get All Reviews for a Shop
 const getAllReviews = async (req, res) => {
   try {
@@ -74,7 +73,6 @@ const getAllReviews = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // ✅ Get Review By ID
 const getReviewById = async (req, res) => {
@@ -142,6 +140,7 @@ const updateReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ✅ Delete Review
 const deleteReview = async (req, res) => {
