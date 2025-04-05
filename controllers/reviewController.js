@@ -152,7 +152,10 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    if (review.user_id.toString() !== req.user._id.toString()) {
+    if (
+      review.user_id.toString() !== req.user._id.toString() &&
+      review.shop_id.toString() !== req.user._id.toString() // assuming shop_id = farmer ID
+    ) {
       return res.status(403).json({ message: "Unauthorized action" });
     }
 
