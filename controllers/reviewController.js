@@ -142,19 +142,25 @@ const updateReview = async (req, res) => {
 };
 
 
-// ✅ Delete Review
 const deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const review = await Review.findById(id);
 
+    const review = await Review.findById(id);
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
 
+    // 🛠️ Find the related Shop to get ownerId
+    const shop = await Shop.findById(review.shop_id);
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    // ✅ Allow if: current user is the review author OR the shop owner
     if (
       review.user_id.toString() !== req.user._id.toString() &&
-      review.shop_id.toString() !== req.user._id.toString() // assuming shop_id = farmer ID
+      shop.farmer_id.toString() !== req.user._id.toString()
     ) {
       return res.status(403).json({ message: "Unauthorized action" });
     }
@@ -167,6 +173,8 @@ const deleteReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 module.exports = {
   createReview,
