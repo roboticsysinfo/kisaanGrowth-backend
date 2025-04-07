@@ -274,41 +274,29 @@ const getProductsByShopId = async (req, res) => {
 };
 
 
-
-// Search shops by keyword, location, and category
+// Search shops by city name or shop name
 const searchShops = async (req, res) => {
   try {
-    const { keyword, city_district, state, category } = req.query;
+    const { keyword } = req.query;
 
-    // Build the search query
     const shopQuery = {};
 
-    // Add location filters (optional)
-    if (city_district) shopQuery.city_district = { $regex: city_district, $options: 'i' }; // Case-insensitive search
-    if (state) shopQuery.state = { $regex: state, $options: 'i' }; // Case-insensitive search
-
-    // If a keyword is provided, search by shop name or description
+    // If keyword is provided, search by shop_name or city_district
     if (keyword) {
       shopQuery.$or = [
-        { shop_name: { $regex: keyword, $options: 'i' } }, // Case-insensitive search for shop name
-        { shop_description: { $regex: keyword, $options: 'i' } }, // Case-insensitive search for description
+        { shop_name: { $regex: keyword, $options: 'i' } },
+        { city_district: { $regex: keyword, $options: 'i' } },
       ];
     }
 
-    // If a category is provided, find related shop IDs through the Product model
-    if (category) {
-      const products = await Product.find({ category: { $regex: category, $options: 'i' } }); // Find products by category
-      const shopIds = [...new Set(products.map(product => product.shop_id))]; // Extract unique shop IDs
-      shopQuery._id = { $in: shopIds }; // Filter shops by these IDs
-    }
-
-    // Fetch shops matching the search criteria
     const shops = await Shop.find(shopQuery);
     res.status(200).json(shops);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 module.exports = {
   upload,
