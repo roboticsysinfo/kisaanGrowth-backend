@@ -4,51 +4,38 @@ const multer = require('multer')
 const path = require('path');
 
 
-// Define storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Directory where files will be saved
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Ensure unique filenames
-  },
-});
-
-// Filter to only allow specific file types (optional)
-const fileFilter = (req, file, cb) => {
-  const fileTypes = /jpeg|jpg|png/; // Adjust for the file types you need
-  const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimeType = fileTypes.test(file.mimetype);
-
-  if (extName && mimeType) {
-    return cb(null, true);
-  }
-  cb(new Error('Invalid file type. Only JPG, JPEG, and PNG are allowed.'));
-};
-
-// Initialize multer with storage and file filter options
-const upload = multer({ storage, fileFilter });
-
 // Farmer Registration Controller
 
 const registerFarmer = async (req, res) => {
+
   const { name, email, password, phoneNumber, address } = req.body;
   const uploadAadharCard = req.file ? req.file.path : undefined;
+
+  console.log("uploadAadharCard image", uploadAadharCard);
 
   try {
     if (!name || !email || !password || !phoneNumber || !address || !uploadAadharCard) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Optional: Extract last 4 digits of Aadhaar from file name (if you want to store something as aadharCard)
-    const aadharCard = req.body.aadharCard || '0000'; // fallback or implement OCR etc if needed
+    // Optional: Extract Aadhaar number from body or default
+    const aadharCard = req.body.aadharCard || '0000';
+    console.log("aadharCard ocr", aadharCard);
 
     const existingFarmer = await Farmer.findOne({
-      $or: [{ email }, { aadharCard }],
+      $or: [
+        { email },
+        { aadharCard },
+        { phoneNumber }
+      ],
     });
 
     if (existingFarmer) {
-      const duplicateField = existingFarmer.email === email ? "Email" : "Aadhar Card";
+      let duplicateField = '';
+      if (existingFarmer.email === email) duplicateField = "Email";
+      else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
+      else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
+
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
 
@@ -64,6 +51,8 @@ const registerFarmer = async (req, res) => {
       uploadAadharCard,
     });
 
+    console.log("farmer new creating", newFarmer);
+
     await newFarmer.save();
 
     res.status(201).json({
@@ -76,7 +65,6 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
-
 
 
 const getFarmerById = async (req, res) => {
@@ -286,7 +274,6 @@ module.exports = {
   getAllFarmers,
   getFarmerById,
   updateFarmerById,
-  upload,
   farmerLoginWithOTP,
   sendOTPToFarmer
 };
