@@ -19,7 +19,7 @@ const fileFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png/; // Adjust for the file types you need
   const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
   const mimeType = fileTypes.test(file.mimetype);
-  
+
   if (extName && mimeType) {
     return cb(null, true);
   }
@@ -32,13 +32,16 @@ const upload = multer({ storage, fileFilter });
 // Farmer Registration Controller
 
 const registerFarmer = async (req, res) => {
-  const { name, email, password, phoneNumber, address, aadharCard } = req.body;
+  const { name, email, password, phoneNumber, address } = req.body;
   const uploadAadharCard = req.file ? req.file.path : undefined;
 
   try {
-    if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard) {
+    if (!name || !email || !password || !phoneNumber || !address || !uploadAadharCard) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    // Optional: Extract last 4 digits of Aadhaar from file name (if you want to store something as aadharCard)
+    const aadharCard = req.body.aadharCard || '0000'; // fallback or implement OCR etc if needed
 
     const existingFarmer = await Farmer.findOne({
       $or: [{ email }, { aadharCard }],
@@ -52,13 +55,13 @@ const registerFarmer = async (req, res) => {
     const newFarmer = new Farmer({
       name,
       email,
-      password, // Password will be hashed automatically
+      password,
       phoneNumber,
       address,
       aadharCard,
-      isKYCVerified: false, // Default
-      kycRequested: true, // Automatically request KYC
-      uploadAadharCard,  // Ensure file path is set correctly
+      isKYCVerified: false,
+      kycRequested: true,
+      uploadAadharCard,
     });
 
     await newFarmer.save();
@@ -73,6 +76,7 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
+
 
 
 const getFarmerById = async (req, res) => {
@@ -275,14 +279,14 @@ const farmerLoginWithOTP = async (req, res) => {
 
 
 
-module.exports = { 
-  registerFarmer, 
-  farmerLogin, 
-  requestKYC, 
-  getAllFarmers, 
+module.exports = {
+  registerFarmer,
+  farmerLogin,
+  requestKYC,
+  getAllFarmers,
   getFarmerById,
   updateFarmerById,
-  upload ,
+  upload,
   farmerLoginWithOTP,
-  sendOTPToFarmer 
+  sendOTPToFarmer
 };

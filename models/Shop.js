@@ -16,13 +16,13 @@ const shopSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
-    whatsappNumber:{
+    whatsappNumber: {
       type: Number,
       required: true
     },
     city_district: {
-       type: String,
-       required: true
+      type: String,
+      required: true
     },
     state: {
       type: String,
@@ -58,6 +58,14 @@ const shopSchema = new mongoose.Schema(
     preferred_buyers: {
       type: String,
       enum: ["retail_customers", "wholesalers", "restaurants", "hotels"]
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
     },
 
   },
