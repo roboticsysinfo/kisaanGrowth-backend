@@ -8,19 +8,23 @@ const {
   deleteRedeemProduct,
   redeemProduct
 } = require('../controllers/redeemProductController');
+const { authorize } = require('../middlewares/authMiddleware');
 
 
 // Add Product
-router.post('/add-redeem-product', upload.single('r_product_img'), createRedeemProduct);
+router.post('/add-redeem-product', authorize(["admin"]), upload.single('r_product_img'), createRedeemProduct);
+
 
 // Get All
-router.get('/redeem-products', getAllRedeemProducts);
+router.get('/redeem-products', authorize(["farmer"]), getAllRedeemProducts);
+
 
 // Update Product
-router.put('/update-redeem-product/:id', upload.single('r_product_img'), updateRedeemProduct);
+router.put('/update-redeem-product/:id', authorize(["admin"]), upload.single('r_product_img'), updateRedeemProduct);
+
 
 // Delete Product
-router.delete('/delete-redeem-product/:id', deleteRedeemProduct);
+router.delete('/delete-redeem-product/:id', authorize(["admin"]), deleteRedeemProduct);
 
 
 // Redeem Product
