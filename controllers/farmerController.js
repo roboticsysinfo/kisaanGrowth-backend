@@ -4,9 +4,10 @@ const multer = require('multer')
 const path = require('path');
 
 
-// 🔐 Helper to generate referral code
+// 🔐 Helper to generate referral code like "KG123456"
 const generateReferralCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase(); // Example: 'AB12CD'
+  const randomNumber = Math.floor(100000 + Math.random() * 900000); // ensures a 6-digit number
+  return `KG${randomNumber}`;
 };
 
 
@@ -91,6 +92,7 @@ const registerFarmer = async (req, res) => {
       ],
     });
 
+
     if (existingFarmer) {
       let duplicateField = '';
       if (existingFarmer.email === email) duplicateField = "Email";
@@ -99,6 +101,7 @@ const registerFarmer = async (req, res) => {
 
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
+
 
     // Handle referral logic
     let referringFarmer = null;
@@ -139,16 +142,13 @@ const registerFarmer = async (req, res) => {
 };
 
 
-
 const getFarmerById = async (req, res) => {
   try {
 
     const farmerId = req.user._id;
 
-
     // Find farmer by ID and exclude password
     const farmer = await Farmer.findById(farmerId).select("-password");
-
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });

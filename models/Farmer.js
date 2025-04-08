@@ -46,7 +46,7 @@ farmerSchema.pre("save", async function (next) {
   if (!this.registrationNumber) {
     const timestampPart = Date.now().toString().slice(-4); // Last 4 digits of timestamp
     const uuidPart = uuidv4().slice(0, 6).toUpperCase(); // First 6 characters of UUID
-    this.registrationNumber = `FRM-${timestampPart}${uuidPart}`;
+    this.registrationNumber = `KG-${timestampPart}${uuidPart}`;
   }
 
   if (this.isModified("password")) {

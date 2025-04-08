@@ -53,7 +53,6 @@ const getAllAdmins = async (req, res) => {
 };
 
 
-
 // Approve KYC verification
 // const approveKYC = async (req, res) => {
   

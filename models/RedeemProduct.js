@@ -1,4 +1,4 @@
-const referEarnProductSchema = new mongoose.Schema({
+const redeemProductSchema = new mongoose.Schema({
 
     name: {
       type: String,
@@ -18,4 +18,4 @@ const referEarnProductSchema = new mongoose.Schema({
 
   }, { timestamps: true });
   
-  module.exports = mongoose.model('RedeemProduct', referEarnProductSchema);
+  module.exports = mongoose.model('RedeemProduct', redeemProductSchema);
