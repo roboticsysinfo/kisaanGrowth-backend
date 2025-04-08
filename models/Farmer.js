@@ -28,6 +28,15 @@ const farmerSchema = new mongoose.Schema(
     },
     registrationNumber: { type: String, unique: true }, // Auto-generated
     kycRequested: { type: Boolean, default: false }, // For KYC requests
+
+    // Refer and Earn
+    referralCode: { type: String, unique: true },
+    
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Farmer", default: null },
+
+    points: { type: Number, default: 0 },
+    
+
   },
   { timestamps: true }
 );

@@ -4,23 +4,84 @@ const multer = require('multer')
 const path = require('path');
 
 
+// 🔐 Helper to generate referral code
+const generateReferralCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase(); // Example: 'AB12CD'
+};
+
+
 // Farmer Registration Controller
 
-const registerFarmer = async (req, res) => {
+// const registerFarmer = async (req, res) => {
 
-  const { name, email, password, phoneNumber, address } = req.body;
+//   const { name, email, password, phoneNumber, address } = req.body;
+//   const uploadAadharCard = req.file ? req.file.path : undefined;
+
+//   console.log("uploadAadharCard image", uploadAadharCard);
+
+//   try {
+//     if (!name || !email || !password || !phoneNumber || !address || !uploadAadharCard) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     // Optional: Extract Aadhaar number from body or default
+//     const aadharCard = req.body.aadharCard || '0000';
+//     console.log("aadharCard ocr", aadharCard);
+
+//     const existingFarmer = await Farmer.findOne({
+//       $or: [
+//         { email },
+//         { aadharCard },
+//         { phoneNumber }
+//       ],
+//     });
+
+//     if (existingFarmer) {
+//       let duplicateField = '';
+//       if (existingFarmer.email === email) duplicateField = "Email";
+//       else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
+//       else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
+
+//       return res.status(409).json({ message: `${duplicateField} already exists` });
+//     }
+
+//     const newFarmer = new Farmer({
+//       name,
+//       email,
+//       password,
+//       phoneNumber,
+//       address,
+//       aadharCard,
+//       isKYCVerified: false,
+//       kycRequested: true,
+//       uploadAadharCard,
+//     });
+
+//     console.log("farmer new creating", newFarmer);
+
+//     await newFarmer.save();
+
+//     res.status(201).json({
+//       message: "Farmer registered successfully. KYC request has been sent.",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Server error occurred",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+const registerFarmer = async (req, res) => {
+  
+  const { name, email, password, phoneNumber, address, aadharCard, referredBy } = req.body;
   const uploadAadharCard = req.file ? req.file.path : undefined;
 
-  console.log("uploadAadharCard image", uploadAadharCard);
-
   try {
-    if (!name || !email || !password || !phoneNumber || !address || !uploadAadharCard) {
+    if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
-    // Optional: Extract Aadhaar number from body or default
-    const aadharCard = req.body.aadharCard || '0000';
-    console.log("aadharCard ocr", aadharCard);
 
     const existingFarmer = await Farmer.findOne({
       $or: [
@@ -39,6 +100,15 @@ const registerFarmer = async (req, res) => {
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
 
+    // Handle referral logic
+    let referringFarmer = null;
+    if (referredBy) {
+      referringFarmer = await Farmer.findOne({ referralCode: referredBy });
+      if (!referringFarmer) {
+        return res.status(400).json({ message: "Invalid referral code" });
+      }
+    }
+
     const newFarmer = new Farmer({
       name,
       email,
@@ -49,15 +119,17 @@ const registerFarmer = async (req, res) => {
       isKYCVerified: false,
       kycRequested: true,
       uploadAadharCard,
+      referralCode: generateReferralCode(), // Generate unique referral code
+      referredBy: referringFarmer ? referringFarmer._id : null,
+      points: 0,
     });
-
-    console.log("farmer new creating", newFarmer);
 
     await newFarmer.save();
 
     res.status(201).json({
       message: "Farmer registered successfully. KYC request has been sent.",
     });
+
   } catch (error) {
     res.status(500).json({
       message: "Server error occurred",
@@ -65,6 +137,7 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
+
 
 
 const getFarmerById = async (req, res) => {

@@ -55,24 +55,73 @@ const getAllAdmins = async (req, res) => {
 
 
 // Approve KYC verification
+// const approveKYC = async (req, res) => {
+  
+//   try {
+
+//     const farmer = await Farmer.findById(req.params.id);
+
+//     if (!farmer) {
+//       return res.status(404).json({ message: "Farmer not found" });
+//     }
+
+//     farmer.isKYCVerified = true;
+//     farmer.kycRequested = false;
+//     await farmer.save();
+
+//     res.status(200).json({ message: "KYC verified successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+
+// };
+
+
 const approveKYC = async (req, res) => {
   try {
-
     const farmer = await Farmer.findById(req.params.id);
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
+    // Already verified check
+    if (farmer.isKYCVerified) {
+      return res.status(400).json({ message: "Farmer is already KYC verified" });
+    }
+
+    // Update farmer KYC status
     farmer.isKYCVerified = true;
     farmer.kycRequested = false;
+
+    // Save KYC update first
     await farmer.save();
 
-    res.status(200).json({ message: "KYC verified successfully" });
+    // Referral logic
+    if (farmer.referredBy) {
+      const referrer = await Farmer.findOne({ referralCode: farmer.referredBy });
+
+      if (referrer) {
+        // Add points to both users
+        const referralPoints = 100;
+
+        referrer.points = (referrer.points || 0) + referralPoints;
+        farmer.points = (farmer.points || 0) + referralPoints;
+
+        await referrer.save();
+        await farmer.save();
+
+        // Optionally: create a transaction entry here if needed
+      }
+    }
+
+    res.status(200).json({ message: "KYC verified successfully. Referral points updated if applicable." });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 
 
