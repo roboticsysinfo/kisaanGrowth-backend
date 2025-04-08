@@ -121,7 +121,8 @@ module.exports = {
     createRedeemProduct,
     getAllRedeemProducts,
     updateRedeemProduct,
-    deleteRedeemProduct
+    deleteRedeemProduct,
+    redeemProduct
 };
 
 

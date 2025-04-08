@@ -5,7 +5,8 @@ const {
   createRedeemProduct,
   getAllRedeemProducts,
   updateRedeemProduct,
-  deleteRedeemProduct
+  deleteRedeemProduct,
+  redeemProduct
 } = require('../controllers/redeemProductController');
 
 
@@ -21,6 +22,9 @@ router.put('/update-redeem-product/:id', upload.single('r_product_img'), updateR
 // Delete Product
 router.delete('/delete-redeem-product/:id', deleteRedeemProduct);
 
+
+// Redeem Product
+router.post('/redeem-product', redeemProduct);
 
 
 module.exports = router;
