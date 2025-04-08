@@ -22,6 +22,7 @@ const deliveryPreferenceRoutes = require('./routes/deliveryPreferenceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const helpSupportRoutes = require('./routes/helpSupportRoutes');
 const adminMessageRoutes = require('./routes/adminMessageRoutes')
+const redeemProductRoutes = require('./routes/redeemProductsRoutes')
 
 
 const app = express();
@@ -74,6 +75,7 @@ app.use('/api', deliveryPreferenceRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', helpSupportRoutes);
 app.use('/api', adminMessageRoutes)
+app.use('/api', redeemProductRoutes)
 
 // ========= Routes end=============
 
