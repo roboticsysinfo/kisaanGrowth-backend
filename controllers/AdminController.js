@@ -85,24 +85,20 @@ const approveKYC = async (req, res) => {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    // Already verified check
     if (farmer.isKYCVerified) {
       return res.status(400).json({ message: "Farmer is already KYC verified" });
     }
 
-    // Update farmer KYC status
     farmer.isKYCVerified = true;
     farmer.kycRequested = false;
 
-    // Save KYC update first
     await farmer.save();
 
-    // Referral logic
+    // ✅ Corrected referral logic
     if (farmer.referredBy) {
-      const referrer = await Farmer.findOne({ referralCode: farmer.referredBy });
+      const referrer = await Farmer.findById(farmer.referredBy);
 
       if (referrer) {
-        // Add points to both users
         const referralPoints = 100;
 
         referrer.points = (referrer.points || 0) + referralPoints;
@@ -111,7 +107,7 @@ const approveKYC = async (req, res) => {
         await referrer.save();
         await farmer.save();
 
-        // Optionally: create a transaction entry here if needed
+        // Optional: Create transaction history
       }
     }
 
@@ -120,7 +116,6 @@ const approveKYC = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 
