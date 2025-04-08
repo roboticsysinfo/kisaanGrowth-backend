@@ -78,8 +78,12 @@ const getAllAdmins = async (req, res) => {
 
 
 const approveKYC = async (req, res) => {
+
   try {
+
     const farmer = await Farmer.findById(req.params.id);
+
+    console.log("farmer from req params", farmer)
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
@@ -98,11 +102,16 @@ const approveKYC = async (req, res) => {
     if (farmer.referredBy) {
       const referrer = await Farmer.findById(farmer.referredBy);
 
+      console.log("referrer", referrer);
+
       if (referrer) {
         const referralPoints = 100;
 
         referrer.points = (referrer.points || 0) + referralPoints;
         farmer.points = (farmer.points || 0) + referralPoints;
+
+        console.log("referrer points", referrer.points )
+        console.log("farmer points", farmer.points )
 
         await referrer.save();
         await farmer.save();
@@ -115,9 +124,8 @@ const approveKYC = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
+
 };
-
-
 
 
 const deleteAdmin = async (req, res) => {

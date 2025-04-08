@@ -74,8 +74,8 @@ const generateReferralCode = () => {
 
 
 const registerFarmer = async (req, res) => {
-  
-  const { name, email, password, phoneNumber, address, aadharCard, referredBy } = req.body;
+
+  const { name, email, password, phoneNumber, address, aadharCard, referralCode } = req.body;
   const uploadAadharCard = req.file ? req.file.path : undefined;
 
   try {
@@ -102,8 +102,8 @@ const registerFarmer = async (req, res) => {
 
     // Handle referral logic
     let referringFarmer = null;
-    if (referredBy) {
-      referringFarmer = await Farmer.findOne({ referralCode: referredBy });
+    if (referralCode) {
+      referringFarmer = await Farmer.findOne({ referralCode }); // ✅ referralCode from input
       if (!referringFarmer) {
         return res.status(400).json({ message: "Invalid referral code" });
       }
@@ -145,12 +145,10 @@ const getFarmerById = async (req, res) => {
 
     const farmerId = req.user._id;
 
-    console.log("farmer id backend param", farmerId)
 
     // Find farmer by ID and exclude password
     const farmer = await Farmer.findById(farmerId).select("-password");
 
-    console.log("farmerFound", farmer)
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
