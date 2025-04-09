@@ -4,6 +4,7 @@ const RedemptionHistory = require('../models/RedemptionHistory');
 
 
 // Add redeem product
+
 const createRedeemProduct = async (req, res) => {
     try {
         const { name, description, requiredPoints } = req.body;
@@ -81,10 +82,9 @@ const deleteRedeemProduct = async (req, res) => {
     }
 };
 
-
-
 // Redeem Product
 const redeemProduct = async (req, res) => {
+
     const { farmerId, redeemProductId } = req.body;
 
     try {

@@ -27,6 +27,20 @@ const createHelpSupportTicket = async (req, res) => {
   }
 };
 
+// get all help and support querys
+
+const getAllHelpSupportTickets = async (req, res) => {
+  try {
+    const tickets = await HelpSupportTicket.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json(tickets);
+  } catch (error) {
+    console.error("Error fetching support tickets:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   createHelpSupportTicket,
+  getAllHelpSupportTickets
 };

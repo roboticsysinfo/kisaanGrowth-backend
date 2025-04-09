@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid"); // Use UUID for unique registration numb
 
 // Farmer Schema
 const farmerSchema = new mongoose.Schema(
+
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -38,7 +39,9 @@ const farmerSchema = new mongoose.Schema(
     
 
   },
+
   { timestamps: true }
+  
 );
 
 // Auto-generate Registration Number
