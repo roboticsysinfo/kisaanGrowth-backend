@@ -32,16 +32,19 @@ const farmerSchema = new mongoose.Schema(
 
     // Refer and Earn
     referralCode: { type: String, unique: true },
-    
+
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Farmer", default: null },
 
     points: { type: Number, default: 0 },
-    
+
+    lastRewardDate: {
+      type: Date,
+    }
 
   },
 
   { timestamps: true }
-  
+
 );
 
 // Auto-generate Registration Number

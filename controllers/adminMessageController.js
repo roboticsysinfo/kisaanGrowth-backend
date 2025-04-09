@@ -2,7 +2,9 @@ const AdminMessage = require("../models/AdminMessage");
 
 // ✅ Create Message
 const createMessage = async (req, res) => {
+
   try {
+
     const { title, message } = req.body;
 
     if (!title || !message) {
@@ -14,21 +16,28 @@ const createMessage = async (req, res) => {
 
     res.status(201).json({ message: "Message created successfully" });
   } catch (err) {
+
     console.error("Error creating message:", err);
     res.status(500).json({ message: "Server error" });
+
   }
+
 };
+
 
 // ✅ Get All Messages
 const getAllMessages = async (req, res) => {
   try {
+    
     const messages = await AdminMessage.find().sort({ createdAt: -1 });
     res.status(200).json(messages);
   } catch (err) {
     console.error("Error fetching messages:", err);
     res.status(500).json({ message: "Server error" });
   }
+
 };
+
 
 // ✅ Update Message
 const updateMessage = async (req, res) => {
@@ -52,6 +61,7 @@ const updateMessage = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ✅ Delete Message
 const deleteMessage = async (req, res) => {

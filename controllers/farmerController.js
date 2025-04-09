@@ -337,6 +337,31 @@ const farmerLoginWithOTP = async (req, res) => {
 };
 
 
+const rewardDailyPoints = async (req, res) => {
+  
+  const farmerId = req.user.id; // assuming auth middleware adds user info
+
+  try {
+    const farmer = await Farmer.findById(farmerId);
+    const today = new Date().toDateString();
+
+    if (farmer.lastRewardDate?.toDateString() === today) {
+      return res.status(400).json({ message: "Already rewarded today" });
+    }
+
+    farmer.points += 5;
+    farmer.lastRewardDate = new Date();
+
+    await farmer.save();
+
+    res.json({ message: "5 points rewarded", points: farmer.points });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
 module.exports = {
   registerFarmer,
@@ -346,5 +371,6 @@ module.exports = {
   getFarmerById,
   updateFarmerById,
   farmerLoginWithOTP,
-  sendOTPToFarmer
+  sendOTPToFarmer,
+  rewardDailyPoints
 };
