@@ -338,7 +338,7 @@ const farmerLoginWithOTP = async (req, res) => {
 
 
 const rewardDailyPoints = async (req, res) => {
-  
+
   const farmerId = req.user.id; // assuming auth middleware adds user info
 
   try {
