@@ -417,9 +417,7 @@ const getFarmerReferralDetails = async (req, res) => {
     const farmerId = req.params.id;
 
     // 1. Find the main farmer
-    
     const farmer = await Farmer.findById(farmerId)
-    .select("name")
     .lean();
     if (!farmer) return res.status(404).json({ message: "Farmer not found" });
 
