@@ -409,6 +409,35 @@ const incrementReferralShare = async (req, res) => {
 };
 
 
+// Get Referral Details of Single Farmer
+
+const getFarmerReferralDetails = async (req, res) => {
+  try {
+
+    const farmerId = req.params.id;
+
+    // 1. Find the main farmer
+    const farmer = await Farmer.findById(farmerId).lean();
+    if (!farmer) return res.status(404).json({ message: "Farmer not found" });
+
+    // 2. Find all referred farmers
+    const referredFarmers = await Farmer.find({ referredBy: farmerId })
+      .select("name referralCode")
+      .lean();
+
+    // 3. Prepare response
+    res.status(200).json({
+      referralCode: farmer.referralCode,
+      referralShares: farmer.referralShares,
+      referralDownloads: farmer.referralDownloads,
+      referredFarmers: referredFarmers,
+    });
+  } catch (error) {
+    console.error("Error fetching referral details:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+  
+};
 
 
 module.exports = {
@@ -421,5 +450,6 @@ module.exports = {
   farmerLoginWithOTP,
   sendOTPToFarmer,
   rewardDailyPoints,
-  incrementReferralShare
+  incrementReferralShare,
+  getFarmerReferralDetails
 };
