@@ -1,4 +1,5 @@
 const Farmer = require("../models/Farmer");
+const pointsTransactionHistory = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
 const multer = require('multer')
 const path = require('path');
@@ -428,7 +429,6 @@ const incrementReferralShare = async (req, res) => {
 };
 
 
-
 // Get Referral Details of Single Farmer
 
 const getFarmerReferralDetails = async (req, res) => {
@@ -461,6 +461,29 @@ const getFarmerReferralDetails = async (req, res) => {
 };
 
 
+// farmer points transactions
+
+const getPointTransactions = async (req, res) => {
+
+  try {
+    const { farmerId } = req.params;
+
+    // If user is not admin, ensure they are requesting their own data
+    if (req.user.role !== "admin" && req.user._id.toString() !== farmerId) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const transactions = await pointsTransactionHistory.find({ farmer: farmerId }).sort({ createdAt: -1 });
+
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch point transactions", error });
+  }
+  
+};
+
+
+
 module.exports = {
   registerFarmer,
   farmerLogin,
@@ -472,5 +495,6 @@ module.exports = {
   sendOTPToFarmer,
   rewardDailyPoints,
   incrementReferralShare,
-  getFarmerReferralDetails
+  getFarmerReferralDetails,
+  getPointTransactions
 };
