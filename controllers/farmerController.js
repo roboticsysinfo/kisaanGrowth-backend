@@ -261,7 +261,12 @@ const requestKYC = async (req, res) => {
 
 const getAllFarmers = async (req, res) => {
   try {
-    const farmers = await Farmer.find({}, '-password'); // Exclude password field
+    const farmers = await Farmer.find({}, '-password')
+      .populate({
+        path: 'referredBy',
+        select: 'name',
+      });
+
     res.status(200).json(farmers);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -269,10 +274,12 @@ const getAllFarmers = async (req, res) => {
 };
 
 
+
 const sendOTPToFarmer = async (req, res) => {
   const { phoneNumber } = req.body;
 
   try {
+
     if (!phoneNumber) {
       return res.status(400).json({ message: "Phone number is required" });
     }
@@ -298,6 +305,7 @@ const farmerLoginWithOTP = async (req, res) => {
   const { phoneNumber, otp } = req.body;
 
   try {
+
     if (!phoneNumber || !otp) {
       return res.status(400).json({ message: "Phone number and OTP are required" });
     }
@@ -342,6 +350,7 @@ const rewardDailyPoints = async (req, res) => {
   const farmerId = req.user.id; // assuming auth middleware adds user info
 
   try {
+
     const farmer = await Farmer.findById(farmerId);
     const today = new Date().toDateString();
 
