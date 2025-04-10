@@ -35,11 +35,31 @@ const farmerSchema = new mongoose.Schema(
 
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Farmer", default: null },
 
+    referralShares: {
+      type: Number,
+      default: 0
+    },
+    
+    referralDownloads: {
+      type: Number,
+      default: 0
+    },
+
     points: { type: Number, default: 0 },
 
     lastRewardDate: {
       type: Date,
+    },
+
+    lastReferralShareDate: {
+      type: Date,
+      default: null,
+    },
+    todayReferralShareCount: {
+      type: Number,
+      default: 0,
     }
+    
 
   },
 

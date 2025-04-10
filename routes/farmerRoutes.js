@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -32,6 +32,12 @@ router.get('/farmer/get/:farmerId', authorize(["farmer"]), getFarmerById);
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
 
+// Daily Reward
 router.post('/farmer/reward-daily', authorize(["farmer"]), rewardDailyPoints);
+
+
+// POST /api/farmer/referral-share
+router.post('/farmer/referral-share', authorize(["farmer"]), incrementReferralShare);
+
 
 module.exports = router;

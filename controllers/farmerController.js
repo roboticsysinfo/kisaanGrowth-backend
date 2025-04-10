@@ -371,6 +371,45 @@ const rewardDailyPoints = async (req, res) => {
 };
 
 
+// Farmer Refer Share Detail Count ( How Many Share Farmer did )
+const incrementReferralShare = async (req, res) => {
+  try {
+    const { farmerId } = req.body;
+    const farmer = await Farmer.findById(farmerId);
+    if (!farmer) return res.status(404).json({ message: "Farmer not found" });
+
+    const today = new Date().toDateString(); // only date part
+    const lastShareDate = farmer.lastReferralShareDate ? new Date(farmer.lastReferralShareDate).toDateString() : null;
+
+    if (lastShareDate === today) {
+      // Same day
+      if (farmer.todayReferralShareCount >= 3) {
+        return res.status(200).json({ message: "Daily share limit reached. Try again tomorrow." });
+      }
+      farmer.todayReferralShareCount += 1;
+    } else {
+      // New day
+      farmer.todayReferralShareCount = 1;
+      farmer.lastReferralShareDate = new Date();
+    }
+
+    farmer.referralShares += 1;
+    farmer.points += 5;
+
+    await farmer.save();
+    res.status(200).json({
+      message: "Referral share counted & points added",
+      points: farmer.points,
+      todayShareCount: farmer.todayReferralShareCount
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
+
 
 module.exports = {
   registerFarmer,
@@ -381,5 +420,6 @@ module.exports = {
   updateFarmerById,
   farmerLoginWithOTP,
   sendOTPToFarmer,
-  rewardDailyPoints
+  rewardDailyPoints,
+  incrementReferralShare
 };

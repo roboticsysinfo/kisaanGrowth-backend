@@ -101,12 +101,11 @@ const approveKYC = async (req, res) => {
     if (farmer.referredBy) {
       const referrer = await Farmer.findById(farmer.referredBy);
 
-      console.log("referrer", referrer);
-
       if (referrer) {
-        const referralPoints = 100;
+        const referralPoints = 10;
 
         referrer.points = (referrer.points || 0) + referralPoints;
+        referrer.referralDownloads += 1;
         farmer.points = (farmer.points || 0) + referralPoints;
 
         console.log("referrer points", referrer.points )
