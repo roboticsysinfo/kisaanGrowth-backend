@@ -99,7 +99,7 @@ const getProductByFarmerId = async (req, res) => {
 
     // Find all products by the farmer's ID and populate the category name
     const products = await Product.find({ farmer_id: farmerId })
-      .populate("category_id", "category_name"); // Populate only category_name
+      .populate("category_id", "name"); // Populate only category_name
 
     if (!products || products.length === 0) {
       return res.status(404).json({ message: "No products found for this farmer." });
