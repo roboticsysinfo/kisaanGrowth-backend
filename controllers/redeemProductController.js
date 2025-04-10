@@ -85,38 +85,46 @@ const deleteRedeemProduct = async (req, res) => {
 
 // Redeem Product farmer
 const redeemProduct = async (req, res) => {
-
     const { farmerId, redeemProductId } = req.body;
-
+  
     try {
-        const farmer = await Farmer.findById(farmerId);
-        const product = await RedeemProduct.findById(redeemProductId);
-
-        if (!farmer || !product) {
-            return res.status(404).json({ message: 'Farmer or Product not found' });
-        }
-
-        if (farmer.points < product.requiredPoints) {
-            return res.status(400).json({ message: 'Not enough points to redeem this product' });
-        }
-
-        // Deduct points
-        farmer.points -= product.requiredPoints;
-        await farmer.save();
-
-        // Save redemption history
-        const redemption = new RedemptionHistory({
-            farmerId: farmer._id,
-            redeemProductId: product._id,
-            pointsDeducted: product.requiredPoints
-        });
-        await redemption.save();
-
-        res.status(200).json({ message: 'Product redeemed successfully', redemption });
+      const farmer = await Farmer.findById(farmerId);
+      const product = await RedeemProduct.findById(redeemProductId);
+  
+      if (!farmer || !product) {
+        return res.status(404).json({ message: 'Farmer or Product not found' });
+      }
+  
+      if (farmer.points < product.requiredPoints) {
+        return res.status(400).json({ message: 'Not enough points to redeem this product' });
+      }
+  
+      // Deduct points
+      farmer.points -= product.requiredPoints;
+      await farmer.save();
+  
+      // Save redemption history
+      const redemption = new RedemptionHistory({
+        farmerId: farmer._id,
+        redeemProductId: product._id,
+        pointsDeducted: product.requiredPoints
+      });
+      await redemption.save();
+  
+      // ✅ Add points transaction
+      await pointsTransactionHistory.create({
+        farmer: farmer._id,
+        points: -product.requiredPoints, // 👈 Negative points for deduction
+        type: "redeem",
+        description: `Redeemed product: ${product.name}`
+      });
+  
+      res.status(200).json({ message: 'Product redeemed successfully', redemption });
     } catch (err) {
-        res.status(500).json({ message: 'Something went wrong', error: err.message });
+      res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
-};
+  };
+  
 
 
 // Get redemption history with farmer & redeem product details

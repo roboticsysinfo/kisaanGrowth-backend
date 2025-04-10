@@ -346,11 +346,9 @@ const farmerLoginWithOTP = async (req, res) => {
 
 
 const rewardDailyPoints = async (req, res) => {
-
   const farmerId = req.user.id; // assuming auth middleware adds user info
 
   try {
-
     const farmer = await Farmer.findById(farmerId);
     const today = new Date().toDateString();
 
@@ -358,10 +356,20 @@ const rewardDailyPoints = async (req, res) => {
       return res.status(400).json({ message: "Already rewarded today" });
     }
 
-    farmer.points += 5;
+    const rewardPoints = 5;
+
+    farmer.points += rewardPoints;
     farmer.lastRewardDate = new Date();
 
     await farmer.save();
+
+    // ✅ Create points transaction
+    await pointsTransactionHistory.create({
+      farmer: farmer._id,
+      points: rewardPoints,
+      type: "daily_stay",
+      description: "Daily login reward",
+    });
 
     res.json({ message: "5 points rewarded", points: farmer.points });
   } catch (error) {
@@ -371,7 +379,9 @@ const rewardDailyPoints = async (req, res) => {
 };
 
 
+
 // Farmer Refer Share Detail Count ( How Many Share Farmer did )
+
 const incrementReferralShare = async (req, res) => {
   try {
     const { farmerId } = req.body;
@@ -397,6 +407,15 @@ const incrementReferralShare = async (req, res) => {
     farmer.points += 5;
 
     await farmer.save();
+
+    // ✅ Add transaction history
+    await pointsTransactionHistory.create({
+      farmer: farmer._id,
+      points: 5,
+      type: "daily_share",
+      description: "Points awarded for sharing referral code"
+    });
+
     res.status(200).json({
       message: "Referral share counted & points added",
       points: farmer.points,
@@ -409,6 +428,7 @@ const incrementReferralShare = async (req, res) => {
 };
 
 
+
 // Get Referral Details of Single Farmer
 
 const getFarmerReferralDetails = async (req, res) => {
@@ -418,7 +438,7 @@ const getFarmerReferralDetails = async (req, res) => {
 
     // 1. Find the main farmer
     const farmer = await Farmer.findById(farmerId)
-    .lean();
+      .lean();
     if (!farmer) return res.status(404).json({ message: "Farmer not found" });
 
     // 2. Find all referred farmers

@@ -1,5 +1,6 @@
 const Admin = require('../models/Admin');
 const Farmer = require("../models/Farmer");
+const pointsTransactionHistory = require('../models/pointsTransactionHistory');
 const generateToken = require('../utils/jwtGenerator');
 
 // Register Admin
@@ -55,7 +56,7 @@ const getAllAdmins = async (req, res) => {
 
 // Approve KYC verification
 // const approveKYC = async (req, res) => {
-  
+
 //   try {
 
 //     const farmer = await Farmer.findById(req.params.id);
@@ -77,9 +78,7 @@ const getAllAdmins = async (req, res) => {
 
 
 const approveKYC = async (req, res) => {
-
   try {
-
     const farmer = await Farmer.findById(req.params.id);
 
     if (!farmer) {
@@ -93,31 +92,46 @@ const approveKYC = async (req, res) => {
     farmer.isKYCVerified = true;
     farmer.kycRequested = false;
 
-    await farmer.save();
-
-    // ✅ Corrected referral logic
+    // Referral Logic
     if (farmer.referredBy) {
       const referrer = await Farmer.findById(farmer.referredBy);
 
       if (referrer) {
-        const referralPoints = 10;
+        const referralPoints = 5;
 
         referrer.points = (referrer.points || 0) + referralPoints;
         referrer.referralDownloads += 1;
+
         farmer.points = (farmer.points || 0) + referralPoints;
 
         await referrer.save();
-        await farmer.save();
 
+        // Create Points Transaction for Referrer
+        await pointsTransactionHistory.create({
+          farmer: referrer._id,
+          points: referralPoints,
+          type: "referral",
+          description: `Referral bonus for referring ${farmer.name}`,
+        });
+
+        // Create Points Transaction for Referred Farmer
+        await pointsTransactionHistory.create({
+          farmer: farmer._id,
+          points: referralPoints,
+          type: "referral",
+          description: "Bonus for joining with referral code",
+        });
       }
     }
+
+    await farmer.save();
 
     res.status(200).json({ message: "KYC verified successfully. Referral points updated if applicable." });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-
 };
+
 
 
 const deleteAdmin = async (req, res) => {
