@@ -417,7 +417,10 @@ const getFarmerReferralDetails = async (req, res) => {
     const farmerId = req.params.id;
 
     // 1. Find the main farmer
-    const farmer = await Farmer.findById(farmerId).lean();
+    
+    const farmer = await Farmer.findById(farmerId)
+    .select("name")
+    .lean();
     if (!farmer) return res.status(404).json({ message: "Farmer not found" });
 
     // 2. Find all referred farmers
@@ -436,7 +439,7 @@ const getFarmerReferralDetails = async (req, res) => {
     console.error("Error fetching referral details:", error);
     res.status(500).json({ message: "Server error" });
   }
-  
+
 };
 
 
