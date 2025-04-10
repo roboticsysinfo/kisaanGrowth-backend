@@ -82,7 +82,8 @@ const deleteRedeemProduct = async (req, res) => {
     }
 };
 
-// Redeem Product
+
+// Redeem Product farmer
 const redeemProduct = async (req, res) => {
 
     const { farmerId, redeemProductId } = req.body;
@@ -106,7 +107,8 @@ const redeemProduct = async (req, res) => {
         // Save redemption history
         const redemption = new RedemptionHistory({
             farmerId: farmer._id,
-            redeemProductId: product._id
+            redeemProductId: product._id,
+            pointsDeducted: product.requiredPoints
         });
         await redemption.save();
 
@@ -117,12 +119,46 @@ const redeemProduct = async (req, res) => {
 };
 
 
+// Get redemption history with farmer & redeem product details
+
+const getRedeemProductHistoryFarmer = async (req, res) => {
+    try {
+        const history = await RedemptionHistory.find()
+            .sort({ redeemedAt: -1 })
+            .populate({
+                path: 'farmerId',
+                select: 'name _id referralCode points'
+            })
+            .populate({
+                path: 'redeemProductId',
+                select: 'name _id requiredPoints'
+            });
+
+        const formattedHistory = history.map(entry => ({
+            farmerId: entry.farmerId?._id,
+            farmerName: entry.farmerId?.name,
+            referralCode: entry.farmerId?.referralCode,
+            totalPoints: entry.farmerId?.points,
+            redeemProductId: entry.redeemProductId?._id,
+            redeemProductName: entry.redeemProductId?.name,
+            pointsDeducted: entry.pointsDeducted,
+            redeemedAt: entry.redeemedAt
+        }));
+
+        res.status(200).json(formattedHistory);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
 module.exports = {
     createRedeemProduct,
     getAllRedeemProducts,
     updateRedeemProduct,
     deleteRedeemProduct,
-    redeemProduct
+    redeemProduct,
+    getRedeemProductHistoryFarmer
 };
 
 

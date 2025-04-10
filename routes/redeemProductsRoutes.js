@@ -6,7 +6,8 @@ const {
   getAllRedeemProducts,
   updateRedeemProduct,
   deleteRedeemProduct,
-  redeemProduct
+  redeemProduct,
+  getRedeemProductHistoryFarmer
 } = require('../controllers/redeemProductController');
 const { authorize } = require('../middlewares/authMiddleware');
 
@@ -27,8 +28,12 @@ router.put('/update-redeem-product/:id', authorize(["admin"]), upload.single('r_
 router.delete('/delete-redeem-product/:id', authorize(["admin"]), deleteRedeemProduct);
 
 
-// Redeem Product
-router.post('/redeem-product', redeemProduct);
+// Redeem Product by farmer
+router.post('/redeem-product', authorize(["farmer"]), redeemProduct);
+
+
+// Redeem Product by farmers history
+router.get('/farmer/redeem-product-history', authorize(["admin"]), getRedeemProductHistoryFarmer);
 
 
 module.exports = router;
