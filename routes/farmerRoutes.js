@@ -41,7 +41,7 @@ router.post('/farmer/referral-share', authorize(["farmer"]), incrementReferralSh
 
 
 // get /api/farmer/referral-share
-router.get('/farmer/referral-details/:id', authorize(["farmer"]), getFarmerReferralDetails);
+router.get('/farmer/referral-details/:id', authorize(["admin"]), getFarmerReferralDetails);
 
 
 module.exports = router;

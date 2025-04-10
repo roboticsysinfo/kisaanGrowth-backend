@@ -82,8 +82,6 @@ const approveKYC = async (req, res) => {
 
     const farmer = await Farmer.findById(req.params.id);
 
-    console.log("farmer from req params", farmer)
-
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
@@ -108,13 +106,9 @@ const approveKYC = async (req, res) => {
         referrer.referralDownloads += 1;
         farmer.points = (farmer.points || 0) + referralPoints;
 
-        console.log("referrer points", referrer.points )
-        console.log("farmer points", farmer.points )
-
         await referrer.save();
         await farmer.save();
 
-        // Optional: Create transaction history
       }
     }
 
