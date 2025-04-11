@@ -1,8 +1,6 @@
 const Farmer = require("../models/Farmer");
 const pointsTransactionHistory = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
-const multer = require('multer')
-const path = require('path');
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -14,69 +12,7 @@ const generateReferralCode = () => {
 
 // Farmer Registration Controller
 
-// const registerFarmer = async (req, res) => {
-
-//   const { name, email, password, phoneNumber, address } = req.body;
-//   const uploadAadharCard = req.file ? req.file.path : undefined;
-
-//   console.log("uploadAadharCard image", uploadAadharCard);
-
-//   try {
-//     if (!name || !email || !password || !phoneNumber || !address || !uploadAadharCard) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-
-//     // Optional: Extract Aadhaar number from body or default
-//     const aadharCard = req.body.aadharCard || '0000';
-//     console.log("aadharCard ocr", aadharCard);
-
-//     const existingFarmer = await Farmer.findOne({
-//       $or: [
-//         { email },
-//         { aadharCard },
-//         { phoneNumber }
-//       ],
-//     });
-
-//     if (existingFarmer) {
-//       let duplicateField = '';
-//       if (existingFarmer.email === email) duplicateField = "Email";
-//       else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
-//       else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
-
-//       return res.status(409).json({ message: `${duplicateField} already exists` });
-//     }
-
-//     const newFarmer = new Farmer({
-//       name,
-//       email,
-//       password,
-//       phoneNumber,
-//       address,
-//       aadharCard,
-//       isKYCVerified: false,
-//       kycRequested: true,
-//       uploadAadharCard,
-//     });
-
-//     console.log("farmer new creating", newFarmer);
-
-//     await newFarmer.save();
-
-//     res.status(201).json({
-//       message: "Farmer registered successfully. KYC request has been sent.",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Server error occurred",
-//       error: error.message,
-//     });
-//   }
-// };
-
-
 const registerFarmer = async (req, res) => {
-
   const { name, email, password, phoneNumber, address, aadharCard, referralCode } = req.body;
   const uploadAadharCard = req.file ? req.file.path : undefined;
 
@@ -93,7 +29,6 @@ const registerFarmer = async (req, res) => {
       ],
     });
 
-
     if (existingFarmer) {
       let duplicateField = '';
       if (existingFarmer.email === email) duplicateField = "Email";
@@ -103,11 +38,10 @@ const registerFarmer = async (req, res) => {
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
 
-
     // Handle referral logic
     let referringFarmer = null;
     if (referralCode) {
-      referringFarmer = await Farmer.findOne({ referralCode }); // ✅ referralCode from input
+      referringFarmer = await Farmer.findOne({ referralCode });
       if (!referringFarmer) {
         return res.status(400).json({ message: "Invalid referral code" });
       }
@@ -123,12 +57,32 @@ const registerFarmer = async (req, res) => {
       isKYCVerified: false,
       kycRequested: true,
       uploadAadharCard,
-      referralCode: generateReferralCode(), // Generate unique referral code
+      referralCode: generateReferralCode(),
       referredBy: referringFarmer ? referringFarmer._id : null,
       points: 0,
     });
 
     await newFarmer.save();
+
+
+    // If no referral code, award self-register points
+    if (!referringFarmer) {
+      const selfRegisterPoints = 5;
+
+      // Update farmer's points
+      newFarmer.points += selfRegisterPoints;
+      await newFarmer.save();
+
+      // Create transaction
+      const transaction = new pointsTransactionHistory({
+        farmer: newFarmer._id,
+        points: selfRegisterPoints,
+        type: "self_register",
+        description: "Points awarded for signing up without referral",
+      });
+
+      await transaction.save();
+    }
 
     res.status(201).json({
       message: "Farmer registered successfully. KYC request has been sent.",
@@ -144,6 +98,7 @@ const registerFarmer = async (req, res) => {
 
 
 const getFarmerById = async (req, res) => {
+
   try {
 
     const farmerId = req.user._id;
@@ -159,8 +114,8 @@ const getFarmerById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
 
+};
 
 
 // Farmer Login
@@ -302,11 +257,54 @@ const sendOTPToFarmer = async (req, res) => {
 
 };
 
+// const farmerLoginWithOTP = async (req, res) => {
+//   const { phoneNumber, otp } = req.body;
+
+//   try {
+
+//     if (!phoneNumber || !otp) {
+//       return res.status(400).json({ message: "Phone number and OTP are required" });
+//     }
+
+//     // Dummy OTP check
+//     if (otp !== "1234") {
+//       return res.status(401).json({ message: "Invalid OTP" });
+//     }
+
+//     // Find farmer by phone number
+//     const farmer = await Farmer.findOne({ phoneNumber });
+//     if (!farmer) {
+//       return res.status(404).json({ message: "Farmer not found" });
+//     }
+
+//     // Check if the farmer is KYC verified
+//     if (!farmer.isKYCVerified) {
+//       return res.status(403).json({ message: "Your KYC is not verified yet" });
+//     }
+
+//     // Generate JWT token
+//     const token = generateToken(farmer._id, "farmer");
+
+//     res.status(200).json({
+//       message: "Farmer login successful",
+//       token,
+//       farmer: {
+//         id: farmer._id,
+//         name: farmer.name,
+//         phoneNumber: farmer.phoneNumber,
+//         role: "farmer",
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
+
+
 const farmerLoginWithOTP = async (req, res) => {
   const { phoneNumber, otp } = req.body;
 
   try {
-
     if (!phoneNumber || !otp) {
       return res.status(400).json({ message: "Phone number and OTP are required" });
     }
@@ -316,18 +314,39 @@ const farmerLoginWithOTP = async (req, res) => {
       return res.status(401).json({ message: "Invalid OTP" });
     }
 
-    // Find farmer by phone number
     const farmer = await Farmer.findOne({ phoneNumber });
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    // Check if the farmer is KYC verified
     if (!farmer.isKYCVerified) {
       return res.status(403).json({ message: "Your KYC is not verified yet" });
     }
 
-    // Generate JWT token
+    // ✅ Daily Login Logic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyGiven = await PointsTransactionHistory.findOne({
+      farmer: farmer._id,
+      type: "daily_login",
+      createdAt: { $gte: today },
+    });
+
+    if (!alreadyGiven) {
+      const points = 1;
+      farmer.points += points;
+      await farmer.save();
+
+      await PointsTransactionHistory.create({
+        farmer: farmer._id,
+        points,
+        type: "daily_login",
+        description: "Daily login reward",
+      });
+    }
+
+    // Token generate
     const token = generateToken(farmer._id, "farmer");
 
     res.status(200).json({
@@ -338,6 +357,7 @@ const farmerLoginWithOTP = async (req, res) => {
         name: farmer.name,
         phoneNumber: farmer.phoneNumber,
         role: "farmer",
+        points: farmer.points, // optional: frontend ko current points bhejne ke liye
       },
     });
   } catch (error) {
@@ -345,6 +365,8 @@ const farmerLoginWithOTP = async (req, res) => {
   }
 };
 
+
+// Daily 5 min stay reward points function
 
 const rewardDailyPoints = async (req, res) => {
   const farmerId = req.user.id; // assuming auth middleware adds user info

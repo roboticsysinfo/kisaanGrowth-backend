@@ -17,7 +17,15 @@ const pointTransactionSchema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: ["referral", "redeem", "daily_stay", "daily_share"],
+    enum: [
+      "referral", 
+      "redeem", 
+      "daily_stay", 
+      "daily_share",
+      "daily_login",
+      "self_register",
+      "product_added"
+    ],
     required: true,
   },
 
