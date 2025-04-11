@@ -23,6 +23,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const helpSupportRoutes = require('./routes/helpSupportRoutes');
 const adminMessageRoutes = require('./routes/adminMessageRoutes')
 const redeemProductRoutes = require('./routes/redeemProductsRoutes')
+const farmingTipsRoutes = require('./routes/farmingTipsRoutes')
 
 
 const app = express();
@@ -35,9 +36,7 @@ const corsOptions = {
   credentials: true, // Allow credentials (cookies, auth headers)
 };
 
-
 app.use(cors(corsOptions));
-
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -45,6 +44,7 @@ app.use(express.urlencoded({ extended: true })); // URL parameters parsing
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 connectDB();
+
 
 app.get('/', (req, res) => {
     res.send('Hello Kissan Growth')
@@ -76,6 +76,8 @@ app.use('/api', notificationRoutes);
 app.use('/api', helpSupportRoutes);
 app.use('/api', adminMessageRoutes)
 app.use('/api', redeemProductRoutes)
+app.use('/api', farmingTipsRoutes)
+
 
 // ========= Routes end=============
 
