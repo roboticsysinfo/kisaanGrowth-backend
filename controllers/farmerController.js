@@ -1,5 +1,5 @@
 const Farmer = require("../models/Farmer");
-const pointsTransactionHistory = require("../models/pointsTransactionHistory");
+const PointTransaction = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
 
 
@@ -74,7 +74,7 @@ const registerFarmer = async (req, res) => {
       await newFarmer.save();
 
       // Create transaction
-      const transaction = new pointsTransactionHistory({
+      const transaction = new PointTransaction({
         farmer: newFarmer._id,
         points: selfRegisterPoints,
         type: "self_register",
@@ -327,7 +327,7 @@ const farmerLoginWithOTP = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const alreadyGiven = await PointsTransactionHistory.findOne({
+    const alreadyGiven = await PointTransaction.findOne({
       farmer: farmer._id,
       type: "daily_login",
       createdAt: { $gte: today },
@@ -338,7 +338,7 @@ const farmerLoginWithOTP = async (req, res) => {
       farmer.points += points;
       await farmer.save();
 
-      await PointsTransactionHistory.create({
+      await PointTransaction.create({
         farmer: farmer._id,
         points,
         type: "daily_login",
@@ -387,7 +387,7 @@ const rewardDailyPoints = async (req, res) => {
     await farmer.save();
 
     // ✅ Create points transaction
-    await pointsTransactionHistory.create({
+    await PointTransaction.create({
       farmer: farmer._id,
       points: rewardPoints,
       type: "daily_stay",
@@ -432,7 +432,7 @@ const incrementReferralShare = async (req, res) => {
     await farmer.save();
 
     // ✅ Add transaction history
-    await pointsTransactionHistory.create({
+    await PointTransaction.create({
       farmer: farmer._id,
       points: 5,
       type: "daily_share",
@@ -490,7 +490,7 @@ const getPointTransactions = async (req, res) => {
   try {
     const { farmerId } = req.params;
 
-    const transactions = await pointsTransactionHistory.find({ farmer: farmerId }).sort({ createdAt: -1 });
+    const transactions = await PointTransaction.find({ farmer: farmerId }).sort({ createdAt: -1 });
 
     res.json(transactions);
   } catch (error) {
