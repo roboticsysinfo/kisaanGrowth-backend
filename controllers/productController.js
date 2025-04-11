@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Shop = require('../models/Shop');
 const PointsTransaction = require('../models/pointsTransactionHistory')
+const Farmer = require("../models/Farmer")
 
 // Create a new product
 // const createProduct = async (req, res) => {
