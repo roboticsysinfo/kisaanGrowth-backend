@@ -1,7 +1,49 @@
 const Product = require('../models/Product');
 const Shop = require('../models/Shop');
+const PointsTransaction = require('../models/pointsTransactionHistory')
 
 // Create a new product
+// const createProduct = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user._id) {
+//       return res.status(400).json({ message: 'Farmer ID is required' });
+//     }
+
+//     const farmerId = req.user._id;
+
+//     // Fetch shop based on farmer_id
+//     let shop = await Shop.findOne({ farmer_id: farmerId });
+
+//     if (!shop) {
+//       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
+//     }
+
+//     // Build the product object
+//     const newProductData = {
+//       ...req.body,
+//       farmer_id: farmerId,
+//       shop_id: shop._id,
+//     };
+
+//     // If there's a file, add it to the product data
+//     if (req.file) {
+//       newProductData.product_image = `/uploads/${req.file.filename}`; // Save the image path
+//     }
+
+//     // Create the product
+//     const newProduct = new Product(newProductData);
+
+//     // Save the product to the database
+//     await newProduct.save();
+//     res.status(201).json({ message: 'Product added successfully', product: newProduct });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+
 const createProduct = async (req, res) => {
   try {
     if (!req.user || !req.user._id) {
@@ -26,21 +68,38 @@ const createProduct = async (req, res) => {
 
     // If there's a file, add it to the product data
     if (req.file) {
-      newProductData.product_image = `/uploads/${req.file.filename}`; // Save the image path
+      newProductData.product_image = `/uploads/${req.file.filename}`;
     }
 
-    // Create the product
+    // Create and save product
     const newProduct = new Product(newProductData);
-
-    // Save the product to the database
     await newProduct.save();
-    res.status(201).json({ message: 'Product added successfully', product: newProduct });
+
+    // ✅ 1. Award 3 points to farmer
+    await Farmer.findByIdAndUpdate(farmerId, {
+      $inc: { points: 3 }
+    });
+
+    // ✅ 2. Add points transaction entry
+    await PointsTransaction.create({
+      farmer: farmerId,
+      type: 'new_product_added',
+      points: 3,
+      description: 'Points awarded for adding a new product',
+      date: new Date()
+    });
+
+    res.status(201).json({
+      message: 'Product added successfully',
+      product: newProduct,
+    });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 
 const getAllProducts = async (req, res) => {
