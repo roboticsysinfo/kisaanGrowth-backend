@@ -67,7 +67,7 @@ const registerFarmer = async (req, res) => {
 
     // If no referral code, award self-register points
     if (!referringFarmer) {
-      const selfRegisterPoints = 5;
+      const selfRegisterPoints = 10;
 
       // Update farmer's points
       newFarmer.points += selfRegisterPoints;
@@ -250,55 +250,16 @@ const sendOTPToFarmer = async (req, res) => {
     const otp = "1234";
 
     // Normally, you would send OTP via SMS here
-    res.status(200).json({ message: "OTP sent successfully", otp });
+    res.status(200).json({ 
+      message: "OTP sent successfully", 
+      otp ,
+      isKYCVerified: farmer.isKYCVerified,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 
 };
-
-// const farmerLoginWithOTP = async (req, res) => {
-//   const { phoneNumber, otp } = req.body;
-
-//   try {
-
-//     if (!phoneNumber || !otp) {
-//       return res.status(400).json({ message: "Phone number and OTP are required" });
-//     }
-
-//     // Dummy OTP check
-//     if (otp !== "1234") {
-//       return res.status(401).json({ message: "Invalid OTP" });
-//     }
-
-//     // Find farmer by phone number
-//     const farmer = await Farmer.findOne({ phoneNumber });
-//     if (!farmer) {
-//       return res.status(404).json({ message: "Farmer not found" });
-//     }
-
-//     // Check if the farmer is KYC verified
-//     if (!farmer.isKYCVerified) {
-//       return res.status(403).json({ message: "Your KYC is not verified yet" });
-//     }
-
-//     // Generate JWT token
-//     const token = generateToken(farmer._id, "farmer");
-
-//     res.status(200).json({
-//       message: "Farmer login successful",
-//       token,
-//       farmer: {
-//         id: farmer._id,
-//         name: farmer.name,
-//         phoneNumber: farmer.phoneNumber,
-//         role: "farmer",
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
 
 
 const farmerLoginWithOTP = async (req, res) => {
@@ -358,6 +319,7 @@ const farmerLoginWithOTP = async (req, res) => {
         phoneNumber: farmer.phoneNumber,
         role: "farmer",
         points: farmer.points, // optional: frontend ko current points bhejne ke liye
+        
       },
     });
   } catch (error) {
