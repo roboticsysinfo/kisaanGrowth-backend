@@ -17,7 +17,7 @@ router.post('/add-redeem-product', authorize(["admin"]), upload.single('r_produc
 
 
 // Get All
-router.get('/redeem-products', authorize(["farmer"]), getAllRedeemProducts);
+router.get('/redeem-products', authorize(["farmer", "admin"]), getAllRedeemProducts);
 
 
 // Update Product
