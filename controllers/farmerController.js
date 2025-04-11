@@ -468,11 +468,6 @@ const getPointTransactions = async (req, res) => {
   try {
     const { farmerId } = req.params;
 
-    // // If user is not admin, ensure they are requesting their own data
-    // if (req.user.role !== "admin" && req.user._id.toString() !== farmerId) {
-    //   return res.status(403).json({ message: "Not authorized" });
-    // }
-
     const transactions = await pointsTransactionHistory.find({ farmer: farmerId }).sort({ createdAt: -1 });
 
     res.json(transactions);

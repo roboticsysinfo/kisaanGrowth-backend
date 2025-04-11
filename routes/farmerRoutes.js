@@ -45,7 +45,7 @@ router.get('/farmer/referral-details/:id', authorize(["admin"]), getFarmerReferr
 
 
 // get /api/farmer/points transaction history
-router.get('/farmer/points-transaction/:id', authorize(["admin", "farmer"]), getPointTransactions);
+router.get('/farmer/points-transaction/:farmerId', authorize(["admin", "farmer"]), getPointTransactions);
 
 
 module.exports = router;
