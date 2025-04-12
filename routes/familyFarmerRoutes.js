@@ -5,16 +5,16 @@ const { sendFamilyRequest, getRequestsForFarmer, getAllFamilyRequests, updateReq
 const router = express.Router();
 
 // Send request (Customer → Farmer)
-router.post('/family-farmer-request/send', sendFamilyRequest);
+router.post('/family-farmer-request/send', authorize(["customer"]), sendFamilyRequest);
 
 // Farmer: Get their own requests
-router.get('/family-farmer-requests/:farmerId', getRequestsForFarmer);
+router.get('/family-farmer-requests/:farmerId', authorize(["farmer", "admin"]), getRequestsForFarmer);
 
 // Admin: Get all requests
-router.get('/family-farmer-requests/all', getAllFamilyRequests);
+router.get('/family-farmer-requests/all', authorize(["admin"]), getAllFamilyRequests);
 
 // Accept/Reject request
-router.put('/family-farmer-request/status/:requestId', updateRequestStatus);
+router.put('/family-farmer-request/status/:requestId', authorize(["farmer", "admin"]), updateRequestStatus);
 
 
 module.exports = router;

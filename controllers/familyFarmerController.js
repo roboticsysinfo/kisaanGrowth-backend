@@ -1,10 +1,12 @@
 const FamilyFarmerRequest = require("../models/FamilyFarmerRequest");
-const  Farmer =  require("../models/Farmer");
-const Customer = require("../models/Customer")
+const Farmer = require("../models/Farmer");
+const Customer = require("../models/Customer");
+const { sendNotification } = require("../helper/sendNotification");
 
 
 // Send request (Customer → Farmer)
- const sendFamilyRequest = async (req, res) => {
+// Send request (Customer → Farmer)
+const sendFamilyRequest = async (req, res) => {
   try {
     const { fromCustomer, toFarmer } = req.body;
 
@@ -19,6 +21,18 @@ const Customer = require("../models/Customer")
     }
 
     const newRequest = await FamilyFarmerRequest.create({ fromCustomer, toFarmer });
+
+    // ✅ Send notification to the farmer
+    const message = "Congratulations! You received a new Family Request.";
+    await sendNotification(
+      toFarmer,          // userId (farmer who should get notified)
+      "farmer",          // userType
+      "familyRequest",   // type of notification (family Request)
+      message,           // message to display
+      fromCustomer,      // actorId (customer who made the request)
+      "customer"         // actorType
+    );
+
     res.status(201).json({ message: 'Request sent successfully.', request: newRequest });
   } catch (error) {
     res.status(500).json({ message: 'Something went wrong.', error: error.message });
@@ -26,8 +40,9 @@ const Customer = require("../models/Customer")
 };
 
 
+
 // Get all requests for a farmer
- const getRequestsForFarmer = async (req, res) => {
+const getRequestsForFarmer = async (req, res) => {
   try {
     const { farmerId } = req.params;
 
@@ -43,7 +58,7 @@ const Customer = require("../models/Customer")
 
 
 // Get all requests for admin panel
- const getAllFamilyRequests = async (req, res) => {
+const getAllFamilyRequests = async (req, res) => {
   try {
     const requests = await FamilyFarmerRequest.find()
       .populate('fromCustomer', 'name email phoneNumber message address')
@@ -58,7 +73,8 @@ const Customer = require("../models/Customer")
 
 
 // Accept or Reject a request
- const updateRequestStatus = async (req, res) => {
+const updateRequestStatus = async (req, res) => {
+
   try {
     const { requestId } = req.params;
     const { status } = req.body;
@@ -79,9 +95,9 @@ const Customer = require("../models/Customer")
   }
 };
 
-module.exports = { 
+module.exports = {
   sendFamilyRequest,
   getRequestsForFarmer,
   getAllFamilyRequests,
   updateRequestStatus,
- };
+};

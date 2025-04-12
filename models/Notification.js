@@ -28,7 +28,7 @@ const notificationSchema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: ["order", "review"],
+    enum: ["order", "review", "familyRequest"],
     required: true,
   },
 
