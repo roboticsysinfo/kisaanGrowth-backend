@@ -24,7 +24,7 @@ const helpSupportRoutes = require('./routes/helpSupportRoutes');
 const adminMessageRoutes = require('./routes/adminMessageRoutes')
 const redeemProductRoutes = require('./routes/redeemProductsRoutes')
 const farmingTipsRoutes = require('./routes/farmingTipsRoutes')
-
+const familyFarmerRoutes = require('./routes/familyFarmerRoutes')
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -76,8 +76,8 @@ app.use('/api', notificationRoutes);
 app.use('/api', helpSupportRoutes);
 app.use('/api', adminMessageRoutes)
 app.use('/api', redeemProductRoutes)
-app.use('/api', farmingTipsRoutes)
-
+app.use('/api', farmingTipsRoutes);
+app.use('/api', familyFarmerRoutes)
 
 // ========= Routes end=============
 
