@@ -121,7 +121,8 @@ const getFarmerById = async (req, res) => {
 // For admin: get farmer by ID from params
 const getFarmerByIdForAdmin = async (req, res) => {
   try {
-    const farmerId = req.params.id;
+
+    const farmerId = req.params.farmerId;
 
     const farmer = await Farmer.findById(farmerId).select("-password");
     if (!farmer) {
@@ -268,9 +269,9 @@ const sendOTPToFarmer = async (req, res) => {
     const otp = "1234";
 
     // Normally, you would send OTP via SMS here
-    res.status(200).json({ 
-      message: "OTP sent successfully", 
-      otp ,
+    res.status(200).json({
+      message: "OTP sent successfully",
+      otp,
       isKYCVerified: farmer.isKYCVerified,
     });
   } catch (error) {
@@ -337,7 +338,7 @@ const farmerLoginWithOTP = async (req, res) => {
         phoneNumber: farmer.phoneNumber,
         role: "farmer",
         points: farmer.points, // optional: frontend ko current points bhejne ke liye
-        
+
       },
     });
   } catch (error) {
