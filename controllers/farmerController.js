@@ -98,12 +98,32 @@ const registerFarmer = async (req, res) => {
 
 
 const getFarmerById = async (req, res) => {
+
   try {
-    const farmerId = req.params.id;
+
+    const farmerId = req.user._id;
 
     // Find farmer by ID and exclude password
     const farmer = await Farmer.findById(farmerId).select("-password");
 
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    res.status(200).json(farmer);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+
+};
+
+
+// For admin: get farmer by ID from params
+const getFarmerByIdForAdmin = async (req, res) => {
+  try {
+    const farmerId = req.params.id;
+
+    const farmer = await Farmer.findById(farmerId).select("-password");
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
@@ -473,5 +493,6 @@ module.exports = {
   rewardDailyPoints,
   incrementReferralShare,
   getFarmerReferralDetails,
-  getPointTransactions
+  getPointTransactions,
+  getFarmerByIdForAdmin
 };

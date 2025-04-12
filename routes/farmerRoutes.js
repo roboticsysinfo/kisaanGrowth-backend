@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -47,5 +47,7 @@ router.get('/farmer/referral-details/:id', authorize(["admin"]), getFarmerReferr
 // get /api/farmer/points transaction history
 router.get('/farmer/points-transaction/:farmerId', authorize(["admin", "farmer"]), getPointTransactions);
 
+
+router.get('/farmer/getbyadmin/:farmerId', authorize(["farmer", "admin"]), getFarmerByIdForAdmin);
 
 module.exports = router;
