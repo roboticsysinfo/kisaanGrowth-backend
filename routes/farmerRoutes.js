@@ -48,6 +48,6 @@ router.get('/farmer/referral-details/:id', authorize(["admin"]), getFarmerReferr
 router.get('/farmer/points-transaction/:farmerId', authorize(["admin", "farmer"]), getPointTransactions);
 
 
-router.get('/farmer/getbyadmin/:farmerId', authorize(["farmer", "admin"]), getFarmerByIdForAdmin);
+router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdForAdmin);
 
 module.exports = router;
