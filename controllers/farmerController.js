@@ -98,10 +98,8 @@ const registerFarmer = async (req, res) => {
 
 
 const getFarmerById = async (req, res) => {
-
   try {
-
-    const farmerId = req.params;
+    const farmerId = req.params.id;
 
     // Find farmer by ID and exclude password
     const farmer = await Farmer.findById(farmerId).select("-password");
@@ -114,8 +112,8 @@ const getFarmerById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-
 };
+
 
 
 // Farmer Login
