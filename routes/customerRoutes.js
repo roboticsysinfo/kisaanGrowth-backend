@@ -17,4 +17,9 @@ router.get("/customer/:id", authorize(['customer']),  CustomerController.getCust
 // Update Customer
 router.put("/update-customer/:id", upload.single('profile_image'), authorize(['customer']), CustomerController.updateCustomer);
 
+router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
+
+router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
+
+
 module.exports = router;

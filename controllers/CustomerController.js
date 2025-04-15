@@ -88,4 +88,70 @@ const updateCustomer = async (req, res) => {
 };
 
 
-module.exports = { registerCustomer, loginCustomer, getCustomerById, updateCustomer };
+// Send OTP (mocked as 1234)
+const sendOtptoCustomer = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber) {
+    return res.status(400).json({ success: false, message: 'Phone number is required' });
+  }
+
+  // ✅ Just check if user exists, don't register
+  const existingUser = await Customer.findOne({ phoneNumber });
+  if (!existingUser) {
+    return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+  }
+
+  // ✅ Send static OTP (1234)
+  res.json({
+    success: true,
+    message: 'OTP sent successfully (use 1234 for testing)',
+    otp: '1234' // You can remove this in production
+  });
+};
+
+
+// Verify OTP
+const verifyCustomerOtp = async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  if (!phoneNumber || !otp) {
+    return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
+  }
+
+  if (otp !== '1234') {
+    return res.status(401).json({ success: false, message: 'Invalid OTP' });
+  }
+
+  try {
+    const user = await Customer.findOne({ phoneNumber });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+    }
+
+    const token = generateToken(user._id, 'customer');
+
+    res.json({
+      success: true,
+      message: 'OTP verified successfully. Logged in!',
+      token,
+      user
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+
+
+
+module.exports = { 
+  registerCustomer, 
+  loginCustomer, 
+  getCustomerById, 
+  updateCustomer,
+  sendOtptoCustomer,
+  verifyCustomerOtp
+};

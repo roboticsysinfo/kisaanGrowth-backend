@@ -383,7 +383,6 @@ const rewardDailyPoints = async (req, res) => {
 };
 
 
-
 // Farmer Refer Share Detail Count ( How Many Share Farmer did )
 
 const incrementReferralShare = async (req, res) => {
