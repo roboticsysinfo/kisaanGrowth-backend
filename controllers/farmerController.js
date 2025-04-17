@@ -12,13 +12,110 @@ const generateReferralCode = () => {
 
 // Farmer Registration Controller
 
+// const registerFarmer = async (req, res) => {
+//   const { name, email, password, phoneNumber, address, aadharCard, referralCode } = req.body;
+//   const uploadAadharCard = req.file ? req.file.path : undefined;
+
+//   try {
+//     if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     const existingFarmer = await Farmer.findOne({
+//       $or: [
+//         { email },
+//         { aadharCard },
+//         { phoneNumber }
+//       ],
+//     });
+
+//     if (existingFarmer) {
+//       let duplicateField = '';
+//       if (existingFarmer.email === email) duplicateField = "Email";
+//       else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
+//       else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
+
+//       return res.status(409).json({ message: `${duplicateField} already exists` });
+//     }
+
+//     // Handle referral logic
+//     let referringFarmer = null;
+//     if (referralCode) {
+//       referringFarmer = await Farmer.findOne({ referralCode });
+//       if (!referringFarmer) {
+//         return res.status(400).json({ message: "Invalid referral code" });
+//       }
+//     }
+
+//     const newFarmer = new Farmer({
+//       name,
+//       email,
+//       password,
+//       phoneNumber,
+//       address,
+//       aadharCard,
+//       isKYCVerified: false,
+//       kycRequested: true,
+//       uploadAadharCard,
+//       referralCode: generateReferralCode(),
+//       referredBy: referringFarmer ? referringFarmer._id : null,
+//       points: 0,
+//     });
+
+//     await newFarmer.save();
+
+
+//     // If no referral code, award self-register points
+//     if (!referringFarmer) {
+//       const selfRegisterPoints = 10;
+
+//       // Update farmer's points
+//       newFarmer.points += selfRegisterPoints;
+//       await newFarmer.save();
+
+//       // Create transaction
+//       const transaction = new PointTransaction({
+//         farmer: newFarmer._id,
+//         points: selfRegisterPoints,
+//         type: "self_register",
+//         description: "Points awarded for signing up without referral",
+//       });
+
+//       await transaction.save();
+//     }
+
+//     res.status(201).json({
+//       message: "Farmer registered successfully. KYC request has been sent.",
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Server error occurred",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const registerFarmer = async (req, res) => {
-  const { name, email, password, phoneNumber, address, aadharCard, referralCode } = req.body;
-  const uploadAadharCard = req.file ? req.file.path : undefined;
+  const {
+    name,
+    email,
+    password,
+    phoneNumber,
+    address,
+    aadharCard,
+    referralCode,
+    state,
+    city_district,
+    village
+  } = req.body;
+
+  const uploadAadharCard = req.files?.uploadAadharCard?.[0]?.path;
+  const profileImg = req.files?.profileImg?.[0]?.path || "https://avatar.iran.liara.run/public";
 
   try {
-    if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard || !state || !city_district) {
+      return res.status(400).json({ message: "Required fields are missing" });
     }
 
     const existingFarmer = await Farmer.findOne({
@@ -38,7 +135,6 @@ const registerFarmer = async (req, res) => {
       return res.status(409).json({ message: `${duplicateField} already exists` });
     }
 
-    // Handle referral logic
     let referringFarmer = null;
     if (referralCode) {
       referringFarmer = await Farmer.findOne({ referralCode });
@@ -54,9 +150,13 @@ const registerFarmer = async (req, res) => {
       phoneNumber,
       address,
       aadharCard,
+      uploadAadharCard,
+      profileImg,
+      state,
+      city_district,
+      village,
       isKYCVerified: false,
       kycRequested: true,
-      uploadAadharCard,
       referralCode: generateReferralCode(),
       referredBy: referringFarmer ? referringFarmer._id : null,
       points: 0,
@@ -64,24 +164,17 @@ const registerFarmer = async (req, res) => {
 
     await newFarmer.save();
 
-
-    // If no referral code, award self-register points
     if (!referringFarmer) {
       const selfRegisterPoints = 10;
-
-      // Update farmer's points
       newFarmer.points += selfRegisterPoints;
       await newFarmer.save();
 
-      // Create transaction
-      const transaction = new PointTransaction({
+      await PointTransaction.create({
         farmer: newFarmer._id,
         points: selfRegisterPoints,
         type: "self_register",
         description: "Points awarded for signing up without referral",
       });
-
-      await transaction.save();
     }
 
     res.status(201).json({
@@ -95,6 +188,9 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 const getFarmerById = async (req, res) => {

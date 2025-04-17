@@ -1,12 +1,34 @@
 const express = require('express');
 const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
-const upload = require('../middlewares/upload');
+// const upload = require('../middlewares/upload');
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 
+// Setup multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
+// Handle both fields
+const multipleUploads = upload.fields([
+  { name: "uploadAadharCard", maxCount: 1 },
+  { name: "profileImg", maxCount: 1 },
+]);
 
 // Register Farmer
-router.post('/farmer/register', upload.single('uploadAadharCard'), registerFarmer);
+
+router.post("/farmer/register", multipleUploads, registerFarmer);
+
+// router.post('/farmer/register', upload.single('uploadAadharCard'), registerFarmer);
 
 // Farmer login
 router.post('/farmer/login', farmerLogin);
