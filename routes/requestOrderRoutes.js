@@ -1,5 +1,5 @@
 const express = require("express");
-const { createRequestOrder, getFarmerRequests, getFarmerOrderRequestbyId, getCustomerOrders, approveRequest, cancelRequest } = require("../controllers/requestOrderController");
+const { createRequestOrder, getFarmerRequests, getFarmerOrderRequestbyId, getCustomerOrders, approveRequest, cancelRequest, getCustomerOrderByOrderId } = require("../controllers/requestOrderController");
 const { authorize } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
@@ -19,5 +19,9 @@ router.put("/approve/:requestId", authorize(['farmer', 'admin']), approveRequest
 router.get("/my-orders", authorize(['customer']), getCustomerOrders);
 
 router.put("/cancel/:requestId", authorize(['farmer', 'customer', 'admin']), cancelRequest);
+
+// get single order
+router.get("/customer/order/:orderId", authorize(['customer']), getCustomerOrderByOrderId);
+
 
 module.exports = router;

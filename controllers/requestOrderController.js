@@ -329,11 +329,61 @@ const cancelRequest = async (req, res) => {
 };
 
 
+const getCustomerOrderByOrderId = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "customer") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const { orderId } = req.params;
+
+    const order = await RequestOrder.findOne({
+      _id: orderId,
+      customer_id: req.user._id,
+    })
+      .populate("farmer_id", "name phoneNumber")
+      .populate({
+        path: "product_id",
+        select: "name price_per_unit unit shop_id",
+        populate: {
+          path: "shop_id",
+          select: "shop_name",
+        },
+      });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const formattedOrder = {
+      order_id: order._id,
+      product_name: order.product_id?.name,
+      product_quantity: order.quantity,
+      quantity_requested: order.quantity_requested,
+      price_per_unit: order.product_id?.price_per_unit,
+      unit: order.product_id?.unit,
+      total_price: order.quantity_requested * order.product_id?.price_per_unit,
+      farmer_name: order.farmer_id?.name,
+      farmer_phone: order.farmer_id?.phoneNumber,
+      shop_name: order.product_id?.shop_id?.shop_name || "N/A",
+      status: order.status,
+      created_at: order.createdAt,
+    };
+
+    res.status(200).json({ order: formattedOrder });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 module.exports = {
   createRequestOrder,
   getFarmerRequests,
   getFarmerOrderRequestbyId,
   approveRequest,
   getCustomerOrders,
-  cancelRequest
+  cancelRequest,
+  getCustomerOrderByOrderId
 };
