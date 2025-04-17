@@ -228,7 +228,7 @@ const getCustomerOrders = async (req, res) => {
       .populate("farmer_id", "name phoneNumber")
       .populate({
         path: "product_id",
-        select: "name price_per_unit unit shop_id",
+        select: "name price_per_unit unit product_image shop_id",
         populate: {
           path: "shop_id",
           select: "shop_name",
@@ -344,7 +344,7 @@ const getCustomerOrderByOrderId = async (req, res) => {
       .populate("farmer_id", "name phoneNumber")
       .populate({
         path: "product_id",
-        select: "name price_per_unit unit shop_id",
+        select: "name price_per_unit unit product_image shop_id",
         populate: {
           path: "shop_id",
           select: "shop_name",
