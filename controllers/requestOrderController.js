@@ -248,6 +248,7 @@ const getCustomerOrders = async (req, res) => {
       farmer_name: order.farmer_id?.name,
       farmer_phone: order.farmer_id?.phoneNumber,
       shop_name: order.product_id?.shop_id?.shop_name || "N/A",
+      product_image: order.product_id?.product_image,
       status: order.status,
       created_at: order.createdAt,
     }));
@@ -366,6 +367,7 @@ const getCustomerOrderByOrderId = async (req, res) => {
       farmer_name: order.farmer_id?.name,
       farmer_phone: order.farmer_id?.phoneNumber,
       shop_name: order.product_id?.shop_id?.shop_name || "N/A",
+      product_image: order.product_id?.product_image,
       status: order.status,
       created_at: order.createdAt,
     };
