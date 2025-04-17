@@ -3,6 +3,7 @@ const generateToken = require('../utils/jwtGenerator');
 
 // Register Customer
 const registerCustomer = async (req, res) => {
+  
   const { name, email, password, phoneNumber, address } = req.body;
 
   try {
