@@ -119,7 +119,9 @@ const updateRequestStatus = async (req, res) => {
 
 // Get all requests for a Customer
 const getRequestsForCustomer = async (req, res) => {
+
   try {
+
     const { customerId } = req.params;
 
     const requests = await FamilyFarmerRequest.find({ fromCustomer: customerId })
@@ -127,9 +129,13 @@ const getRequestsForCustomer = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json(requests);
+
   } catch (error) {
+
     res.status(500).json({ message: 'Failed to fetch requests.', error: error.message });
+    
   }
+
 };
 
 

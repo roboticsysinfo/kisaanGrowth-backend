@@ -1,5 +1,6 @@
 const { sendNotification } = require("../helper/sendNotification");
 const RequestOrder = require("../models/RequestOrder");
+const Shop = require("../models/Shop")
 
 
 // Create a new request order
@@ -178,16 +179,61 @@ const approveRequest = async (req, res) => {
 };
 
 
+// const getCustomerOrders = async (req, res) => {
+//   try {
+
+//     if (!req.user || req.user.role !== "customer") {
+//       return res.status(403).json({ message: "Access denied" });
+//     }
+
+//     let orders = await RequestOrder.find({ customer_id: req.user._id, status: { $in: ["pending", "accepted", "cancelled"] }, })
+//       .populate("farmer_id", "name phoneNumber")
+//       .populate("product_id", "name price_per_unit unit")
+//       .sort({ createdAt: -1 });
+
+//     // Format response
+//     orders = orders.map((order) => ({
+//       order_id: order._id,
+//       product_name: order.product_id?.name,
+//       product_quantity: order.quantity,
+//       quantity_requested: order.quantity_requested, // Added this field
+//       price_per_unit: order.product_id?.price_per_unit,
+//       unit: order.product_id?.unit,
+//       total_price: order.quantity_requested * order.product_id?.price_per_unit,
+//       farmer_name: order.farmer_id?.name,
+//       farmer_phone: order.farmer_id?.phoneNumber,
+//       status: order.status,
+//     }));
+
+//     res.status(200).json({ orders });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+
+// };
+
+
 const getCustomerOrders = async (req, res) => {
   try {
-
     if (!req.user || req.user.role !== "customer") {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    let orders = await RequestOrder.find({ customer_id: req.user._id, status: { $in: ["pending", "accepted", "cancelled"] }, })
+    // Find customer orders and populate farmer + product + shop
+    let orders = await RequestOrder.find({
+      customer_id: req.user._id,
+      status: { $in: ["pending", "accepted", "cancelled"] },
+    })
       .populate("farmer_id", "name phoneNumber")
-      .populate("product_id", "name price_per_unit unit")
+      .populate({
+        path: "product_id",
+        select: "name price_per_unit unit shop_id",
+        populate: {
+          path: "shop_id",
+          select: "shop_name",
+        },
+      })
       .sort({ createdAt: -1 });
 
     // Format response
@@ -195,13 +241,15 @@ const getCustomerOrders = async (req, res) => {
       order_id: order._id,
       product_name: order.product_id?.name,
       product_quantity: order.quantity,
-      quantity_requested: order.quantity_requested, // Added this field
+      quantity_requested: order.quantity_requested,
       price_per_unit: order.product_id?.price_per_unit,
       unit: order.product_id?.unit,
       total_price: order.quantity_requested * order.product_id?.price_per_unit,
       farmer_name: order.farmer_id?.name,
       farmer_phone: order.farmer_id?.phoneNumber,
+      shop_name: order.product_id?.shop_id?.shop_name || "N/A",
       status: order.status,
+      created_at: order.createdAt,
     }));
 
     res.status(200).json({ orders });
@@ -209,43 +257,8 @@ const getCustomerOrders = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-
 };
 
-
-// const cancelRequest = async (req, res) => {
-//   try {
-//     const { requestId } = req.params;
-
-//     if (!req.user || (req.user.role !== "farmer" && req.user.role !== "customer")) {
-//       return res.status(403).json({ message: "Access denied" });
-//     }
-
-//     // Find request
-//     let requestOrder = await RequestOrder.findById(requestId);
-
-//     if (!requestOrder) {
-//       return res.status(404).json({ message: "Request not found" });
-//     }
-
-//     // Only farmer or customer who created the request can cancel it
-//     if (
-//       (req.user.role === "farmer" && requestOrder.farmer_id.toString() !== req.user._id.toString()) ||
-//       (req.user.role === "customer" && requestOrder.customer_id.toString() !== req.user._id.toString())
-//     ) {
-//       return res.status(403).json({ message: "You are not authorized to cancel this request" });
-//     }
-
-//     // Update status to cancelled
-//     requestOrder.status = "cancelled";
-//     await requestOrder.save();
-
-//     res.status(200).json({ message: "Request cancelled successfully", requestOrder });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 
 
 const cancelRequest = async (req, res) => {
