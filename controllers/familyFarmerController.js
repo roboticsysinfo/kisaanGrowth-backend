@@ -117,6 +117,21 @@ const updateRequestStatus = async (req, res) => {
 };
 
 
+// Get all requests for a Customer
+const getRequestsForCustomer = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+
+    const requests = await FamilyFarmerRequest.find({ fromCustomer: customerId })
+      .populate('toFarmer', 'name email phoneNumber address profileImg state city_district village')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch requests.', error: error.message });
+  }
+};
+
 
 
 module.exports = {
@@ -124,4 +139,5 @@ module.exports = {
   getRequestsForFarmer,
   getAllFamilyRequests,
   updateRequestStatus,
+  getRequestsForCustomer
 };
