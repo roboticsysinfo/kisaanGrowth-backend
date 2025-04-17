@@ -576,6 +576,25 @@ const getPointTransactions = async (req, res) => {
 };
 
 
+// Get Farmers by City/District
+const getFarmersByCity = async (req, res) => {
+
+  const { city_district } = req.query;
+
+  if (!city_district) {
+    return res.status(400).json({ message: 'city_district query is required' });
+  }
+
+  try {
+    const farmers = await Farmer.find({ city_district });
+    res.status(200).json(farmers);
+  } catch (error) {
+    console.error('Error fetching farmers by city:', error);
+    res.status(500).json({ message: 'Server error while fetching farmers' });
+  }
+};
+
+
 
 module.exports = {
   registerFarmer,
@@ -590,5 +609,6 @@ module.exports = {
   incrementReferralShare,
   getFarmerReferralDetails,
   getPointTransactions,
-  getFarmerByIdForAdmin
+  getFarmerByIdForAdmin,
+  getFarmersByCity
 };
