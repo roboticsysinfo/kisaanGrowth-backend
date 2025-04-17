@@ -74,7 +74,6 @@ const getAllFamilyRequests = async (req, res) => {
 
 // Accept or Reject a request
 const updateRequestStatus = async (req, res) => {
-
   try {
     const { requestId } = req.params;
     const { status } = req.body;
@@ -83,10 +82,32 @@ const updateRequestStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
+    // Update the status of the request
     const updated = await FamilyFarmerRequest.findByIdAndUpdate(
       requestId,
       { status },
       { new: true }
+    ).populate('fromCustomer toFarmer'); // populate to access customer and farmer info
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // ✅ Send notification to the customer
+    let message = "";
+    if (status === 'accepted') {
+      message = `Good news! Your family farmer request to ${updated.toFarmer.name} has been accepted. 👨‍🌾`;
+    } else if (status === 'rejected') {
+      message = `Oops! Your family farmer request to ${updated.toFarmer.name} has been rejected. 😔`;
+    }
+
+    await sendNotification(
+      updated.fromCustomer._id,   // userId (customer who should be notified)
+      "customer",                 // userType
+      "familyRequestResponse",    // type of notification
+      message,                    // notification message
+      updated.toFarmer._id,       // actorId (farmer who responded)
+      "farmer"                    // actorType
     );
 
     res.status(200).json({ message: `Request ${status}`, request: updated });
@@ -94,6 +115,9 @@ const updateRequestStatus = async (req, res) => {
     res.status(500).json({ message: 'Error updating status', error: error.message });
   }
 };
+
+
+
 
 module.exports = {
   sendFamilyRequest,
