@@ -28,6 +28,8 @@ router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
 
 router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
 
+router.get('/search', CustomerController.searchByNameAndCity);
+
 
 // GET /api/search/products?city=city_district
 router.get('/search/products', getProductsByCity);
