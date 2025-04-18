@@ -214,6 +214,32 @@ const getProductsByCategory = async (req, res) => {
 
 };
 
+
+const getProductsByCity = async (req, res) => {
+  try {
+    const { city } = req.query;
+
+    if (!city) {
+      return res.status(400).json({ message: 'Please provide a city_district in query' });
+    }
+
+    // Find all shops in the given city
+    const shops = await Shop.find({ city_district: city }).select('_id');
+    const shopIds = shops.map(shop => shop._id);
+
+    // Find products belonging to these shops
+    const products = await Product.find({ shop_id: { $in: shopIds } })
+      .populate('shop_id', 'shop_name city_district')
+      .populate('farmer_id', 'firstName lastName')
+      .populate('category_id', 'name');
+
+    res.status(200).json(products);
+  } catch (err) {
+    console.error('Error in getProductsByCity:', err);
+    res.status(500).json({ message: 'Server error while fetching products' });
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -221,5 +247,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductsByCategory,
-  getProductByFarmerId
+  getProductByFarmerId,
+  getProductsByCity
 };

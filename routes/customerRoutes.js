@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const CustomerController = require('../controllers/CustomerController')
 const { authorize } = require('../middlewares/authMiddleware');
-const upload = require('../middlewares/upload')
+const upload = require('../middlewares/upload');
+const { getProductsByCity } = require('../controllers/productController');
 
 
 
@@ -28,7 +29,7 @@ router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
 router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
 
 
-// GET /api/search?city=Jaipur
-router.get('/search', CustomerController.searchByNameAndCity);
+// GET /api/search/products?city=city_district
+router.get('/search/products', getProductsByCity);
 
 module.exports = router;
