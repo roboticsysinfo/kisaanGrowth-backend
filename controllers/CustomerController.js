@@ -1,9 +1,12 @@
 const Customer = require('../models/Customer');
+const Shop = require('../models/Shop');
+const Product = require('../models/Product');
+const Farmer = require('../models/Farmer');
 const generateToken = require('../utils/jwtGenerator');
 
 // Register Customer
 const registerCustomer = async (req, res) => {
-  
+
   const { name, email, password, phoneNumber, address } = req.body;
 
   try {
@@ -145,14 +148,38 @@ const verifyCustomerOtp = async (req, res) => {
   }
 };
 
+// Search Api - fined shop, farmers, products based on city
+
+const searchByNameAndCity = async (req, res) => {
+  const { query, filter, city } = req.query;
+  const regex = new RegExp(query, 'i');
+  try {
+    let results = [];
+
+    if (filter === 'shops') {
+      results = await Shop.find({ shop_name: regex, city_district: city });
+    } else if (filter === 'farmers') {
+      results = await Farmer.find({ name: regex, city_district: city });
+    } else if (filter === 'products') {
+      const shops = await Shop.find({ city_district: city });
+      const shopIds = shops.map(s => s._id);
+      results = await Product.find({ name: regex, shop_id: { $in: shopIds } });
+    }
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Search failed' });
+  }
+};
 
 
-
-module.exports = { 
-  registerCustomer, 
-  loginCustomer, 
-  getCustomerById, 
+module.exports = {
+  registerCustomer,
+  loginCustomer,
+  getCustomerById,
   updateCustomer,
   sendOtptoCustomer,
-  verifyCustomerOtp
+  verifyCustomerOtp,
+  searchByNameAndCity
 };

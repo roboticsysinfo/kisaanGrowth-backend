@@ -28,4 +28,7 @@ router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
 router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
 
 
+// GET /api/search?city=Jaipur
+router.get('/search', CustomerController.searchByNameAndCity);
+
 module.exports = router;
