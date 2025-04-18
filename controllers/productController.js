@@ -230,7 +230,7 @@ const getProductsByCity = async (req, res) => {
     // Find products belonging to these shops
     const products = await Product.find({ shop_id: { $in: shopIds } })
       .populate('shop_id', 'shop_name city_district')
-      .populate('farmer_id', 'firstName lastName')
+      .populate('farmer_id', 'name')
       .populate('category_id', 'name');
 
     res.status(200).json(products);
