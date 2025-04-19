@@ -139,11 +139,35 @@ const getRequestsForCustomer = async (req, res) => {
 };
 
 
+// Remove Family Farmer Request (Customer -> Farmer)
+const removeFamilyRequest = async (req, res) => {
+  try {
+    const { fromCustomer, toFarmer } = req.body;
+
+    if (!fromCustomer || !toFarmer) {
+      return res.status(400).json({ message: 'Customer and Farmer are required.' });
+    }
+
+    const deleted = await FamilyFarmerRequest.findOneAndDelete({ fromCustomer, toFarmer });
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'No existing request found to remove.' });
+    }
+
+    res.status(200).json({ message: 'Request removed successfully.' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to remove request.', error: error.message });
+  }
+};
+
+
 
 module.exports = {
   sendFamilyRequest,
   getRequestsForFarmer,
   getAllFamilyRequests,
   updateRequestStatus,
-  getRequestsForCustomer
+  getRequestsForCustomer,
+  removeFamilyRequest
 };
