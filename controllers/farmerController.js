@@ -511,7 +511,7 @@ const getFarmerDetailsById = async (req, res) => {
 
   try {
 
-    const farmerId = req.params.farmerId; // get farmer id from URL params
+    const farmerId = req.params; 
 
     // Find farmer by ID and exclude password
     const farmer = await Farmer.findById(farmerId).select("-password");
