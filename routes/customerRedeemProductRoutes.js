@@ -29,7 +29,7 @@ router.delete('/customer/delete-redeem-product/:id', authorize(["admin"]), delet
 
 
 // Redeem Product by farmer
-router.post('/customer/redeem-product', authorize(["customer"]), redeemProductCustomer);
+router.post('/post/customer/redeem-product', authorize(["customer"]), redeemProductCustomer);
 
 
 // Redeem Product by customers history
