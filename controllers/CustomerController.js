@@ -223,9 +223,9 @@ const verifyCustomerOtp = async (req, res) => {
   }
 
   try {
-    const customer = await Customer.findOne({ phoneNumber });
+    const user = await Customer.findOne({ phoneNumber });
 
-    if (!customer) {
+    if (!user) {
       return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
     }
 
@@ -234,37 +234,38 @@ const verifyCustomerOtp = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const alreadyGiven = await CustomerPointsTransactions.findOne({
-      customer: customer._id,
+      customer: user._id, // 👈 change here
       type: "daily_login",
       createdAt: { $gte: today },
     });
 
     if (!alreadyGiven) {
       const points = 1;
-      customer.points += points;
-      await customer.save();
+      user.points += points;        // 👈 change here
+      await user.save();
 
       await CustomerPointsTransactions.create({
-        customer: customer._id,
+        customer: user._id,         // 👈 change here
         points,
         type: "daily_login",
         description: "Daily login reward",
       });
     }
 
-    const token = generateToken(customer._id, 'customer');
+    const token = generateToken(user._id, 'customer');
 
     res.json({
       success: true,
       message: 'OTP verified successfully. Logged in!',
       token,
-      customer
+      user
     });
 
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
 
 
 // Search Api - fined shop, farmers, products based on city
