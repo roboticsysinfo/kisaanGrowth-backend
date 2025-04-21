@@ -470,8 +470,7 @@ const getFarmerReferralDetails = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 
-};
-
+}
 
 // farmer points transactions
 

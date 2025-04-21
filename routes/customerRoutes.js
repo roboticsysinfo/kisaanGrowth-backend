@@ -35,4 +35,19 @@ router.get('/search', CustomerController.searchByNameAndCity);
 router.get('/search/products', getProductsByCity);
 
 
+// Daily Reward
+router.post('/customer/reward-daily', authorize(["customer"]), CustomerController.rewardDailyPointsCustomer);
+
+
+// POST /api/customer/referral-share
+router.post('/customer/referral-share', authorize(["customer"]), CustomerController.incrementReferralShareCustomer);
+
+
+// get /api/customer/referral-details
+router.get('/customer/referral-details/:id', authorize(["admin"]), CustomerController.getCustomerReferralDetails);
+
+
+// get /api/customer/points transaction history
+router.get('/customer/points-transaction/:customerId', authorize(["admin", "customer"]), CustomerController.getCustomerPointsTransactions);
+
 module.exports = router;

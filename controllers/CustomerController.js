@@ -269,6 +269,142 @@ const searchByNameAndCity = async (req, res) => {
 };
 
 
+// Daily 5 min stay reward points function
+
+const rewardDailyPointsCustomer = async (req, res) => {
+  const customerId = req.user.id; // assuming auth middleware adds user info
+
+  try {
+    const customer = await Customer.findById(customerId);
+    const today = new Date().toDateString();
+
+    if (customer.lastRewardDate?.toDateString() === today) {
+      return res.status(400).json({ message: "Already rewarded today" });
+    }
+
+    const rewardPoints = 5;
+
+    customer.points += rewardPoints;
+    customer.lastRewardDate = new Date();
+
+    await customer.save();
+
+    // ✅ Create points transaction
+    await CustomerPointsTransactions.create({
+      customer: customer._id,
+      points: rewardPoints,
+      type: "daily_stay",
+      description: "Daily login reward",
+    });
+
+    res.json({ message: "5 points rewarded", points: customer.points });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// Customer Refer Share Detail Count ( How Many Share Farmer did )
+
+const incrementReferralShareCustomer = async (req, res) => {
+  try {
+    const { customerId } = req.body;
+    const customer = await Customer.findById(customerId);
+    if (!customer) return res.status(404).json({ message: "customer not found" });
+
+    const today = new Date().toDateString(); // only date part
+    const lastShareDate = customer.lastReferralShareDate ? new Date(customer.lastReferralShareDate).toDateString() : null;
+
+    if (lastShareDate === today) {
+      // Same day
+      if (customer.todayReferralShareCount >= 3) {
+        return res.status(200).json({ message: "Daily share limit reached. Try again tomorrow." });
+      }
+      customer.todayReferralShareCount += 1;
+    } else {
+      // New day
+      customer.todayReferralShareCount = 1;
+      customer.lastReferralShareDate = new Date();
+    }
+
+    customer.referralShares += 1;
+    customer.points += 5;
+
+    await customer.save();
+
+    // ✅ Add transaction history
+    await CustomerPointsTransactions.create({
+      customer: customer._id,
+      points: 5,
+      type: "daily_share",
+      description: "Points awarded for sharing referral code"
+    });
+
+    res.status(200).json({
+      message: "Referral share counted & points added",
+      points: customer.points,
+      todayShareCount: customer.todayReferralShareCount
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
+// Get Referral Details of Single Customer
+
+const getCustomerReferralDetails = async (req, res) => {
+  try {
+
+    const customerId = req.params.id;
+
+    // 1. Find the main Customer
+    const customer = await Customer.findById(customerId)
+      .lean();
+    if (!customer) return res.status(404).json({ message: "Farmer not found" });
+
+    // 2. Find all referred farmers
+    const referredCustomer = await Customer.find({ referredBy: customerId })
+      .select("name referralCode")
+      .lean();
+
+    // 3. Prepare response
+    res.status(200).json({
+      referralCode: customer.referralCode,
+      referralShares: customer.referralShares,
+      referralDownloads: customer.referralDownloads,
+      referredCustomer: referredCustomer,
+    });
+  } catch (error) {
+    console.error("Error fetching referral details:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+
+}
+
+
+// Customer points transactions
+
+const getCustomerPointsTransactions = async (req, res) => {
+
+  try {
+    const { customerId } = req.params;
+
+
+    const transactions = await CustomerPointsTransactions.find({ customer: customerId }).sort({ createdAt: -1 });
+
+
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch point transactions", error });
+  }
+
+};
+
+
+
 module.exports = {
   registerCustomer,
   loginCustomer,
@@ -276,5 +412,9 @@ module.exports = {
   updateCustomer,
   sendOtptoCustomer,
   verifyCustomerOtp,
-  searchByNameAndCity
+  searchByNameAndCity,
+  getCustomerPointsTransactions,
+  getCustomerReferralDetails,
+  rewardDailyPointsCustomer,
+  incrementReferralShareCustomer
 };
