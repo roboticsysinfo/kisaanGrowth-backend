@@ -46,7 +46,9 @@ router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerByI
 
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
-router.get('/farmer-details/get/:farmerId', authorize(["customer"]), getFarmerDetailsById);
+
+router.get('/farmer-details/get/:farmerId', getFarmerDetailsById);
+
 
 // Daily Reward
 router.post('/farmer/reward-daily', authorize(["farmer"]), rewardDailyPoints);
