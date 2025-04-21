@@ -93,7 +93,7 @@ const redeemProductCustomer = async (req, res) => {
       const product = await CustomerRedeemProduct.findById(redeemProductId);
   
       if (!customer || !product) {
-        return res.status(404).json({ message: 'Farmer or Product not found' });
+        return res.status(404).json({ message: 'Customer or Product not found' });
       }
   
       if (customer.points < product.requiredPoints) {
