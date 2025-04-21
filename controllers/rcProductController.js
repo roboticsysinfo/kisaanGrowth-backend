@@ -34,7 +34,7 @@ const addRedeemProductCustomer = async (req, res) => {
 // get all redeem products
 const getAllRedeemProductsCustomer = async (req, res) => {
     try {
-        const products = await CustomerRedeemProductRedeemProduct.find().sort({ createdAt: -1 });
+        const products = await CustomerRedeemProduct.find().sort({ createdAt: -1 });
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });

@@ -17,7 +17,7 @@ router.post('/customer/add-redeem-product', authorize(["admin"]), upload.single(
 
 
 // Get All
-router.get('/customer/redeem-products', authorize(["customer", "admin"]), getAllRedeemProductsCustomer);
+router.get('/get/customer/redeem-products', authorize(["customer", "admin"]), getAllRedeemProductsCustomer);
 
 
 // Update Product
