@@ -42,7 +42,7 @@ router.post('/send-otp-to-farmer', sendOTPToFarmer);
 
 router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 
-router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
+router.get('/farmer/get/:farmerId', authorize(["farmer", "admin", "customer"]), getFarmerById);
 
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
