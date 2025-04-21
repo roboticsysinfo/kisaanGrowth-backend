@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 // const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -42,10 +42,11 @@ router.post('/send-otp-to-farmer', sendOTPToFarmer);
 
 router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 
-router.get('/farmer/get/:farmerId',  getFarmerById);
+router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
 
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
+router.get('/farmer-details/get/:farmerId', authorize(["customer"]), getFarmerDetailsById);
 
 // Daily Reward
 router.post('/farmer/reward-daily', authorize(["farmer"]), rewardDailyPoints);

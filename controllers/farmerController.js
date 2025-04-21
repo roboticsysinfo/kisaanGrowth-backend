@@ -191,8 +191,6 @@ const registerFarmer = async (req, res) => {
 
 
 
-
-
 const getFarmerById = async (req, res) => {
 
   try {
@@ -594,6 +592,27 @@ const getFarmersByCity = async (req, res) => {
   }
 };
 
+const getFarmerDetailsById = async (req, res) => {
+
+  try {
+
+    const farmerId = req.params.farmerId; // get farmer id from URL params
+
+    // Find farmer by ID and exclude password
+    const farmer = await Farmer.findById(farmerId).select("-password");
+
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    res.status(200).json(farmer);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+
+
+};
+
 
 
 module.exports = {
@@ -610,5 +629,6 @@ module.exports = {
   getFarmerReferralDetails,
   getPointTransactions,
   getFarmerByIdForAdmin,
-  getFarmersByCity
+  getFarmersByCity,
+  getFarmerDetailsById
 };
