@@ -472,6 +472,7 @@ const getFarmerReferralDetails = async (req, res) => {
 
 }
 
+
 // farmer points transactions
 
 const getPointTransactions = async (req, res) => {

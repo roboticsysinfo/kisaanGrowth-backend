@@ -38,7 +38,7 @@ const registerCustomer = async (req, res) => {
 
   try {
     // Check existing
-    const existingCustomer = await Customer.findOne({ 
+    const existingCustomer = await Customer.findOne({
       $or: [
         { email },
         { phoneNumber }
@@ -223,25 +223,49 @@ const verifyCustomerOtp = async (req, res) => {
   }
 
   try {
-    const user = await Customer.findOne({ phoneNumber });
+    const customer = await Customer.findOne({ phoneNumber });
 
-    if (!user) {
+    if (!customer) {
       return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
     }
 
-    const token = generateToken(user._id, 'customer');
+    // ✅ Daily Login Logic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyGiven = await CustomerPointsTransactions.findOne({
+      customer: customer._id,
+      type: "daily_login",
+      createdAt: { $gte: today },
+    });
+
+    if (!alreadyGiven) {
+      const points = 1;
+      customer.points += points;
+      await customer.save();
+
+      await CustomerPointsTransactions.create({
+        customer: customer._id,
+        points,
+        type: "daily_login",
+        description: "Daily login reward",
+      });
+    }
+
+    const token = generateToken(customer._id, 'customer');
 
     res.json({
       success: true,
       message: 'OTP verified successfully. Logged in!',
       token,
-      user
+      customer
     });
 
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
 
 // Search Api - fined shop, farmers, products based on city
 
@@ -306,7 +330,6 @@ const rewardDailyPointsCustomer = async (req, res) => {
 
 
 // Customer Refer Share Detail Count ( How Many Share Farmer did )
-
 const incrementReferralShareCustomer = async (req, res) => {
   try {
     const { customerId } = req.body;
@@ -354,7 +377,6 @@ const incrementReferralShareCustomer = async (req, res) => {
 
 
 // Get Referral Details of Single Customer
-
 const getCustomerReferralDetails = async (req, res) => {
   try {
 
@@ -384,9 +406,7 @@ const getCustomerReferralDetails = async (req, res) => {
 
 }
 
-
 // Customer points transactions
-
 const getCustomerPointsTransactions = async (req, res) => {
 
   try {
@@ -402,7 +422,6 @@ const getCustomerPointsTransactions = async (req, res) => {
   }
 
 };
-
 
 
 module.exports = {
