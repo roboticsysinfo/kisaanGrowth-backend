@@ -9,6 +9,37 @@ const customerSchema = new mongoose.Schema({
   phoneNumber: {type: Number, required: true},
   address: {type: String, required: true},
   profile_image: {type: String, default: 'https://avatar.iran.liara.run/public/boy'},
+
+      // Refer and Earn
+      referralCode: { type: String, unique: true },
+  
+      referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", default: null },
+  
+      referralShares: {
+        type: Number,
+        default: 0
+      },
+      
+      referralDownloads: {
+        type: Number,
+        default: 0
+      },
+  
+      points: { type: Number, default: 0 },
+  
+      lastRewardDate: {
+        type: Date,
+      },
+  
+      lastReferralShareDate: {
+        type: Date,
+        default: null,
+      },
+      todayReferralShareCount: {
+        type: Number,
+        default: 0,
+      }
+
 },{
   timestamps: true
 });

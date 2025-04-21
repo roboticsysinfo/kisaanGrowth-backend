@@ -3,26 +3,121 @@ const Shop = require('../models/Shop');
 const Product = require('../models/Product');
 const Farmer = require('../models/Farmer');
 const generateToken = require('../utils/jwtGenerator');
+const CustomerPointsTransactions = require('../models/customerPointsTransactions');
+
+
+// 🔐 Helper to generate referral code like "KGC123456"
+const generateReferralCode = () => {
+  const randomNumber = Math.floor(100000 + Math.random() * 900000); // ensures a 6-digit number
+  return `KGC${randomNumber}`;
+};
+
 
 // Register Customer
-const registerCustomer = async (req, res) => {
+// const registerCustomer = async (req, res) => {
 
-  const { name, email, password, phoneNumber, address } = req.body;
+//   const { name, email, password, phoneNumber, address } = req.body;
+
+//   try {
+//     const existingCustomer = await Customer.findOne({ email });
+//     if (existingCustomer) {
+//       return res.status(400).json({ message: 'Customer already exists' });
+//     }
+
+//     const customer = new Customer({ name, email, password, phoneNumber, address });
+//     await customer.save();
+
+//     res.status(201).json({ message: 'Customer registered successfully', customer });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+const registerCustomer = async (req, res) => {
+  const { name, email, password, phoneNumber, address, referralCode } = req.body;
 
   try {
-    const existingCustomer = await Customer.findOne({ email });
+    // Check existing
+    const existingCustomer = await Customer.findOne({ 
+      $or: [
+        { email },
+        { phoneNumber }
+      ]
+    });
+
     if (existingCustomer) {
       return res.status(400).json({ message: 'Customer already exists' });
     }
 
-    const customer = new Customer({ name, email, password, phoneNumber, address });
-    await customer.save();
+    // Check referralCode validity
+    let referringCustomer = null;
+    if (referralCode) {
+      referringCustomer = await Customer.findOne({ referralCode });
+      if (!referringCustomer) {
+        return res.status(400).json({ message: "Invalid referral code" });
+      }
+    }
 
-    res.status(201).json({ message: 'Customer registered successfully', customer });
+    // Create new customer
+    const newCustomer = new Customer({
+      name,
+      email,
+      password,
+      phoneNumber,
+      address,
+      referralCode: generateReferralCode(),
+      referredBy: referringCustomer ? referringCustomer._id : null,
+      points: 0,
+    });
+
+    await newCustomer.save();
+
+    if (referringCustomer) {
+      // Both get 10 points
+      const referralPoints = 10;
+      referringCustomer.points += referralPoints;
+      await referringCustomer.save();
+
+      newCustomer.points += referralPoints;
+      await newCustomer.save();
+
+      // Optional: log in PointTransaction
+      await CustomerPointsTransactions.create({
+        customer: referringCustomer._id,
+        points: referralPoints,
+        type: "referral",
+        description: `Referral bonus for referring ${newCustomer.name}`,
+      });
+
+      await CustomerPointsTransactions.create({
+        customer: newCustomer._id,
+        points: referralPoints,
+        type: "referral",
+        description: `Register bonus for using referral code`,
+      });
+
+    } else {
+      // Self registration reward
+      const selfRegisterPoints = 10;
+      newCustomer.points += selfRegisterPoints;
+      await newCustomer.save();
+
+      await CustomerPointsTransactions.create({
+        customer: newCustomer._id,
+        points: selfRegisterPoints,
+        type: "self_register",
+        description: "Points awarded for signing up without referral",
+      });
+    }
+
+    res.status(201).json({ message: 'Customer registered successfully' });
+
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 
 // Login Customer
 const loginCustomer = async (req, res) => {
