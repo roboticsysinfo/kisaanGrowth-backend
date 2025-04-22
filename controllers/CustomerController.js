@@ -33,10 +33,13 @@ const generateReferralCode = () => {
 //   }
 // };
 
+
 const registerCustomer = async (req, res) => {
+
   const { name, email, password, phoneNumber, address, referralCode } = req.body;
 
   try {
+    
     // Check existing
     const existingCustomer = await Customer.findOne({
       $or: [
@@ -44,6 +47,7 @@ const registerCustomer = async (req, res) => {
         { phoneNumber }
       ]
     });
+
 
     if (existingCustomer) {
       return res.status(400).json({ message: 'Customer already exists' });
@@ -115,6 +119,7 @@ const registerCustomer = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
+
 };
 
 
@@ -190,6 +195,7 @@ const updateCustomer = async (req, res) => {
 
 // Send OTP (mocked as 1234)
 const sendOtptoCustomer = async (req, res) => {
+
   const { phoneNumber } = req.body;
 
   if (!phoneNumber) {
@@ -208,6 +214,7 @@ const sendOtptoCustomer = async (req, res) => {
     message: 'OTP sent successfully (use 1234 for testing)',
     otp: '1234' // You can remove this in production
   });
+
 };
 
 
@@ -240,6 +247,7 @@ const verifyCustomerOtp = async (req, res) => {
       createdAt: { $gte: today },
     });
 
+
     if (!alreadyGiven) {
       const points = 1;
       user.points += points;        // 👈 change here
@@ -261,6 +269,7 @@ const verifyCustomerOtp = async (req, res) => {
       token,
       user
     });
+
 
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
@@ -393,7 +402,7 @@ const getCustomerReferralDetails = async (req, res) => {
     const referredCustomer = await Customer.find({ referredBy: customerId })
       .select("name referralCode")
       .lean();
-
+   
     // 3. Prepare response
     res.status(200).json({
       referralCode: customer.referralCode,
