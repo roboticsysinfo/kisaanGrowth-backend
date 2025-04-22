@@ -1,6 +1,6 @@
 const express = require("express");
 const { authorize } = require("../middlewares/authMiddleware");
-const { sendFamilyRequest, getRequestsForFarmer, getAllFamilyRequests, updateRequestStatus, getRequestsForCustomer, removeFamilyRequest } = require('../controllers/familyFarmerController')
+const { sendFamilyRequest, getRequestsForFarmer, getAllFamilyRequests, updateRequestStatus, getRequestsForCustomer, removeFamilyRequest, getFamilyRequestStatus } = require('../controllers/familyFarmerController')
 
 
 const router = express.Router();
@@ -27,5 +27,10 @@ router.put('/family-farmer-request/status/:requestId', authorize(["farmer", "adm
 
 
 router.delete('/family-request/remove', removeFamilyRequest);
+
+// Get Family Farmer customer request status
+
+router.get('/customer/family-farmer/request/status/:fromCustomerId/:toFarmerId', getFamilyRequestStatus);
+
 
 module.exports = router;

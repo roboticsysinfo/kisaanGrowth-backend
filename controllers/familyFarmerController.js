@@ -226,6 +226,27 @@ const removeFamilyRequest = async (req, res) => {
 };
 
 
+// Get single request status between customer and farmer
+const getFamilyRequestStatus = async (req, res) => {
+  const { fromCustomerId, toFarmerId } = req.params;
+
+  try {
+    const request = await FamilyFarmerRequest.findOne({
+      fromCustomer: fromCustomerId,
+      toFarmer: toFarmerId
+    });
+
+    if (!request) {
+      return res.status(200).json({ status: null }); // No request found
+    }
+
+    res.status(200).json({ status: request.status }); // pending / accepted / rejected
+
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch request status.', error: error.message });
+  }
+};
+
 
 module.exports = {
   sendFamilyRequest,
@@ -233,5 +254,6 @@ module.exports = {
   getAllFamilyRequests,
   updateRequestStatus,
   getRequestsForCustomer,
-  removeFamilyRequest
+  removeFamilyRequest,
+  getFamilyRequestStatus
 };
