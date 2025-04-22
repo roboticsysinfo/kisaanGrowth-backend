@@ -15,7 +15,6 @@ const { authorize } = require('../middlewares/authMiddleware');
 // Add Product
 router.post('/customer/add-redeem-product', authorize(["admin"]), upload.single('rc_product_img'), addRedeemProductCustomer);
 
-
 // Get All
 router.get('/get/customer/redeem-products', authorize(["customer", "admin"]), getAllRedeemProductsCustomer);
 
@@ -33,7 +32,8 @@ router.post('/post/customer/redeem-product', authorize(["customer"]), redeemProd
 
 
 // Redeem Product by customers history
-router.get('/customer/redeem-product-history', authorize(["admin"]), getRedeemProductHistoryCustomer);
+router.get('/get/customer/redeem-product-history', authorize(["admin"]), getRedeemProductHistoryCustomer);
+
 
 
 module.exports = router;
