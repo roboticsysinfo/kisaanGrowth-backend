@@ -22,7 +22,8 @@ const customerPointTransactionSchema = new mongoose.Schema({
             "daily_share",
             "daily_login",
             "self_register",
-            "new_product_added"
+            "new_product_added",
+            "family_farmer"
         ],
         required: true,
     },
