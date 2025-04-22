@@ -28,8 +28,8 @@ router.put('/family-farmer-request/status/:requestId', authorize(["farmer", "adm
 
 router.delete('/family-request/remove', removeFamilyRequest);
 
-// Get Family Farmer customer request status
 
+// Get Family Farmer customer request status
 router.get('/customer/family-farmer/request/status/:fromCustomerId/:toFarmerId', getFamilyRequestStatus);
 
 

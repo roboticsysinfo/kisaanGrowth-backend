@@ -1,6 +1,8 @@
 const { sendNotification } = require("../helper/sendNotification");
+const Farmer = require("../models/Farmer");
 const Review = require("../models/Review");
 const Shop = require("../models/Shop");
+const PointsTransaction = require("../models/pointsTransactionHistory")
 
 
 const createReview = async (req, res) => {
@@ -17,29 +19,38 @@ const createReview = async (req, res) => {
       return res.status(404).json({ message: "Shop not found" });
     }
 
-    const userId = shop.farmer_id; // Fetching farmer's ID from shop
-
-    console.log("Notification Rec id", userId);
+    const userId = shop.farmer_id;
 
     const newReview = new Review({
       shop_id,
-      user_id: req.user._id, // Assuming user is authenticated
+      user_id: req.user._id,
       rating,
       comment,
     });
 
     await newReview.save();
 
-    // Pass reviewer ID as actorId
+    // ✅ Add 5 points to farmer
+    await Farmer.findByIdAndUpdate(userId, { $inc: { points: 5 } });
+
+    // ✅ Save points transaction
+    await PointsTransaction.create({
+      farmer: userId,
+      type: 'shop_review',
+      points: 5,
+      description: 'Points awarded for new shop review',
+      date: new Date()
+    });
+
+    // ✅ Send notification
     await sendNotification(
       userId, 
       "farmer", 
       "review", 
       "You’ve Received a New Review!", 
-      req.user._id,   // ✅ Actor ID
-      req.user.role   // ✅ Actor Type (customer ya farmer)
+      req.user._id,
+      req.user.role
     );
-    
 
     res.status(201).json({ message: "Review submitted successfully", review: newReview });
   } catch (error) {
@@ -47,6 +58,7 @@ const createReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 // ✅ Get All Reviews for a Shop

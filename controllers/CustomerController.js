@@ -279,7 +279,6 @@ const verifyCustomerOtp = async (req, res) => {
 
 
 // Search Api - fined shop, farmers, products based on city
-
 const searchByNameAndCity = async (req, res) => {
   const { query, filter, city } = req.query;
   const regex = new RegExp(query, 'i');
@@ -305,7 +304,6 @@ const searchByNameAndCity = async (req, res) => {
 
 
 // Daily 5 min stay reward points function
-
 const rewardDailyPointsCustomer = async (req, res) => {
   const customerId = req.user.id; // assuming auth middleware adds user info
 
@@ -433,7 +431,6 @@ const getCustomerPointsTransactions = async (req, res) => {
   }
 
 };
-
 
 
 // ✅ Get All Customers
