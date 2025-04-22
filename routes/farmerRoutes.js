@@ -42,12 +42,14 @@ router.post('/send-otp-to-farmer', sendOTPToFarmer);
 
 router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 
+
 router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
+
 
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
 
-router.get('/farmer-details/get/:farmerId', authorize(["customer"]), getFarmerDetailsById);
+router.get('/get/farmer-details/:farmerId', authorize(["customer", "admin"]), getFarmerDetailsById);
 
 
 // Daily Reward
@@ -71,7 +73,6 @@ router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdFo
 
 // Route to get farmers by city_district
 router.get("/farmers/by-city", getFarmersByCity);
-
 
 
 module.exports = router;
