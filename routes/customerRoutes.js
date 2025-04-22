@@ -51,4 +51,6 @@ router.get('/customer/referral-details/:id', authorize(["admin"]), CustomerContr
 router.get('/customer/points-transaction/:customerId', authorize(["admin", "customer"]), CustomerController.getCustomerPointsTransactions);
 
 
+router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCustomers );
+
 module.exports = router;

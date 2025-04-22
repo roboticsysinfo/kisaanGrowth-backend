@@ -83,7 +83,6 @@ const deleteCustomerRedeemProduct = async (req, res) => {
     }
 };
 
-
 // Redeem Product Customer ( Customer can redeem product )
 const redeemProductCustomer = async (req, res) => {
     const { customer_Id, redeemProductId } = req.body;

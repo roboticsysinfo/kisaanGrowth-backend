@@ -118,7 +118,6 @@ const registerCustomer = async (req, res) => {
 };
 
 
-
 // Login Customer
 const loginCustomer = async (req, res) => {
   const { email, password } = req.body;
@@ -152,6 +151,7 @@ const loginCustomer = async (req, res) => {
   }
 };
 
+
 // Get Customer Details by ID
 const getCustomerById = async (req, res) => {
   try {
@@ -164,6 +164,7 @@ const getCustomerById = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // Update Customer Details
 const updateCustomer = async (req, res) => {
@@ -425,6 +426,19 @@ const getCustomerPointsTransactions = async (req, res) => {
 };
 
 
+
+// ✅ Get All Customers
+const getAllCustomers = async (req, res) => {
+  try {
+    const customers = await Customer.find().select("-password");
+    res.status(200).json(customers);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
 module.exports = {
   registerCustomer,
   loginCustomer,
@@ -436,5 +450,6 @@ module.exports = {
   getCustomerPointsTransactions,
   getCustomerReferralDetails,
   rewardDailyPointsCustomer,
-  incrementReferralShareCustomer
+  incrementReferralShareCustomer,
+  getAllCustomers
 };
