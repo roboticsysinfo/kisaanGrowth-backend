@@ -438,6 +438,29 @@ const getAllCustomers = async (req, res) => {
 };
 
 
+// Delete Customer
+const deleteCustomer = async (req, res) => {
+  try {
+    const customerId = req.params.id;
+
+    // check if customer exist
+    const customer = await Customer.findById(customerId);
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    // delete customer
+    await Customer.findByIdAndDelete(customerId);
+
+    // delete customer points transaction also
+    await CustomerPointsTransactions.deleteMany({ customer: customerId });
+
+    res.status(200).json({ message: "Customer deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 
 module.exports = {
   registerCustomer,
@@ -451,5 +474,6 @@ module.exports = {
   getCustomerReferralDetails,
   rewardDailyPointsCustomer,
   incrementReferralShareCustomer,
-  getAllCustomers
+  getAllCustomers,
+  deleteCustomer
 };
