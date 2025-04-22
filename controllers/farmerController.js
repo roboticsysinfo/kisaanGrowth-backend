@@ -1,4 +1,5 @@
 const Farmer = require("../models/Farmer");
+const Shop = require("../models/Shop");
 const PointTransaction = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
 
@@ -508,27 +509,34 @@ const getFarmersByCity = async (req, res) => {
   }
 };
 
+
 const getFarmerDetailsById = async (req, res) => {
 
   try {
+    const farmerId = req.params.farmerId;
 
-    const farmerId = req.params.farmerId; 
-
-    // Find farmer by ID and exclude password
+    // 1. Find farmer
     const farmer = await Farmer.findById(farmerId).select("-password");
-
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    res.status(200).json(farmer);
+    // 2. Find shop based on farmer_id
+    const shop = await Shop.findOne({ farmer_id: farmerId });
+
+
+    
+    // 3. Return both farmer and shop
+    res.status(200).json({
+      ...farmer._doc,
+      shop,
+    });
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 
-
 };
-
 
 
 module.exports = {
