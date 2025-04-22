@@ -142,7 +142,7 @@ const getRedeemProductHistoryCustomer = async (req, res) => {
 
         const formattedHistory = history.map(entry => ({
             customer_Id: entry.customer_Id?._id,
-            farmerName: entry.customer_Id?.name,
+            customerName: entry.customer_Id?.name,
             referralCode: entry.customer_Id?.referralCode,
             totalPoints: entry.customer_Id?.points,
             redeemProductId: entry.redeemProductId?._id,
