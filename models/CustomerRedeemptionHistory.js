@@ -12,7 +12,7 @@ const customerRedeemptionHistorySchema = new mongoose.Schema({
   
   redeemProductId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'RedeemProduct',
+    ref: 'CustomerRedeemProduct',
     required: true
   },
 

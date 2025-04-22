@@ -525,7 +525,6 @@ const getFarmerDetailsById = async (req, res) => {
     const shop = await Shop.findOne({ farmer_id: farmerId });
 
 
-    
     // 3. Return both farmer and shop
     res.status(200).json({
       ...farmer._doc,

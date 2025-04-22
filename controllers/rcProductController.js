@@ -158,13 +158,44 @@ const getRedeemProductHistoryCustomer = async (req, res) => {
 };
 
 
+
+// Get redemption history by customer ID
+const getRedeemProductsByCustomerId = async (req, res) => {
+    const { customerId } = req.params;
+
+    try {
+        const history = await CustomerRedemptionHistory.find({ customer_Id: customerId })
+            .sort({ redeemedAt: -1 })
+            .populate({
+                path: 'redeemProductId',
+                select: 'name rc_product_img requiredPoints description'
+            });
+
+        const formattedHistory = history.map(entry => ({
+            redeemProductId: entry.redeemProductId?._id,
+            redeemProductName: entry.redeemProductId?.name,
+            productImg: entry.redeemProductId?.rc_product_img,
+            requiredPoints: entry.redeemProductId?.requiredPoints,
+            description: entry.redeemProductId?.description,
+            pointsDeducted: entry.pointsDeducted,
+            redeemedAt: entry.redeemedAt
+        }));
+
+        res.status(200).json(formattedHistory);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
 module.exports = {
     addRedeemProductCustomer,
     getAllRedeemProductsCustomer,
     updateCustomerRedeemProduct,
     deleteCustomerRedeemProduct,
     redeemProductCustomer,
-    getRedeemProductHistoryCustomer
+    getRedeemProductHistoryCustomer,
+    getRedeemProductsByCustomerId
 };
 
 

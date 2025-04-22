@@ -7,7 +7,8 @@ const {
     redeemProductCustomer,
     deleteCustomerRedeemProduct,
     updateCustomerRedeemProduct,
-    addRedeemProductCustomer
+    addRedeemProductCustomer,
+    getRedeemProductsByCustomerId
 } = require("../controllers/rcProductController")
 const { authorize } = require('../middlewares/authMiddleware');
 
@@ -34,6 +35,7 @@ router.post('/post/customer/redeem-product', authorize(["customer"]), redeemProd
 // Redeem Product by customers history
 router.get('/get/customer/redeem-product-history', authorize(["admin"]), getRedeemProductHistoryCustomer);
 
-
+// Get redemption history for a specific customer by customerId
+router.get('/customer/redeem-history/:customerId', authorize(["customer"]), getRedeemProductsByCustomerId);
 
 module.exports = router;
