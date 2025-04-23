@@ -1,6 +1,7 @@
+const mongoose = require('mongoose');
 const Review = require('../models/Review');
 const Shop = require('../models/Shop');
-const mongoose = require('mongoose');
+
 
 const updateShopRating = async (shopId) => {
   const stats = await Review.aggregate([

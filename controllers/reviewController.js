@@ -1,4 +1,5 @@
 const { sendNotification } = require("../helper/sendNotification");
+const { updateShopRating } = require("../helper/updateShopRating");
 const Farmer = require("../models/Farmer");
 const Review = require("../models/Review");
 const Shop = require("../models/Shop");
@@ -29,19 +30,17 @@ const createReview = async (req, res) => {
 
     await newReview.save();
 
-    // ✅ Add points to farmer
+    // Add points to farmer and update ratings
     await Farmer.findByIdAndUpdate(userId, { $inc: { points: 2 } });
 
-    // ✅ Save points transaction
     await PointsTransaction.create({
       farmer: userId,
       type: 'shop_review',
       points: 2,
       description: 'Points earned for new shop review',
-      date: new Date()
+      date: new Date(),
     });
 
-    // ✅ Send notification
     await sendNotification(
       userId, 
       "farmer", 
@@ -51,22 +50,15 @@ const createReview = async (req, res) => {
       req.user.role
     );
 
-    res.status(201).json({ 
-      success: true,
-      message: "Review submitted successfully", 
-      review: newReview 
-    });
+    await updateShopRating(shop_id); // Update the shop rating
+
+    res.status(201).json({ success: true, message: "Review submitted successfully", review: newReview });
 
   } catch (error) {
     console.error("Review Creation Error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      details: error.message
-    });
+    res.status(500).json({ success: false, message: "Server error", details: error.message });
   }
 };
-
 
 
 // ✅ Get All Reviews for a Shop
