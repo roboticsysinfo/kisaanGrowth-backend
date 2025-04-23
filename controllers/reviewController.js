@@ -51,16 +51,19 @@ const createReview = async (req, res) => {
       req.user.role
     );
 
-    // ✅ Final Response with success flag
     res.status(201).json({ 
       success: true,
       message: "Review submitted successfully", 
       review: newReview 
     });
-    
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Review Creation Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      details: error.message
+    });
   }
 };
 
