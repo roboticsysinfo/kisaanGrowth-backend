@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { updateShopRating } = require('../helper/updateShopRating');
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -29,21 +28,6 @@ const reviewSchema = new mongoose.Schema(
   }
 
 );
-
-
-// After a review is created
-reviewSchema.post('save', async function () {
-  await updateShopRating(this.shop_id);
-});
-
-
-// After a review is deleted
-reviewSchema.post('findOneAndDelete', async function (doc) {
-  if (doc) {
-    await updateShopRating(doc.shop_id);
-  }
-});
-
 
 const Review = mongoose.model('Review', reviewSchema);
 

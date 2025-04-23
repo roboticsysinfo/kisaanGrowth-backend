@@ -6,6 +6,7 @@ const Shop = require("../models/Shop");
 const PointsTransaction = require("../models/pointsTransactionHistory")
 
 
+
 const createReview = async (req, res) => {
   try {
     const { shop_id, rating, comment } = req.body;
@@ -49,8 +50,6 @@ const createReview = async (req, res) => {
       req.user._id,
       req.user.role
     );
-
-    await updateShopRating(shop_id); // Update the shop rating
 
     res.status(201).json({ success: true, message: "Review submitted successfully", review: newReview });
 
