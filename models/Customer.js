@@ -38,6 +38,15 @@ const customerSchema = new mongoose.Schema({
       todayReferralShareCount: {
         type: Number,
         default: 0,
+      },
+
+      agreedToPrivacyPolicyAndTermsAndConditions: {
+        type: Boolean,
+        required: true
+      },
+      agreementTimestamp: {
+        type: Date,
+        required: true
       }
 
 },{

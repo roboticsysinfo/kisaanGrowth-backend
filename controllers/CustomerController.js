@@ -36,7 +36,8 @@ const generateReferralCode = () => {
 
 const registerCustomer = async (req, res) => {
 
-  const { name, email, password, phoneNumber, address, referralCode } = req.body;
+  const { name, email, password, phoneNumber, address, referralCode, agreedToPrivacyPolicyAndTermsAndConditions, agreementTimestamp } = req.body;
+
 
   try {
     
@@ -72,6 +73,8 @@ const registerCustomer = async (req, res) => {
       referralCode: generateReferralCode(),
       referredBy: referringCustomer ? referringCustomer._id : null,
       points: 0,
+      agreedToPrivacyPolicyAndTermsAndConditions, 
+      agreementTimestamp
     });
 
     await newCustomer.save();
