@@ -24,7 +24,7 @@ router.post(
   // GET Shop by ID
   router.get("/shop/:id" ,getShopById); 
 
-  router.get('/shop-products/:shopId', getProductsByShopId);
+  router.get('/shop-products/:shopId', authorize(["customer", "farmer", "admin"]), getProductsByShopId);
 
   router.put(
     '/shop/:id',

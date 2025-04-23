@@ -10,13 +10,12 @@ const createReview = async (req, res) => {
     const { shop_id, rating, comment } = req.body;
 
     if (!shop_id || !rating) {
-      return res.status(400).json({ message: "Shop ID and rating are required" });
+      return res.status(400).json({ success: false, message: "Shop ID and rating are required" });
     }
 
     const shop = await Shop.findById(shop_id);
-
     if (!shop) {
-      return res.status(404).json({ message: "Shop not found" });
+      return res.status(404).json({ success: false, message: "Shop not found" });
     }
 
     const userId = shop.farmer_id;
@@ -30,15 +29,15 @@ const createReview = async (req, res) => {
 
     await newReview.save();
 
-    // ✅ Add 5 points to farmer
-    await Farmer.findByIdAndUpdate(userId, { $inc: { points: 5 } });
+    // ✅ Add points to farmer
+    await Farmer.findByIdAndUpdate(userId, { $inc: { points: 2 } });
 
     // ✅ Save points transaction
     await PointsTransaction.create({
       farmer: userId,
       type: 'shop_review',
-      points: 5,
-      description: 'Points awarded for new shop review',
+      points: 2,
+      description: 'Points earned for new shop review',
       date: new Date()
     });
 
@@ -52,10 +51,16 @@ const createReview = async (req, res) => {
       req.user.role
     );
 
-    res.status(201).json({ message: "Review submitted successfully", review: newReview });
+    // ✅ Final Response with success flag
+    res.status(201).json({ 
+      success: true,
+      message: "Review submitted successfully", 
+      review: newReview 
+    });
+    
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
