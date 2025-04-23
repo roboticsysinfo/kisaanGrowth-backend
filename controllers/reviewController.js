@@ -7,6 +7,61 @@ const PointsTransaction = require("../models/pointsTransactionHistory")
 
 
 
+// const createReview = async (req, res) => {
+//   try {
+//     const { shop_id, rating, comment } = req.body;
+
+//     if (!shop_id || !rating) {
+//       return res.status(400).json({ success: false, message: "Shop ID and rating are required" });
+//     }
+
+//     const shop = await Shop.findById(shop_id);
+//     if (!shop) {
+//       return res.status(404).json({ success: false, message: "Shop not found" });
+//     }
+
+//     const userId = shop.farmer_id;
+
+//     const newReview = new Review({
+//       shop_id,
+//       user_id: req.user._id,
+//       rating,
+//       comment,
+//     });
+
+//     await newReview.save();
+
+//     // Add points to farmer and update ratings
+//     await Farmer.findByIdAndUpdate(userId, { $inc: { points: 2 } });
+
+//     await PointsTransaction.create({
+//       farmer: userId,
+//       type: 'shop_review',
+//       points: 2,
+//       description: 'Points earned for new shop review',
+//       date: new Date(),
+//     });
+
+//     await sendNotification(
+//       userId, 
+//       "farmer", 
+//       "review", 
+//       "You’ve Received a New Review!", 
+//       req.user._id,
+//       req.user.role
+//     );
+
+//     res.status(201).json({ success: true, message: "Review submitted successfully", review: newReview });
+
+//   } catch (error) {
+//     console.error("Review Creation Error:", error.message);
+//     res.status(500).json({ success: false, message: "Server error", details: error.message });
+//   }
+// };
+
+
+// ✅ Get All Reviews for a Shop
+
 const createReview = async (req, res) => {
   try {
     const { shop_id, rating, comment } = req.body;
@@ -51,6 +106,9 @@ const createReview = async (req, res) => {
       req.user.role
     );
 
+    // Update Shop rating and total reviews
+    await updateShopRating(shop_id);  // This will update averageRating and totalReviews
+
     res.status(201).json({ success: true, message: "Review submitted successfully", review: newReview });
 
   } catch (error) {
@@ -60,7 +118,6 @@ const createReview = async (req, res) => {
 };
 
 
-// ✅ Get All Reviews for a Shop
 const getAllReviews = async (req, res) => {
   try {
     const { shop_id } = req.params;
