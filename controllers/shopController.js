@@ -2,7 +2,7 @@ const Shop = require('../models/Shop'); // Adjust the path as needed
 const Product = require('../models/Product')
 const multer = require('multer');
 const path = require('path');
-const mongoose  = require('mongoose');
+const mongoose = require('mongoose');
 
 
 const storage = multer.diskStorage({
@@ -96,9 +96,9 @@ const createShop = async (req, res) => {
 // Get Shop by Farmer ID
 const getShopByFarmerId = async (req, res) => {
   try {
-    const farmerId = req.user._id; 
+    const farmerId = req.user._id;
     // Assuming farmer_id is fetched from the authenticated user
-    
+
     // Find the shop by the farmer's ID
     const shop = await Shop.findOne({ farmer_id: farmerId });
 
@@ -259,7 +259,7 @@ const getProductsByShopId = async (req, res) => {
     const products = await Product.find({ shop_id: shopId })
       .populate("shop_id", "shop_name") // Shop model se shop_name fetch karega
       .select("name price_per_unit quantity unit harvest_date product_image");
-      // Sirf required fields return karega
+    // Sirf required fields return karega
 
 
     if (!products.length) {
@@ -290,6 +290,7 @@ const searchShops = async (req, res) => {
     }
 
     const shops = await Shop.find(shopQuery);
+
     res.status(200).json(shops);
   } catch (error) {
     res.status(500).json({ message: error.message });

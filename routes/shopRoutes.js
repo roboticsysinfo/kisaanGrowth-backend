@@ -44,7 +44,7 @@ router.get('/shop-by-location', getShopsByLocation); // Get shops by location
 
 router.get('/shop/category', authorize, getShopsByCategory); // Get shops by category
 
-router.get('/shop/search', searchShops);
+router.get('/search/bynamecity/shop', searchShops);
 
 
 
