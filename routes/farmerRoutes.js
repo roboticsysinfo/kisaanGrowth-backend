@@ -36,7 +36,7 @@ router.post('/farmer/login', farmerLogin);
 // Api For farmer request for kyc verifcation
 router.post("/farmer/kyc-request", authorize(["farmer"]), requestKYC);
 
-router.get('/farmers', authorize(["admin", "customer"]), getAllFarmers);
+router.get('/farmers', getAllFarmers);
 
 router.post('/send-otp-to-farmer', sendOTPToFarmer);
 
