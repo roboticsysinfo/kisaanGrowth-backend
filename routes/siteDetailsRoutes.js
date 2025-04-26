@@ -26,9 +26,7 @@ router.put('/update/site-termsconditions', SiteDetailsController.updateTermsAndC
 
 router.put('/update/site-privacypolicy', SiteDetailsController.updatePrivacyPolicy);
 
-
 router.get("/get/site-privacypolicy", SiteDetailsController.getPrivacyPolicy);
-
 
 router.get("/get/site-termconditions", SiteDetailsController.getTermsAndConditions);
 

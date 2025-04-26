@@ -16,7 +16,7 @@ router.post(
     createShop
   );
   
-  router.get('/farmer-shops', authorize(["customer", "farmer", "admin"]), getAllShops);
+  router.get('/farmer-shops', getAllShops);
 
   // get farmer shop by id  
   router.get('/farmer-shop/:id', authorize(['farmer']), getShopByFarmerId);
