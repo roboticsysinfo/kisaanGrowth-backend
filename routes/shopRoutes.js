@@ -16,15 +16,15 @@ router.post(
     createShop
   );
   
-  router.get('/farmer-shops', getAllShops);
+  router.get('/farmer-shops', authorize(["customer", "farmer", "admin"]), getAllShops);
 
   // get farmer shop by id  
   router.get('/farmer-shop/:id', authorize(['farmer']), getShopByFarmerId);
 
   // GET Shop by ID
-  router.get("/shop/:id" ,getShopById); 
+  router.get("/shop/:id" , getShopById); 
 
-  router.get('/shop-products/:shopId', authorize(["customer", "farmer", "admin"]), getProductsByShopId);
+  router.get('/shop-products/:shopId', getProductsByShopId);
 
   router.put(
     '/shop/:id',

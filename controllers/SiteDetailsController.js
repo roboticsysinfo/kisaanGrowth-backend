@@ -183,8 +183,84 @@ const SearchProductsAndShops = async (req, res) => {
 }
 
 
-module.exports={
+const updateTermsAndConditions = async (req, res) => {
+    try {
+        const { termsAndConditions } = req.body;
 
+        if (!termsAndConditions) {
+            return res.status(400).json({ message: "Terms and Conditions content is required" });
+        }
+
+        let siteDetails = await SiteDetails.findOne();
+        if (!siteDetails) {
+            siteDetails = new SiteDetails({ termsAndConditions });
+        } else {
+            siteDetails.termsAndConditions = termsAndConditions;
+        }
+
+        await siteDetails.save();
+        res.json({ success: true, message: "Terms and Conditions updated successfully!", termsAndConditions: siteDetails.termsAndConditions });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+const updatePrivacyPolicy = async (req, res) => {
+    try {
+        const { privacyPolicy } = req.body;
+
+        if (!privacyPolicy) {
+            return res.status(400).json({ message: "Privacy Policy content is required" });
+        }
+
+        let siteDetails = await SiteDetails.findOne();
+        if (!siteDetails) {
+            siteDetails = new SiteDetails({ privacyPolicy });
+        } else {
+            siteDetails.privacyPolicy = privacyPolicy;
+        }
+
+        await siteDetails.save();
+        res.json({ success: true, message: "Privacy Policy updated successfully!", privacyPolicy: siteDetails.privacyPolicy });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+const getTermsAndConditions = async (req, res) => {
+    try {
+        const siteDetails = await SiteDetails.findOne();
+
+        if (!siteDetails || !siteDetails.termsAndConditions) {
+            return res.status(404).json({ success: false, message: "Terms and Conditions not found" });
+        }
+
+        res.json({ success: true, termsAndConditions: siteDetails.termsAndConditions });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+const getPrivacyPolicy = async (req, res) => {
+    try {
+        const siteDetails = await SiteDetails.findOne();
+
+        if (!siteDetails || !siteDetails.privacyPolicy) {
+            return res.status(404).json({ success: false, message: "Privacy Policy not found" });
+        }
+
+        res.json({ success: true, privacyPolicy: siteDetails.privacyPolicy });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+module.exports={
     updateSocialMedia,
     AddSiteAbout,
     updateContactDetail,
@@ -192,5 +268,9 @@ module.exports={
     updateSiteDetails,
     updateSiteAbout,
     AddSiteLogo,
-    SearchProductsAndShops
+    SearchProductsAndShops,
+    updateTermsAndConditions,  
+    updatePrivacyPolicy,
+    getTermsAndConditions,
+    getPrivacyPolicy
 }

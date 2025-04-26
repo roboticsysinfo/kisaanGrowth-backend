@@ -18,11 +18,20 @@ router.put("/site-details/update-social-media", authorize(['admin']), SiteDetail
 
 router.get("/fetch-site-details", SiteDetailsController.getSiteDetails);
 
-
 router.put("/site-details/update-about", authorize(['admin']), SiteDetailsController.updateSiteAbout);
 
-
 router.get("/search-products-shops", SiteDetailsController.SearchProductsAndShops);
+
+router.put('/update/site-termsconditions', SiteDetailsController.updateTermsAndConditions);
+
+router.put('/update/site-privacypolicy', SiteDetailsController.updatePrivacyPolicy);
+
+
+router.get("/get/site-privacypolicy", SiteDetailsController.getPrivacyPolicy);
+
+
+router.get("/get/site-termconditions", SiteDetailsController.getTermsAndConditions);
+
 
 
 module.exports = router;

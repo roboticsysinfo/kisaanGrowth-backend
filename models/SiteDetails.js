@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const siteDetailsSchema = new mongoose.Schema({
     contactDetails: {
-        phone: { type: String, default: null }, 
+        phone: { type: String, default: null },
         email: { type: String, default: null },
         address: { type: String, default: null }
     },
-    siteLogo: { type: String, default: null }, 
+    siteLogo: { type: String, default: null },
     socialMedia: [
         {
             platform: { type: String, required: true },
@@ -14,9 +14,9 @@ const siteDetailsSchema = new mongoose.Schema({
         }
     ],
     about: {
-        title: { type: String, default: null }, 
+        title: { type: String, default: null },
         content: { type: String, default: null },
-        footer_text: { type: String, default: null}
+        footer_text: { type: String, default: null }
     },
     banners: [
         {
@@ -24,7 +24,12 @@ const siteDetailsSchema = new mongoose.Schema({
             banner_image: { type: String, required: true },
             category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true }
         }
-    ]
+    ],
+
+    termsAndConditions: { type: String, default: null },
+    
+    privacyPolicy: { type: String, default: null }
+
 }, { timestamps: true });
 
 

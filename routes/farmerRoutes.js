@@ -49,7 +49,7 @@ router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerByI
 router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
 
 
-router.get('/get/farmer-details/:farmerId', authorize(["customer", "admin"]), getFarmerDetailsById);
+router.get('/get/farmer-details/:farmerId', getFarmerDetailsById);
 
 
 // Daily Reward
