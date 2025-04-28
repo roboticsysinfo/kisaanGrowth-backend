@@ -5,6 +5,7 @@ const { authorize } = require('../middlewares/authMiddleware');
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
+const { createRazorpayOrderForFarmerPoints } = require('../controllers/razorpayController');
 
 // Setup multer storage
 const storage = multer.diskStorage({
@@ -76,5 +77,9 @@ router.get("/farmers/by-city", getFarmersByCity);
 
 // upgrade farmer points
 router.post('/farmer/upgradePoints', upgradeFarmerPoints);  
+
+// Route for creating Razorpay order for farmer upgrade points
+router.post('/farmer/createRazorpayOrder', createRazorpayOrderForFarmerPoints);
+
 
 module.exports = router;
