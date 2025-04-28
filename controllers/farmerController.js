@@ -24,7 +24,9 @@ const registerFarmer = async (req, res) => {
     referralCode,
     state,
     city_district,
-    village
+    village,
+    agreedToPrivacyPolicyAndTermsAndConditions, 
+    agreementTimestamp
   } = req.body;
 
   const uploadAadharCard = req.files?.uploadAadharCard?.[0]?.path;
@@ -77,6 +79,8 @@ const registerFarmer = async (req, res) => {
       referralCode: generateReferralCode(),
       referredBy: referringFarmer ? referringFarmer._id : null,
       points: 0,
+      agreedToPrivacyPolicyAndTermsAndConditions, 
+      agreementTimestamp
     });
 
     await newFarmer.save();

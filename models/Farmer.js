@@ -63,8 +63,15 @@ const farmerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    agreedToTerms: { type: Boolean, required: true },
-    agreedToPrivacyPolicy: { type: Boolean, required: true },
+    
+    agreedToPrivacyPolicyAndTermsAndConditions: {
+      type: Boolean,
+      required: true
+    },
+    agreementTimestamp: {
+      type: Date,
+      required: true
+    }
     
 
   },
