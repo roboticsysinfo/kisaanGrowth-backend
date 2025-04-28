@@ -25,8 +25,8 @@ router.put("/admin/kyc-request/approve/:id", authorize(["admin"]), approveKYC);
 // Admin route to reject KYC
 router.put("/admin/kyc-request/reject/:id", authorize(["admin"]), rejectKYC);
 
-router.get("/createPlanOrder", createPlanOrder);
+router.post("/createPlanOrder", createPlanOrder);
 
-router.get("/verifyPayment", verifyPayment);
+router.post("/verifyPayment", verifyPayment);
 
 module.exports = router;
