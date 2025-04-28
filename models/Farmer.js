@@ -71,6 +71,14 @@ const farmerSchema = new mongoose.Schema(
     agreementTimestamp: {
       type: Date,
       required: true
+    },
+
+    isUpgraded: {
+      type: Boolean,
+      default: false
+    },
+    upgradedAt: {
+      type: Date,
     }
     
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { registerAdmin, loginAdmin, getKYCRequests, approveKYC, rejectKYC, getAllAdmins, updateAdmin, deleteAdmin } = require('../controllers/AdminController');
 const { authorize } = require('../middlewares/authMiddleware');
+const { createPlanOrder, verifyPayment } = require('../controllers/razorpayController');
 
 // Register a user (Farmer, Customer, Admin, Sub Admin)
 router.post('/admin/register', registerAdmin);
@@ -23,5 +24,9 @@ router.put("/admin/kyc-request/approve/:id", authorize(["admin"]), approveKYC);
 
 // Admin route to reject KYC
 router.put("/admin/kyc-request/reject/:id", authorize(["admin"]), rejectKYC);
+
+router.get("/createPlanOrder", createPlanOrder);
+
+router.get("/verifyPayment", verifyPayment);
 
 module.exports = router;
