@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 // const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -74,5 +74,7 @@ router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdFo
 // Route to get farmers by city_district
 router.get("/farmers/by-city", getFarmersByCity);
 
+// upgrade farmer points
+router.post('/farmer/upgradePoints', upgradeFarmerPoints);  
 
 module.exports = router;

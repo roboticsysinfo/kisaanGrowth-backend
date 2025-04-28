@@ -81,7 +81,6 @@ const farmerSchema = new mongoose.Schema(
       type: Date,
     }
     
-
   },
 
   { timestamps: true }

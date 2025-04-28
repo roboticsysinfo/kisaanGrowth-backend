@@ -541,6 +541,42 @@ const getFarmerDetailsById = async (req, res) => {
 
 };
 
+// Controller to update farmer's points after payment
+const upgradeFarmerPoints = async (req, res) => {
+  try {
+      const { points, userId } = req.body;
+
+      // Validate if points and userId are provided
+      if (!points || !userId) {
+          return res.status(400).json({ success: false, message: 'Points and userId are required' });
+      }
+
+      // Find the farmer by userId
+      const farmer = await Farmer.findById(userId);
+
+      // If the farmer doesn't exist, return an error
+      if (!farmer) {
+          return res.status(404).json({ success: false, message: 'Farmer not found' });
+      }
+
+      // Update the farmer's points
+      farmer.points += points;
+
+      // Save the updated farmer document
+      await farmer.save();
+
+      // Respond with success
+      return res.status(200).json({
+          success: true,
+          message: 'Points updated successfully',
+          updatedPoints: farmer.points
+      });
+  } catch (error) {
+      console.error('Error updating points:', error);
+      return res.status(500).json({ success: false, message: 'Error updating points' });
+  }
+};
+
 
 module.exports = {
   registerFarmer,
@@ -557,5 +593,6 @@ module.exports = {
   getPointTransactions,
   getFarmerByIdForAdmin,
   getFarmersByCity,
-  getFarmerDetailsById
+  getFarmerDetailsById,
+  upgradeFarmerPoints
 };
