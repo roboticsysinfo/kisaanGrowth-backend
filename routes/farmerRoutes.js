@@ -76,7 +76,7 @@ router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdFo
 router.get("/farmers/by-city", getFarmersByCity);
 
 // upgrade farmer points
-router.post('/farmer/upgradePoints', upgradeFarmerPoints);  
+router.post('/farmer/upgradePoints/:farmerId', upgradeFarmerPoints);  
 
 // Route for creating Razorpay order for farmer upgrade points
 router.post('/farmer/createRazorpayOrder', createRazorpayOrderForFarmerPoints);

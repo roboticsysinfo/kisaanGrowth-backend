@@ -2,6 +2,7 @@ const Farmer = require("../models/Farmer");
 const Shop = require("../models/Shop");
 const PointTransaction = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
+const { ObjectId } = require('mongodb');
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -542,38 +543,49 @@ const getFarmerDetailsById = async (req, res) => {
 };
 
 // Controller to update farmer's points after payment
+
 const upgradeFarmerPoints = async (req, res) => {
   try {
-      const { points, farmerId } = req.body;
+      const { points } = req.body;
+      const { farmerId } = req.params; // Access farmerId from URL parameter
 
-      // Validate if points and userId are provided
+      console.log("points", points);
+      console.log("farmerId", farmerId);
+    
+      // Validate if points and farmerId are provided
       if (!points || !farmerId) {
           return res.status(400).json({ success: false, message: 'Points and farmerId are required' });
       }
 
-      // Find the farmer by farmerId
-      const farmer = await Farmer.findById(farmerId);
-
-      // If the farmer doesn't exist, return an error
-      if (!farmer) {
-          return res.status(404).json({ success: false, message: 'Farmer not found' });
+      try {
+          const farmer = await Farmer.findById(farmerId);
+      
+          console.log("farmer", farmer);
+      
+          // If the farmer doesn't exist, return an error
+          if (!farmer) {
+              return res.status(404).json({ success: false, message: 'Farmer not found' });
+          }
+      
+          // Update the farmer's points
+          farmer.points += points;
+      
+          // Save the updated farmer document
+          await farmer.save();
+      
+          // Respond with success and updated points
+          return res.status(200).json({
+              success: true,
+              message: 'Points updated successfully',
+              updatedPoints: farmer.points
+          });
+      } catch (error) {
+          console.error('Error updating points:', error);
+          return res.status(500).json({ success: false, message: 'Error updating points' });
       }
-
-      // Update the farmer's points
-      farmer.points += points;
-
-      // Save the updated farmer document
-      await farmer.save();
-
-      // Respond with success
-      return res.status(200).json({
-          success: true,
-          message: 'Points updated successfully',
-          updatedPoints: farmer.points
-      });
   } catch (error) {
-      console.error('Error updating points:', error);
-      return res.status(500).json({ success: false, message: 'Error updating points' });
+      console.error("Error in upgradeFarmerPoints:", error);
+      return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
