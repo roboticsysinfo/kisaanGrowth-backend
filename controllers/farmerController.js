@@ -544,15 +544,15 @@ const getFarmerDetailsById = async (req, res) => {
 // Controller to update farmer's points after payment
 const upgradeFarmerPoints = async (req, res) => {
   try {
-      const { points, userId } = req.body;
+      const { points, farmerId } = req.body;
 
       // Validate if points and userId are provided
-      if (!points || !userId) {
-          return res.status(400).json({ success: false, message: 'Points and userId are required' });
+      if (!points || !farmerId) {
+          return res.status(400).json({ success: false, message: 'Points and farmerId are required' });
       }
 
-      // Find the farmer by userId
-      const farmer = await Farmer.findById(userId);
+      // Find the farmer by farmerId
+      const farmer = await Farmer.findById(farmerId);
 
       // If the farmer doesn't exist, return an error
       if (!farmer) {
