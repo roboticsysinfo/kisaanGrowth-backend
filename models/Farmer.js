@@ -62,7 +62,9 @@ const farmerSchema = new mongoose.Schema(
     todayReferralShareCount: {
       type: Number,
       default: 0,
-    }
+    },
+    agreedToTerms: { type: Boolean, required: true },
+    agreedToPrivacyPolicy: { type: Boolean, required: true },
     
 
   },
