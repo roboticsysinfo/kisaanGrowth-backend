@@ -57,5 +57,7 @@ router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCust
 
 router.delete('/delete/customer/:id', CustomerController.deleteCustomer);
 
+router.post('/customer/upgrade-points/:customerId', CustomerController.upgradeCustomerPoints);
+
 
 module.exports = router;

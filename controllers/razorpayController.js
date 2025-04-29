@@ -29,7 +29,6 @@ const createPlanOrder = async (req, res) => {
     }
   };
   
-
   const verifyPayment = async (req, res) => {
     
     const { 
@@ -96,6 +95,7 @@ const createPlanOrder = async (req, res) => {
     }
   };
   
+  
 // for upgrade farmer points create order
  const createRazorpayOrderForFarmerPoints = async (req, res) => {
     const { amount } = req.body;
@@ -116,8 +116,31 @@ const createPlanOrder = async (req, res) => {
   };
 
   
+
+// for upgrade customer points create order
+const createRazorpayOrderForCustomerPoints = async (req, res) => {
+  const { amount } = req.body;
+
+  const options = {
+    amount: amount,  // Amount in paise
+    currency: 'INR',
+    receipt: `receipt_${Date.now()}`,
+  };
+
+  try {
+    const order = await razorpayInstance.orders.create(options);
+    res.json({ success: true, order_id: order.id });
+  } catch (error) {
+    console.error("Error creating Razorpay order:", error);
+    res.status(500).json({ success: false, message: 'Failed to create Razorpay order' });
+  }
+};
+
+
+
   module.exports={
     createPlanOrder,
     verifyPayment,
-    createRazorpayOrderForFarmerPoints
+    createRazorpayOrderForFarmerPoints,
+    createRazorpayOrderForCustomerPoints
   }

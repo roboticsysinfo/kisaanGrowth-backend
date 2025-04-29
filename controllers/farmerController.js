@@ -585,7 +585,6 @@ const upgradeFarmerPoints = async (req, res) => {
 };
 
 
-
 module.exports = {
   registerFarmer,
   farmerLogin,
