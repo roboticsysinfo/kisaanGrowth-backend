@@ -16,7 +16,6 @@ router.post('/auth/customer_register', CustomerController.registerCustomer);
 
 
 // Get Customer by ID
-
 router.get("/customer/:id", authorize(['customer', 'admin']),  CustomerController.getCustomerById);
 
 
@@ -58,9 +57,12 @@ router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCust
 
 router.delete('/delete/customer/:id', CustomerController.deleteCustomer);
 
-router.post('/customer/upgrade-points/:customerId', CustomerController.upgradeCustomerPoints);
+
+router.post('/customer/upgrade-points/:customerId', authorize(["customer"]), CustomerController.upgradeCustomerPoints);
+
 
 // Route for creating Razorpay order for customer upgrade points
-router.post('/customer/createRazorpayOrder', createRazorpayOrderForCustomerPoints);
+router.post('/customer/createRazorpayOrder', authorize(["customer"]), createRazorpayOrderForCustomerPoints);
+
 
 module.exports = router;

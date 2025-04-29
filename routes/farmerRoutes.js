@@ -5,7 +5,7 @@ const { authorize } = require('../middlewares/authMiddleware');
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const { createRazorpayOrderForFarmerPoints } = require('../controllers/razorpayController');
+const { createRazorpayOrderForFarmerPoints, applyFarmerUpgradePlan } = require('../controllers/razorpayController');
 
 // Setup multer storage
 const storage = multer.diskStorage({
@@ -76,10 +76,12 @@ router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdFo
 router.get("/farmers/by-city", getFarmersByCity);
 
 // upgrade farmer points
-router.post('/farmer/upgradePoints/:farmerId', upgradeFarmerPoints);  
+router.post('/farmer/upgradePoints/:farmerId', authorize(["farmer"]), upgradeFarmerPoints);  
 
 // Route for creating Razorpay order for farmer upgrade points
-router.post('/farmer/createRazorpayOrder', createRazorpayOrderForFarmerPoints);
+router.post('/farmer/createRazorpayOrder',  authorize(["farmer"]), createRazorpayOrderForFarmerPoints);
 
+// upgrade farmer plan api
+router.post('/farmer/applyUpgradePlan', authorize(["farmer"]), applyFarmerUpgradePlan);
 
 module.exports = router;
