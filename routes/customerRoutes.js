@@ -4,6 +4,7 @@ const CustomerController = require('../controllers/CustomerController')
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const { getProductsByCity } = require('../controllers/productController');
+const { createRazorpayOrderForCustomerPoints } = require('../controllers/razorpayController');
 
 
 // Get all items in the cart (protected)
@@ -59,5 +60,7 @@ router.delete('/delete/customer/:id', CustomerController.deleteCustomer);
 
 router.post('/customer/upgrade-points/:customerId', CustomerController.upgradeCustomerPoints);
 
+// Route for creating Razorpay order for customer upgrade points
+router.post('/customer/createRazorpayOrder', createRazorpayOrderForCustomerPoints);
 
 module.exports = router;
