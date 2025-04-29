@@ -73,7 +73,7 @@ const applyFarmerUpgradePlan = async (req, res) => {
 
     // Update only the shops related to the specific farmer
     const updatedShop = await Shop.findOneAndUpdate(
-      { farmerId },
+      { farmer_id: farmerId },
       { isFarmerUpgraded: true },
       { new: true }
     );
