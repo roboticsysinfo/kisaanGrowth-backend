@@ -13,27 +13,6 @@ const generateReferralCode = () => {
 };
 
 
-// Register Customer
-// const registerCustomer = async (req, res) => {
-
-//   const { name, email, password, phoneNumber, address } = req.body;
-
-//   try {
-//     const existingCustomer = await Customer.findOne({ email });
-//     if (existingCustomer) {
-//       return res.status(400).json({ message: 'Customer already exists' });
-//     }
-
-//     const customer = new Customer({ name, email, password, phoneNumber, address });
-//     await customer.save();
-
-//     res.status(201).json({ message: 'Customer registered successfully', customer });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
-
 const registerCustomer = async (req, res) => {
 
   const { name, email, password, phoneNumber, address, referralCode, agreedToPrivacyPolicyAndTermsAndConditions, agreementTimestamp } = req.body;

@@ -59,6 +59,7 @@ const farmerSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    
     todayReferralShareCount: {
       type: Number,
       default: 0,
