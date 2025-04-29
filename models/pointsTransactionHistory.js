@@ -25,7 +25,8 @@ const pointTransactionSchema = new mongoose.Schema({
       "daily_login",
       "self_register",
       "new_product_added",
-      "shop_review"
+      "shop_review",
+      "points_upgrade"
     ],
     required: true,
   },

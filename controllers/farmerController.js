@@ -542,7 +542,9 @@ const getFarmerDetailsById = async (req, res) => {
 
 };
 
+
 // Controller to update farmer's points after payment
+
 const upgradeFarmerPoints = async (req, res) => {
   try {
     const { upgradedpoints } = req.body;
@@ -562,11 +564,20 @@ const upgradeFarmerPoints = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Farmer not found' });
     }
 
+    // Create a point transaction entry
+    await PointTransaction.create({
+      farmer: farmerId,
+      points: upgradedpoints,
+      type: "points_upgrade",
+      description: `Congratulations! 🎉 Your points have been upgraded by ${upgradedpoints} points.`,
+    });
+
     return res.status(200).json({
       success: true,
       message: 'Points updated successfully',
       updatedPoints: updatedFarmer.points
     });
+
   } catch (error) {
     console.error("Error in upgradeFarmerPoints:", error);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
