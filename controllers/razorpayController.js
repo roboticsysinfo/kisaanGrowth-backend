@@ -49,32 +49,45 @@ const verifyPayment = async (req, res) => {
 };
 
 
+
 const applyFarmerUpgradePlan = async (req, res) => {
 
   const { farmerId, planName, planAmount, planValidityDays } = req.body;
 
+  // Check if all required fields are provided
   if (!farmerId || !planName || !planAmount || !planValidityDays) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
 
   try {
-    // Farmer upgrade
+    // Update the farmer document to mark them as upgraded
     const farmer = await Farmer.findByIdAndUpdate(farmerId, {
       isUpgraded: true,
       upgradedAt: new Date()
     }, { new: true });
 
-    // Related shops update
-    await Shop.updateMany(
+    if (!farmer) {
+      return res.status(404).json({ success: false, message: 'Farmer not found' });
+    }
+
+
+    // Update only the shops related to the specific farmer
+    const updatedShop = await Shop.findOneAndUpdate(
       { farmerId },
-      { isFarmerUpgraded: true }
+      { isFarmerUpgraded: true },
+      { new: true }
     );
 
-    // Plan expiry date
+    if (!updatedShop) {
+      return res.status(404).json({ success: false, message: 'Shop not found for this farmer' });
+    }
+
+
+    // Calculate the expiry date based on the plan validity in days
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + planValidityDays);
 
-    // History entry
+    // Save the upgrade plan history for the farmer
     const history = new FarmerUpgradePlanHistory({
       farmerId,
       planName,
@@ -86,12 +99,14 @@ const applyFarmerUpgradePlan = async (req, res) => {
 
     await history.save();
 
-    res.status(200).json({ success: true, message: "Upgrade applied successfully", farmer });
+    // Respond with success message
+    res.status(200).json({ success: true, message: "Upgrade applied successfully", farmer, updatedShop });
   } catch (err) {
     console.error("Error applying upgrade:", err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
 
 
 
