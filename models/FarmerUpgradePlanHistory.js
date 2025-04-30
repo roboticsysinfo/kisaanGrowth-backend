@@ -8,15 +8,15 @@ const farmerPlanHistorySchema = new mongoose.Schema({
     required: true,
   },
   planName: {
-    type: String, // Example: 'Gold Plan', 'Silver Plan'
+    type: String, 
     required: true,
   },
   planAmount: {
-    type: Number, // Kitne paise diye plan ke liye
+    type: Number, 
     required: true,
   },
   planValidityDays: {
-    type: Number, // Example: 30 days, 60 days
+    type: Number, 
     required: true,
   },
   purchasedAt: {
@@ -24,7 +24,7 @@ const farmerPlanHistorySchema = new mongoose.Schema({
     default: Date.now,
   },
   expiresAt: {
-    type: Date, // PurchasedAt + ValidityDays
+    type: Date, 
   }
 });
 

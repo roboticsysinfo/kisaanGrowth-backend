@@ -2,53 +2,28 @@ const Farmer = require("../models/Farmer")
 const Shop = require("../models/Shop")
 const FarmerUpgradePlanHistory = require('../models/FarmerUpgradePlanHistory');
 
-const purchasePlan = async (req, res) => {
 
-  const { farmerId, planName, planAmount, planValidityDays } = req.body;
+const getActiveFarmerPlanById = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
 
-  const farmer = await Farmer.findByIdAndUpdate(farmerId, {
-    isUpgraded: true,
-    upgradedAt: Date.now()
-  }, { new: true });
+    const activePlan = await FarmerUpgradePlanHistory.findOne({
+      farmerId,
+      expiresAt: { $gt: new Date() } // validity check
+    }).sort({ purchasedAt: -1 }); // latest plan first
 
-  await Shop.updateMany(
-    { farmerId: farmerId },
-    { isFarmerUpgraded: true }
-  );
+    if (!activePlan) {
+      return res.status(404).json({ message: 'No active plan found for this farmer.' });
+    }
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + planValidityDays);
+    return res.status(200).json(activePlan);
 
-  const planHistory = new FarmerUpgradePlanHistory({
-    farmerId,
-    planName,
-    planAmount,
-    planValidityDays,
-    purchasedAt: new Date(),
-    expiresAt: expiresAt
-  });
-
-  await planHistory.save();
-
-  res.status(200).json({
-    message: 'Plan purchased successfully',
-    farmer,
-    planHistory
-  });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
 };
 
-
-const getFarmerPlansbyId = async (req, res) => {
-    const { farmerId } = req.params;
-  
-    const plans = await FarmerPlanHistory.find({ farmerId }).sort({ purchasedAt: -1 });
-  
-    res.status(200).json(plans);
-  };
-  
-
-
-module.exports={
-    purchasePlan,
-    getFarmerPlansbyId
+module.exports = {
+  getActiveFarmerPlanById
 }

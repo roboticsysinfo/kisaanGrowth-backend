@@ -7,27 +7,35 @@ const Shop = require("../models/Shop");
 
 const createPlanOrder = async (req, res) => {
 
-  const { planName, planAmount } = req.body; // amount in rupees
+  const { planName, planAmount } = req.body;
 
   const options = {
-    amount: planAmount * 100, // Razorpay takes amount in paise (₹1 = 100 paise)
+    amount: Number(planAmount) * 100, // Ensure it's a number
     currency: "INR",
-    receipt: `receipt_order_${Math.random() * 1000}`,
+    receipt: `receipt_${Date.now()}`, // Avoid Math.random() with decimals
   };
+
+
+  console.log("🟢 Order Options:", options);
 
   try {
     const order = await razorpayInstance.orders.create(options);
+
+    console.warn("✅ Razorpay Order Created:", order);
+
     res.status(200).json({
       success: true,
       orderId: order.id,
       amount: order.amount,
-      currency: order.currency
+      currency: order.currency,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Unable to create order" });
+    console.error("🔴 Razorpay Error:", JSON.stringify(error, null, 2));
+    const message = error?.error?.description || "Unable to create order";
+    res.status(500).json({ success: false, message, fullError: error });
   }
 };
+
 
 
 const verifyPayment = async (req, res) => {
