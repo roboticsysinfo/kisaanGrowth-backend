@@ -45,7 +45,7 @@ router.post('/customer/referral-share', authorize(["customer"]), CustomerControl
 
 
 // get /api/customer/referral-details
-router.get('/customer/referral-details/:id', authorize(["admin"]), CustomerController.getCustomerReferralDetails);
+router.get('/customer/referral-details/:id', authorize(["customer", "admin"]), CustomerController.getCustomerReferralDetails);
 
 
 // get /api/customer/points transaction history

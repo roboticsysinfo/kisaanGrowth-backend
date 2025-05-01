@@ -59,7 +59,7 @@ router.post('/farmer/reward-daily', authorize(["farmer"]), rewardDailyPoints);
 router.post('/farmer/referral-share', authorize(["farmer"]), incrementReferralShare);
 
 // get /api/farmer/referral-details
-router.get('/farmer/referral-details/:id', authorize(["admin"]), getFarmerReferralDetails);
+router.get('/farmer/referral-details/:id', authorize(["farmer", "admin"]), getFarmerReferralDetails);
 
 // get /api/farmer/points transaction history
 router.get('/farmer/points-transaction/:farmerId', authorize(["admin", "farmer"]), getPointTransactions);
