@@ -27,6 +27,7 @@ const farmingTipsRoutes = require('./routes/farmingTipsRoutes')
 const familyFarmerRoutes = require('./routes/familyFarmerRoutes')
 const customerRedeemProductRoutes = require('./routes/customerRedeemProductRoutes')
 const CustomerHelpSupportRoutes = require('./routes/CustomerHelpSupportRoutes')
+const sitemapRoutes = require("./routes/sitemapRoutes")
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -58,6 +59,7 @@ app.use((req, res, next) => {
 });
 
 // ========= Routes=============
+app.use('/', sitemapRoutes)
 app.use('/api', stateCityRoutes)
 app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);

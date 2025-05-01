@@ -115,9 +115,8 @@ const getProductByFarmerId = async (req, res) => {
   
   try {
 
-    const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
+    const farmerId = req.user._id; 
 
-    // Find all products by the farmer's ID and populate the category name
     const products = await Product.find({ farmer_id: farmerId })
       .populate("category_id", "name"); // Populate only category_name
 

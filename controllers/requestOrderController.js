@@ -63,6 +63,7 @@ const getFarmerRequests = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
+    
     let requests;
 
     if (req.user.role === "admin") {
@@ -90,6 +91,7 @@ const getFarmerRequests = async (req, res) => {
         status: request.status, // ✅ Status from request
       }));
     } else {
+
       // Farmers can see only their own requests
       requests = await RequestOrder.find({ farmer_id: req.user._id })
         .populate("customer_id", "name phoneNumber")

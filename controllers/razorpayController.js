@@ -6,22 +6,27 @@ const Shop = require("../models/Shop");
 
 
 const createPlanOrder = async (req, res) => {
-
-  const { planName, planAmount } = req.body;
-
-  const options = {
-    amount: Number(planAmount) * 100, // Ensure it's a number
-    currency: "INR",
-    receipt: `receipt_${Date.now()}`, // Avoid Math.random() with decimals
-  };
-
-
-  console.log("🟢 Order Options:", options);
-
   try {
+    const { planName, planAmount } = req.body;
+
+    if (!planName || !planAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Plan name and amount are required",
+      });
+    }
+
+    const options = {
+      amount: Math.round(Number(planAmount) * 100), // convert ₹ to paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    console.log("🟢 Creating Razorpay order with:", options);
+
     const order = await razorpayInstance.orders.create(options);
 
-    console.warn("✅ Razorpay Order Created:", order);
+    console.log("✅ Razorpay Order Created:", order);
 
     res.status(200).json({
       success: true,
@@ -30,15 +35,18 @@ const createPlanOrder = async (req, res) => {
       currency: order.currency,
     });
   } catch (error) {
-    console.error("🔴 Razorpay Error:", JSON.stringify(error, null, 2));
-    const message = error?.error?.description || "Unable to create order";
-    res.status(500).json({ success: false, message, fullError: error });
+    console.error("🔴 Razorpay Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error?.error?.description || "Unable to create Razorpay order",
+      fullError: error,
+    });
   }
 };
 
 
-
 const verifyPayment = async (req, res) => {
+  
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
