@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 });
 
 // ========= Routes=============
-app.use('/', sitemapRoutes)
+app.use('/api', sitemapRoutes)
 app.use('/api', stateCityRoutes)
 app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);
