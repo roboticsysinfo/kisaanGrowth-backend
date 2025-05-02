@@ -248,33 +248,75 @@ const getShopById = async (req, res) => {
 };
 
 
+// const getProductsByShopId = async (req, res) => {
+//   try {
+//     const { shopId } = req.params;
+
+//     if (!mongoose.Types.ObjectId.isValid(shopId)) {
+//       return res.status(400).json({ message: "Invalid Shop ID" });
+//     }
+
+//     const products = await Product.find({ shop_id: shopId })
+//       .populate("shop_id", "shop_name") // Shop model se shop_name fetch karega
+//       .select("name price_per_unit quantity unit harvest_date product_image");
+//     // Sirf required fields return karega
+
+
+//     if (!products.length) {
+//       return res.status(404).json({ message: "No products found for this shop" });
+//     }
+
+//     res.status(200).json(products);
+//   } catch (error) {
+//     console.error("Error fetching products by shop ID:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+
+// Search shops by city name or shop name
+
 const getProductsByShopId = async (req, res) => {
   try {
     const { shopId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(shopId)) {
-      return res.status(400).json({ message: "Invalid Shop ID" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Shop ID"
+      });
     }
 
     const products = await Product.find({ shop_id: shopId })
       .populate("shop_id", "shop_name") // Shop model se shop_name fetch karega
       .select("name price_per_unit quantity unit harvest_date product_image");
-    // Sirf required fields return karega
 
-
+    // If no products are found, return a message with success = false
     if (!products.length) {
-      return res.status(404).json({ message: "No products found for this shop" });
+      return res.status(404).json({
+        success: false,
+        message: "No products found for this shop"
+      });
     }
 
-    res.status(200).json(products);
+    // Return products with success = true
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      data: products
+    });
   } catch (error) {
     console.error("Error fetching products by shop ID:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
   }
 };
 
 
-// Search shops by city name or shop name
+
+
 const searchShops = async (req, res) => {
   try {
     const { keyword } = req.query;
