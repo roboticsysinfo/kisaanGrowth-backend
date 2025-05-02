@@ -220,6 +220,7 @@ const getShopsByCategory = async (req, res) => {
 
 // Get Shop by Shop ID
 const getShopById = async (req, res) => {
+  
   try {
 
     const { id } = req.params;
@@ -230,10 +231,7 @@ const getShopById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Shop ID is required" });
     }
 
-
-    console.time("fetchShop");
     const shop = await Shop.findById(id).populate("farmer_id").lean();
-    console.timeEnd("fetchShop");
 
     if (!shop) {
       console.error("🚨 Shop not found for ID:", id);
@@ -245,6 +243,7 @@ const getShopById = async (req, res) => {
     console.error("❌ Error fetching shop:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
+
 };
 
 
@@ -275,6 +274,7 @@ const getShopById = async (req, res) => {
 
 
 // Search shops by city name or shop name
+
 
 const getProductsByShopId = async (req, res) => {
   try {
@@ -313,8 +313,6 @@ const getProductsByShopId = async (req, res) => {
     });
   }
 };
-
-
 
 
 const searchShops = async (req, res) => {

@@ -112,10 +112,10 @@ const getProductById = async (req, res) => {
 
 
 const getProductByFarmerId = async (req, res) => {
-  
+
   try {
 
-    const farmerId = req.user._id; 
+    const farmerId = req.user._id;
 
     const products = await Product.find({ farmer_id: farmerId })
       .populate("category_id", "name"); // Populate only category_name
@@ -186,9 +186,10 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+
 // Get products by subcategory ID
 const getProductsByCategory = async (req, res) => {
-  
+
   try {
 
     const { categoryId } = req.params;
@@ -211,6 +212,37 @@ const getProductsByCategory = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 
+};
+
+
+// Get products by category ID and city_district
+const getProductsByCategoryLocation = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { city } = req.query; // "Karnal" etc.
+
+    // Populate shop and filter by category and location
+    const products = await Product.find({ category_id: categoryId })
+      .populate('farmer_id')
+      .populate('shop_id')
+      .populate('category_id');
+
+    // Filter products by shop location
+    const filteredProducts = products.filter(p =>
+      p.shop_id && p.shop_id.city_district && p.shop_id.city_district.toLowerCase() === city.toLowerCase()
+    );
+
+    if (!filteredProducts || filteredProducts.length === 0) {
+      return res.status(404).json({ message: 'No products found for this Category and Location' });
+    }
+
+    res.status(200).json({
+      message: 'Products retrieved successfully',
+      products: filteredProducts,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 
@@ -247,5 +279,6 @@ module.exports = {
   deleteProduct,
   getProductsByCategory,
   getProductByFarmerId,
-  getProductsByCity
+  getProductsByCity,
+  getProductsByCategoryLocation
 };
