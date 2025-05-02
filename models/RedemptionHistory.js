@@ -8,7 +8,6 @@ const redemptionHistorySchema = new mongoose.Schema({
     ref: 'Farmer',
     required: true
   },
-
   
   redeemProductId: {
     type: mongoose.Schema.Types.ObjectId,
