@@ -48,11 +48,17 @@ exports.updateDeliveryPreference = async (req, res) => {
   }
 };
 
+
 // ✅ Get Farmer's Delivery Preference
 exports.getDeliveryPreference = async (req, res) => {
   try {
     const { farmer_id } = req.params;
+
+    console.warn("farmer_id", farmer_id)
+
     const preference = await DeliveryPreference.findOne({ farmer_id });
+
+    console.warn("preference", preference)
 
     if (!preference) {
       return res.status(404).json({ message: "No delivery preference found for this farmer" });

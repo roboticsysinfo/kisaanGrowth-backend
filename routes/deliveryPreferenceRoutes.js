@@ -14,6 +14,6 @@ router.post("/delivery-preference/add", addDeliveryPreference);
 router.put("/delivery-preference/update/:farmer_id", updateDeliveryPreference);
 
 // Get Farmer's Delivery Preference
-router.get("//delivery-preference/fetch/:farmer_id", getDeliveryPreference);
+router.get("/delivery-preference/fetch/:farmer_id", getDeliveryPreference);
 
 module.exports = router;
