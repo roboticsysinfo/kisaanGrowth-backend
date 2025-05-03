@@ -1,6 +1,8 @@
 const Farmer = require('../models/Farmer');
+const pointsTransactionHistory = require('../models/pointsTransactionHistory');
 const RedeemProduct = require('../models/RedeemProduct');
 const RedemptionHistory = require('../models/RedemptionHistory');
+
 
 
 // Add redeem product
@@ -81,15 +83,16 @@ const deleteRedeemProduct = async (req, res) => {
     }
 };
 
-
 // Redeem Product farmer
 const redeemProduct = async (req, res) => {
+
     const { farmerId, redeemProductId } = req.body;
-  
+
     try {
+
       const farmer = await Farmer.findById(farmerId);
       const product = await RedeemProduct.findById(redeemProductId);
-  
+
       if (!farmer || !product) {
         return res.status(404).json({ message: 'Farmer or Product not found' });
       }
@@ -101,7 +104,7 @@ const redeemProduct = async (req, res) => {
       // Deduct points
       farmer.points -= product.requiredPoints;
       await farmer.save();
-  
+
       // Save redemption history
       const redemption = new RedemptionHistory({
         farmerId: farmer._id,
@@ -109,7 +112,7 @@ const redeemProduct = async (req, res) => {
         pointsDeducted: product.requiredPoints
       });
       await redemption.save();
-  
+
       // ✅ Add points transaction
       await pointsTransactionHistory.create({
         farmer: farmer._id,
@@ -117,7 +120,7 @@ const redeemProduct = async (req, res) => {
         type: "redeem",
         description: `Redeemed product: ${product.name}`
       });
-  
+      
       res.status(200).json({ message: 'Product redeemed successfully', redemption });
     } catch (err) {
       res.status(500).json({ message: 'Something went wrong', error: err.message });

@@ -224,7 +224,6 @@ const updateFarmerById = async (req, res) => {
 };
 
 
-
 // Request KYC verification
 const requestKYC = async (req, res) => {
   try {
@@ -249,7 +248,6 @@ const requestKYC = async (req, res) => {
   }
 };
 
-
 const getAllFarmers = async (req, res) => {
   try {
     const farmers = await Farmer.find({}, '-password')
@@ -263,7 +261,6 @@ const getAllFarmers = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 
 
 const sendOTPToFarmer = async (req, res) => {
@@ -295,7 +292,6 @@ const sendOTPToFarmer = async (req, res) => {
   }
 
 };
-
 
 const farmerLoginWithOTP = async (req, res) => {
   const { phoneNumber, otp } = req.body;
