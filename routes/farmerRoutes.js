@@ -7,6 +7,7 @@ const multer = require("multer");
 const path = require("path");
 const { createRazorpayOrderForFarmerPoints, applyFarmerUpgradePlan, createPlanOrder } = require('../controllers/razorpayController');
 const { getActiveFarmerPlanById } = require('../controllers/FarmerPlanController');
+const { getRedeemProductsByFarmerId } = require('../controllers/rcProductController');
 
 // Setup multer storage
 const storage = multer.diskStorage({
@@ -83,6 +84,10 @@ router.post('/farmer/createRazorpayOrder',  authorize(["farmer"]), createRazorpa
 
 // upgrade farmer plan api
 router.post('/farmer/applyUpgradePlan', authorize(["farmer"]), applyFarmerUpgradePlan);
+
+
+// Get redemption history for a specific customer by farmer id
+router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemProductsByFarmerId);
 
 
 module.exports = router;

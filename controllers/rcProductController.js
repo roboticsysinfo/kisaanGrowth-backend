@@ -2,7 +2,8 @@
 const Customer = require("../models/Customer")
 const CustomerPointsTransactions = require('../models/customerPointsTransactions');
 const CustomerRedeemProduct = require("../models/CustomerRedeemProduct")
-const CustomerRedemptionHistory = require("../models/CustomerRedeemptionHistory")
+const CustomerRedemptionHistory = require("../models/CustomerRedeemptionHistory");
+const RedemptionHistory = require("../models/RedemptionHistory");
 
 // Add redeem product
 
@@ -159,7 +160,7 @@ const getRedeemProductHistoryCustomer = async (req, res) => {
 
 
 
-// Get redemption history by customer ID
+// Get customer redemption history by customer ID
 const getRedeemProductsByCustomerId = async (req, res) => {
     const { customerId } = req.params;
 
@@ -188,6 +189,36 @@ const getRedeemProductsByCustomerId = async (req, res) => {
 };
 
 
+
+// Get farmer redemption history by farmer ID
+const getRedeemProductsByFarmerId = async (req, res) => {
+    const { farmerId } = req.params;
+
+    try {
+        const history = await RedemptionHistory.find({ farmerId: farmerId })
+            .sort({ redeemedAt: -1 })
+            .populate({
+                path: 'redeemProductId',
+                select: 'name r_product_img requiredPoints description'
+            });
+
+        const formattedHistory = history.map(entry => ({
+            redeemProductId: entry.redeemProductId?._id,
+            redeemProductName: entry.redeemProductId?.name,
+            productImg: entry.redeemProductId?.r_product_img,
+            requiredPoints: entry.redeemProductId?.requiredPoints,
+            description: entry.redeemProductId?.description,
+            pointsDeducted: entry.pointsDeducted,
+            redeemedAt: entry.redeemedAt
+        }));
+
+        res.status(200).json(formattedHistory);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
 module.exports = {
     addRedeemProductCustomer,
     getAllRedeemProductsCustomer,
@@ -195,7 +226,8 @@ module.exports = {
     deleteCustomerRedeemProduct,
     redeemProductCustomer,
     getRedeemProductHistoryCustomer,
-    getRedeemProductsByCustomerId
+    getRedeemProductsByCustomerId,
+    getRedeemProductsByFarmerId
 };
 
 
