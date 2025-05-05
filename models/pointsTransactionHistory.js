@@ -1,20 +1,13 @@
-// models/PointTransaction.js
-
-const mongoose = require("mongoose");
-
 const pointTransactionSchema = new mongoose.Schema({
-
   farmer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Farmer",
     required: true,
   },
-
   points: {
     type: Number,
     required: true,
   },
-
   type: {
     type: String,
     enum: [
@@ -30,18 +23,20 @@ const pointTransactionSchema = new mongoose.Schema({
     ],
     required: true,
   },
-
   description: {
     type: String,
     default: "",
   },
-
+  paymentId: {
+    type: String,
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["success", "failed", "pending"],
+    default: "success",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-
-
 });
-
-module.exports = mongoose.model("PointTransaction", pointTransactionSchema);
