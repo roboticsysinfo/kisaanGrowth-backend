@@ -1,3 +1,7 @@
+// models/PointTransaction.js
+
+const mongoose = require("mongoose");
+
 const pointTransactionSchema = new mongoose.Schema({
   farmer: {
     type: mongoose.Schema.Types.ObjectId,
@@ -40,3 +44,7 @@ const pointTransactionSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+
+
+module.exports = mongoose.model("PointTransaction", pointTransactionSchema);
