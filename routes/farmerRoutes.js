@@ -6,7 +6,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const { createRazorpayOrderForFarmerPoints, applyFarmerUpgradePlan, createPlanOrder } = require('../controllers/razorpayController');
-const { getActiveFarmerPlanById } = require('../controllers/FarmerPlanController');
+const { getActiveFarmerPlanById, getAllFarmerPlans } = require('../controllers/FarmerPlanController');
 const { getRedeemProductsByFarmerId } = require('../controllers/rcProductController');
 
 // Setup multer storage
@@ -103,6 +103,9 @@ router.post('/farmer/applyUpgradePlan', authorize(["farmer"]), applyFarmerUpgrad
 
 // Get redemption history for a specific customer by farmer id
 router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemProductsByFarmerId);
+
+
+router.get('/farmer/get/allplans', getAllFarmerPlans);
 
 
 module.exports = router;
