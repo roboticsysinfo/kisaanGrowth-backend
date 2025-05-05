@@ -13,7 +13,6 @@ const generateReferralCode = () => {
 
 
 // Farmer Registration Controller
-
 const registerFarmer = async (req, res) => {
   const {
     name,
@@ -112,7 +111,6 @@ const registerFarmer = async (req, res) => {
 };
 
 
-
 const getFarmerById = async (req, res) => {
 
   try {
@@ -150,7 +148,6 @@ const getFarmerByIdForAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 // Farmer Login
@@ -445,22 +442,36 @@ const incrementReferralShare = async (req, res) => {
 
 // Get Referral Details of Single Farmer
 
+
 const getFarmerReferralDetails = async (req, res) => {
   try {
-
     const farmerId = req.params.id;
 
     // 1. Find the main farmer
-    const farmer = await Farmer.findById(farmerId)
-      .lean();
+    const farmer = await Farmer.findById(farmerId).lean();
     if (!farmer) return res.status(404).json({ message: "Farmer not found" });
 
     // 2. Find all referred farmers
-    const referredFarmers = await Farmer.find({ referredBy: farmerId })
-      .select("name referralCode")
+    const referredFarmersRaw = await Farmer.find({ referredBy: farmerId })
+      .select("name referralCode createdAt")
       .lean();
 
-    // 3. Prepare response
+    // 3. Format referred farmers data with date + time
+    const referredFarmers = referredFarmersRaw.map(f => ({
+      name: f.name,
+      referralCode: f.referralCode,
+      createdAt: f.createdAt,
+      createdAtFormatted: new Date(f.createdAt).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      })
+    }));
+
+    // 4. Prepare and send response
     res.status(200).json({
       referralCode: farmer.referralCode,
       referralShares: farmer.referralShares,
@@ -471,8 +482,8 @@ const getFarmerReferralDetails = async (req, res) => {
     console.error("Error fetching referral details:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
 
-}
 
 
 // farmer points transactions
