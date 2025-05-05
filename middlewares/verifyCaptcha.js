@@ -19,7 +19,7 @@ const verifyCaptcha = async (req, res, next) => {
       null,
       {
         params: {
-          secret: secretKey,
+          secret: "6LfmwC4rAAAAAG9NsB4uANZMvwux0cSY92iHhSPj",
           response: captchaValue,
         },
       }
