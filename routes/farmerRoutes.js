@@ -105,7 +105,7 @@ router.post('/farmer/applyUpgradePlan', authorize(["farmer"]), applyFarmerUpgrad
 router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemProductsByFarmerId);
 
 
-router.get('/farmer/get/allplans', getAllFarmerPlans);
+router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
 
 
 module.exports = router;
