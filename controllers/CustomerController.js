@@ -368,22 +368,40 @@ const incrementReferralShareCustomer = async (req, res) => {
 
 
 // Get Referral Details of Single Customer
+
 const getCustomerReferralDetails = async (req, res) => {
+
   try {
 
     const customerId = req.params.id;
 
     // 1. Find the main Customer
-    const customer = await Customer.findById(customerId)
-      .lean();
-    if (!customer) return res.status(404).json({ message: "Farmer not found" });
+    const customer = await Customer.findById(customerId).lean();
+    if (!customer) return res.status(404).json({ message: "Customer not found" });
 
-    // 2. Find all referred farmers
-    const referredCustomer = await Customer.find({ referredBy: customerId })
-      .select("name referralCode")
+
+    // 2. Find all referred customers
+    const referredCustomerRaw = await Customer.find({ referredBy: customerId })
+      .select("name referralCode createdAt")
       .lean();
-   
-    // 3. Prepare response
+
+
+    // 3. Format referred customers data with date + time
+    const referredCustomer = referredCustomerRaw.map(c => ({
+      name: c.name,
+      referralCode: c.referralCode,
+      createdAt: c.createdAt,
+      createdAtFormatted: new Date(c.createdAt).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      })
+    }));
+
+    // 4. Prepare and send response
     res.status(200).json({
       referralCode: customer.referralCode,
       referralShares: customer.referralShares,
@@ -394,8 +412,11 @@ const getCustomerReferralDetails = async (req, res) => {
     console.error("Error fetching referral details:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
 
-}
+
+
+
 
 // Customer points transactions
 const getCustomerPointsTransactions = async (req, res) => {
