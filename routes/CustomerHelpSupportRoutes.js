@@ -5,12 +5,13 @@ const {
   updateHelpSupport,
   deleteHelpSupport
 } = require("../controllers/customerHelpSupportController");
-const { authorize } = require("../middlewares/authMiddleware")
+const { authorize } = require("../middlewares/authMiddleware");
+const verifyCaptcha = require("../middlewares/verifyCaptcha");
 
 const router = express.Router();
 
 // POST - Customer submits help request
-router.post("/create/help-support", authorize(["customer"]), createHelpSupport);
+router.post("/create/help-support", verifyCaptcha, authorize(["customer"]), createHelpSupport);
 
 // GET - Admin sees all help requests
 router.get("/get/help-support", authorize(["admin"]), getAllHelpSupport);

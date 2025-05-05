@@ -10,6 +10,7 @@ const verifyCaptcha = async (req, res, next) => {
   }
 
   try {
+    
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
     console.log("secretKey middleware", secretKey)
@@ -36,5 +37,6 @@ const verifyCaptcha = async (req, res, next) => {
     return res.status(500).json({ message: "Server Error | Please Try again Later" });
   }
 };
+
 
 module.exports = verifyCaptcha;
