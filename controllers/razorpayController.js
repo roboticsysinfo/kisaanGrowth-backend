@@ -66,17 +66,77 @@ const verifyPayment = async (req, res) => {
 
 
 
+// const applyFarmerUpgradePlan = async (req, res) => {
+
+//   const { farmerId, planName, planAmount, planValidityDays } = req.body;
+
+//   // Check if all required fields are provided
+//   if (!farmerId || !planName || !planAmount || !planValidityDays) {
+//     return res.status(400).json({ success: false, message: 'Missing required fields' });
+//   }
+
+//   try {
+//     // Update the farmer document to mark them as upgraded
+//     const farmer = await Farmer.findByIdAndUpdate(farmerId, {
+//       isUpgraded: true,
+//       upgradedAt: new Date()
+//     }, { new: true });
+
+//     if (!farmer) {
+//       return res.status(404).json({ success: false, message: 'Farmer not found' });
+//     }
+
+
+//     // Update only the shops related to the specific farmer
+//     const updatedShop = await Shop.findOneAndUpdate(
+//       { farmer_id: farmerId },
+//       { isFarmerUpgraded: true },
+//       { new: true }
+//     );
+
+//     if (!updatedShop) {
+//       return res.status(404).json({ success: false, message: 'Shop not found for this farmer' });
+//     }
+
+
+//     // Calculate the expiry date based on the plan validity in days
+//     const expiresAt = new Date();
+//     expiresAt.setDate(expiresAt.getDate() + planValidityDays);
+
+//     // Save the upgrade plan history for the farmer
+//     const history = new FarmerUpgradePlanHistory({
+//       farmerId,
+//       planName,
+//       planAmount,
+//       planValidityDays,
+//       purchasedAt: new Date(),
+//       expiresAt
+//     });
+
+//     await history.save();
+
+//     // Respond with success message
+//     res.status(200).json({ success: true, message: "Upgrade applied successfully", farmer, updatedShop });
+//   } catch (err) {
+//     console.error("Error applying upgrade:", err);
+//     res.status(500).json({ success: false, message: 'Internal server error' });
+//   }
+// };
+
+
+
+
+// for upgrade farmer points create order
+
 const applyFarmerUpgradePlan = async (req, res) => {
+  
+  const { farmerId, planName, planAmount, planValidityDays, paymentId, orderId, paymentStatus } = req.body;
 
-  const { farmerId, planName, planAmount, planValidityDays } = req.body;
-
-  // Check if all required fields are provided
-  if (!farmerId || !planName || !planAmount || !planValidityDays) {
+  if (!farmerId || !planName || !planAmount || !planValidityDays || !paymentId || !paymentStatus) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
 
   try {
-    // Update the farmer document to mark them as upgraded
     const farmer = await Farmer.findByIdAndUpdate(farmerId, {
       isUpgraded: true,
       upgradedAt: new Date()
@@ -86,8 +146,6 @@ const applyFarmerUpgradePlan = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Farmer not found' });
     }
 
-
-    // Update only the shops related to the specific farmer
     const updatedShop = await Shop.findOneAndUpdate(
       { farmer_id: farmerId },
       { isFarmerUpgraded: true },
@@ -98,24 +156,23 @@ const applyFarmerUpgradePlan = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Shop not found for this farmer' });
     }
 
-
-    // Calculate the expiry date based on the plan validity in days
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + planValidityDays);
 
-    // Save the upgrade plan history for the farmer
     const history = new FarmerUpgradePlanHistory({
       farmerId,
       planName,
       planAmount,
       planValidityDays,
       purchasedAt: new Date(),
-      expiresAt
+      expiresAt,
+      paymentId,
+      orderId,
+      paymentStatus
     });
 
     await history.save();
 
-    // Respond with success message
     res.status(200).json({ success: true, message: "Upgrade applied successfully", farmer, updatedShop });
   } catch (err) {
     console.error("Error applying upgrade:", err);
@@ -126,7 +183,7 @@ const applyFarmerUpgradePlan = async (req, res) => {
 
 
 
-// for upgrade farmer points create order
+
 const createRazorpayOrderForFarmerPoints = async (req, res) => {
   const { amount } = req.body;
 
