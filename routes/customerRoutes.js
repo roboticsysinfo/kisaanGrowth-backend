@@ -5,10 +5,11 @@ const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const { getProductsByCity } = require('../controllers/productController');
 const { createRazorpayOrderForCustomerPoints } = require('../controllers/razorpayController');
+const verifyCaptcha = require('../middlewares/verifyCaptcha');
 
 
 // Get all items in the cart (protected)
-router.post('/auth/customer_login', CustomerController.loginCustomer);
+router.post('/auth/customer_login', verifyCaptcha, CustomerController.loginCustomer);
 
 
 // Add a product to the cart (protected)
