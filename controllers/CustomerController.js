@@ -474,11 +474,51 @@ const deleteCustomer = async (req, res) => {
 
 // Controller to update customer's points after payment
 
+// const upgradeCustomerPoints = async (req, res) => {
+
+//   try {
+
+//     const { upgradedpoints } = req.body;
+//     const { customerId } = req.params;
+
+//     if (!upgradedpoints || !customerId) {
+//       return res.status(400).json({ success: false, message: 'Points and Customer Id are required' });
+//     }
+
+//     const updatedCustomer = await Customer.findByIdAndUpdate(
+//       customerId,
+//       { $inc: { points: upgradedpoints } },
+//       { new: true }
+//     );
+
+//     if (!updatedCustomer) {
+//       return res.status(404).json({ success: false, message: 'Customer not found' });
+//     }
+
+//     // Create a point transaction entry
+//     await CustomerPointsTransactions.create({
+//       customer: customerId,
+//       points: upgradedpoints,
+//       type: "points_upgrade",
+//       description: `Congratulations! 🎉 Your points have been upgraded by ${upgradedpoints} points.`,
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       message: 'Points updated successfully',
+//       updatedPoints: updatedCustomer.points
+//     });
+
+//   } catch (error) {
+//     console.error("Error in Upgrade Customer Points:", error);
+//     return res.status(500).json({ success: false, message: 'Internal Server Error' });
+//   }
+// };
+
+
 const upgradeCustomerPoints = async (req, res) => {
-
   try {
-
-    const { upgradedpoints } = req.body;
+    const { upgradedpoints, paymentId, paymentStatus } = req.body;
     const { customerId } = req.params;
 
     if (!upgradedpoints || !customerId) {
@@ -495,12 +535,13 @@ const upgradeCustomerPoints = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
 
-    // Create a point transaction entry
     await CustomerPointsTransactions.create({
       customer: customerId,
       points: upgradedpoints,
       type: "points_upgrade",
       description: `Congratulations! 🎉 Your points have been upgraded by ${upgradedpoints} points.`,
+      paymentId: paymentId || null,
+      paymentStatus: paymentStatus || "success",
     });
 
     return res.status(200).json({
@@ -514,6 +555,7 @@ const upgradeCustomerPoints = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
+
 
 
 module.exports = {
