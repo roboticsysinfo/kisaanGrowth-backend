@@ -382,10 +382,12 @@ const getCustomerReferralDetails = async (req, res) => {
 
     // 2. Find all referred customers
     const referredCustomerRaw = await Customer.find({ referredBy: customerId })
+
       .select("name referralCode createdAt")
       .lean();
 
     // 3. Format referred customers data with date + time
+
     const referredCustomer = referredCustomerRaw.map(c => ({
       name: c.name,
       referralCode: c.referralCode,
@@ -412,9 +414,6 @@ const getCustomerReferralDetails = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-
 
 
 // Customer points transactions
