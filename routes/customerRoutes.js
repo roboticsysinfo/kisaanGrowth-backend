@@ -9,7 +9,7 @@ const verifyCaptcha = require('../middlewares/verifyCaptcha');
 
 
 // Get all items in the cart (protected)
-router.post('/auth/customer_login', verifyCaptcha, CustomerController.loginCustomer);
+router.post('/auth/customer_login', CustomerController.loginCustomer);
 
 
 // Add a product to the cart (protected)

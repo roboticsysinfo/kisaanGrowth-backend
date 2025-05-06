@@ -4,6 +4,9 @@ const Product = require('../models/Product');
 const Farmer = require('../models/Farmer');
 const generateToken = require('../utils/jwtGenerator');
 const CustomerPointsTransactions = require('../models/customerPointsTransactions');
+const CustomerOTPModel = require("../models/CustomerOTPModel")
+const axios = require("axios")
+require('dotenv').config();
 
 
 // 🔐 Helper to generate referral code like "KGC123456"
@@ -19,7 +22,7 @@ const registerCustomer = async (req, res) => {
 
 
   try {
-    
+
     // Check existing
     const existingCustomer = await Customer.findOne({
       $or: [
@@ -52,7 +55,7 @@ const registerCustomer = async (req, res) => {
       referralCode: generateReferralCode(),
       referredBy: referringCustomer ? referringCustomer._id : null,
       points: 0,
-      agreedToPrivacyPolicyAndTermsAndConditions, 
+      agreedToPrivacyPolicyAndTermsAndConditions,
       agreementTimestamp
     });
 
@@ -257,6 +260,114 @@ const verifyCustomerOtp = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+
+// Send OTP to Customer Phone Number with FAST 2 SMS
+
+// const sendOtpToPhone = async (req, res) => {
+
+//   const { phoneNumber } = req.body;
+
+//   if (!phoneNumber) {
+//     return res.status(400).json({ message: "Phone number is required" });
+//   }
+
+//   const otp = Math.floor(1000 + Math.random() * 9000).toString(); // ✅ 4-digit OTP
+
+//   try {
+
+//     // Save OTP to DB with 1 min expiry
+//     await CustomerOTPModel.create({ phone: phoneNumber, otp });
+
+//     // Send OTP using Fast2SMS
+//     const response = await axios.post(
+//       "https://www.fast2sms.com/dev/bulkV2",
+//       {
+//         variables_values: otp,
+//         route: "otp",
+//         numbers: phoneNumber,
+//       },
+//       {
+//         headers: {
+//           Authorization: process.env.FAST2SMS_API_KEY,
+//         },
+//       }
+//     );
+
+//     return res.status(200).json({ message: "OTP sent successfully" });
+//   } catch (err) {
+//     console.error("Error sending OTP:", err.message);
+//     return res.status(500).json({ message: "Failed to send OTP" });
+//   }
+
+// };
+
+
+// Send OTP to Customer Phone Number with FAST 2 SMS end here
+
+// OTP Verify Real with FAST 2 SMS
+
+// const verifyCustomerOtp = async (req, res) => {
+//   const { phoneNumber, otp } = req.body;
+
+//   if (!phoneNumber || !otp) {
+//     return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
+//   }
+
+//   try {
+//     // Find latest OTP for this phone
+//     const existingOtp = await CustomerOTPModel.findOne({ phone: phoneNumber }).sort({ createdAt: -1 });
+
+//     if (!existingOtp || existingOtp.otp !== otp) {
+//       return res.status(401).json({ success: false, message: 'Invalid or expired OTP' });
+//     }
+
+//     // OTP is valid — delete it (optional but good practice)
+//     await CustomerOTPModel.deleteMany({ phone: phoneNumber });
+
+//     const user = await Customer.findOne({ phoneNumber });
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+//     }
+
+//     // ✅ Daily Login Logic
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const alreadyGiven = await CustomerPointsTransactions.findOne({
+//       customer: user._id,
+//       type: "daily_login",
+//       createdAt: { $gte: today },
+//     });
+
+//     if (!alreadyGiven) {
+//       const points = 1;
+//       user.points += points;
+//       await user.save();
+
+//       await CustomerPointsTransactions.create({
+//         customer: user._id,
+//         points,
+//         type: "daily_login",
+//         description: "Daily login reward",
+//       });
+//     }
+
+//     const token = generateToken(user._id, 'customer');
+
+//     res.json({
+//       success: true,
+//       message: 'OTP verified successfully. Logged in!',
+//       token,
+//       user
+//     });
+
+//   } catch (error) {
+//     console.error("OTP Verify Error:", error.message);
+//     res.status(500).json({ success: false, message: 'Server error', error: error.message });
+//   }
+// };
+
 
 
 
@@ -467,7 +578,6 @@ const deleteCustomer = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 // Controller to update customer's points after payment
