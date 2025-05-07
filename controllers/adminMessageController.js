@@ -2,52 +2,55 @@ const AdminMessage = require("../models/AdminMessage");
 
 // ✅ Create Message
 const createMessage = async (req, res) => {
-
   try {
+    const { title, message, type } = req.body;
 
-    const { title, message } = req.body;
-
-    if (!title || !message) {
-      return res.status(400).json({ message: "Title and message are required" });
+    if (!title || !message || !type) {
+      return res.status(400).json({ message: "Title, message, and type are required" });
     }
 
-    const newMessage = new AdminMessage({ title, message });
+    if (!['farmer', 'customer'].includes(type)) {
+      return res.status(400).json({ message: "Type must be either 'farmer' or 'customer'" });
+    }
+
+    const newMessage = new AdminMessage({ title, message, type });
     await newMessage.save();
 
     res.status(201).json({ message: "Message created successfully" });
   } catch (err) {
-
     console.error("Error creating message:", err);
     res.status(500).json({ message: "Server error" });
-
   }
-
 };
 
-
-// ✅ Get All Messages
+// ✅ Get All Messages (optionally filter by type)
 const getAllMessages = async (req, res) => {
   try {
-    
-    const messages = await AdminMessage.find().sort({ createdAt: -1 });
+    const { type } = req.query;
+
+    const filter = type && ['farmer', 'customer'].includes(type) ? { type } : {};
+
+    const messages = await AdminMessage.find(filter).sort({ createdAt: -1 });
     res.status(200).json(messages);
   } catch (err) {
     console.error("Error fetching messages:", err);
     res.status(500).json({ message: "Server error" });
   }
-
 };
-
 
 // ✅ Update Message
 const updateMessage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, message } = req.body;
+    const { title, message, type } = req.body;
+
+    if (type && !['farmer', 'customer'].includes(type)) {
+      return res.status(400).json({ message: "Type must be either 'farmer' or 'customer'" });
+    }
 
     const updated = await AdminMessage.findByIdAndUpdate(
       id,
-      { title, message },
+      { title, message, type },
       { new: true }
     );
 
@@ -55,13 +58,12 @@ const updateMessage = async (req, res) => {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    res.status(200).json({ message: "Message updated successfully" });
+    res.status(200).json({ message: "Message updated successfully", data: updated });
   } catch (err) {
     console.error("Error updating message:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // ✅ Delete Message
 const deleteMessage = async (req, res) => {
