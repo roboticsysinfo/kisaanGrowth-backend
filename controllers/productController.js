@@ -7,6 +7,76 @@ const fs = require("fs");
 
 // Create a new product
 
+const createProduct = async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(400).json({ message: 'Farmer ID is required' });
+    }
+
+    const farmerId = req.user._id;
+    let shop = await Shop.findOne({ farmer_id: farmerId });
+
+    if (!shop) {
+      shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
+    }
+
+    const newProductData = {
+      ...req.body,
+      farmer_id: farmerId,
+      shop_id: shop._id,
+    };
+
+    // 🔁 Image upload to ImageKit
+    if (req.file) {
+      const filePath = req.file.path;
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(400).json({ message: "Uploaded file not found" });
+      }
+
+      const fileBuffer = fs.readFileSync(filePath);
+
+      const uploadedImage = await imagekit.upload({
+        file: fileBuffer,
+        fileName: req.file.originalname,
+        folder: "/products",
+      });
+
+      newProductData.product_image = uploadedImage.url;
+
+      // ✅ Safely delete temp file
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    const newProduct = new Product(newProductData);
+    await newProduct.save();
+
+    await Farmer.findByIdAndUpdate(farmerId, { $inc: { points: 2 } });
+
+    await PointsTransaction.create({
+      farmer: farmerId,
+      type: "new_product_added",
+      points: 2,
+      description: "Points awarded for adding a new product",
+      date: new Date(),
+    });
+
+    res.status(201).json({
+      message: "Product added successfully",
+      product: newProduct,
+    });
+  } catch (error) {
+    console.error("Error in createProduct:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+
+
 // const createProduct = async (req, res) => {
 
 //   try {
@@ -68,63 +138,6 @@ const fs = require("fs");
 
 
 
-const createProduct = async (req, res) => {
-  try {
-    if (!req.user || !req.user._id) {
-      return res.status(400).json({ message: 'Farmer ID is required' });
-    }
-
-    const farmerId = req.user._id;
-    let shop = await Shop.findOne({ farmer_id: farmerId });
-
-    if (!shop) {
-      shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
-    }
-
-    const newProductData = {
-      ...req.body,
-      farmer_id: farmerId,
-      shop_id: shop._id,
-    };
-
-    // 🔁 Image upload to ImageKit
-    if (req.file) {
-      const uploadedImage = await imagekit.upload({
-        file: fs.readFileSync(req.file.path), // file buffer
-        fileName: req.file.originalname,
-        folder: "/products", // optional: organize in folder
-      });
-
-      newProductData.product_image = uploadedImage.url;
-
-      // Remove temp file from local uploads/
-      fs.unlinkSync(req.file.path);
-    }
-
-    const newProduct = new Product(newProductData);
-    await newProduct.save();
-
-    await Farmer.findByIdAndUpdate(farmerId, {
-      $inc: { points: 2 },
-    });
-
-    await PointsTransaction.create({
-      farmer: farmerId,
-      type: "new_product_added",
-      points: 2,
-      description: "Points awarded for adding a new product",
-      date: new Date(),
-    });
-
-    res.status(201).json({
-      message: "Product added successfully",
-      product: newProduct,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 
 
