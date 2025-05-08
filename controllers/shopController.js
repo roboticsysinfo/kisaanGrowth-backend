@@ -3,25 +3,18 @@ const Product = require('../models/Product')
 const multer = require('multer');
 const path = require('path');
 const mongoose = require('mongoose');
+const imagekit = require('../utils/imagekit');
 
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Directory where files will be stored
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Rename file with timestamp
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png/;
+    const fileTypes = /jpeg|jpg|png|webp/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = fileTypes.test(file.mimetype);
-
     if (extname && mimetype) {
       return cb(null, true);
     } else {
@@ -32,15 +25,73 @@ const upload = multer({
 
 
 // Create Shop 
+// const createShop = async (req, res) => {
+//   try {
+//     const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
+
+//     // Check if the farmer already has a shop
+//     const existingShop = await Shop.findOne({ farmer_id: farmerId });
+
+//     if (existingShop) {
+//       // If a shop already exists for the farmer, send an error message
+//       return res.status(400).json({ message: "You can only create one shop. Please update your existing shop details." });
+//     }
+
+//     const {
+//       shop_name,
+//       phoneNumber,
+//       whatsappNumber,
+//       city_district,
+//       state,
+//       shop_address,
+//       shop_description,
+//       pricing_preference,
+//       preferred_buyers,
+//       village_name,
+//     } = req.body;
+
+//     // Validate required fields
+//     if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
+//       return res.status(400).json({ message: "Missing required fields" });
+//     }
+
+//     // Process file uploads
+//     const shop_image = req.files?.shop_image ? req.files.shop_image.map(file => file.path) : [];
+//     const shop_cover_image = req.files?.shop_cover_image?.[0]?.path || null;
+//     const shop_profile_image = req.files?.shop_profile_image?.[0]?.path || null;
+
+//     // Create a new shop
+//     const shop = new Shop({
+//       farmer_id: farmerId,
+//       shop_name,
+//       phoneNumber,
+//       whatsappNumber,
+//       city_district,
+//       state,
+//       shop_address,
+//       shop_description,
+//       pricing_preference,
+//       preferred_buyers,
+//       village_name,
+//       shop_image,
+//       shop_cover_image,
+//       shop_profile_image,
+//     });
+
+//     const savedShop = await shop.save();
+//     res.status(201).json({ success: true, data: savedShop });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
 const createShop = async (req, res) => {
   try {
-    const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
+    const farmerId = req.user._id;
 
-    // Check if the farmer already has a shop
     const existingShop = await Shop.findOne({ farmer_id: farmerId });
-
     if (existingShop) {
-      // If a shop already exists for the farmer, send an error message
       return res.status(400).json({ message: "You can only create one shop. Please update your existing shop details." });
     }
 
@@ -57,17 +108,38 @@ const createShop = async (req, res) => {
       village_name,
     } = req.body;
 
-    // Validate required fields
     if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Process file uploads
-    const shop_image = req.files?.shop_image ? req.files.shop_image.map(file => file.path) : [];
-    const shop_cover_image = req.files?.shop_cover_image?.[0]?.path || null;
-    const shop_profile_image = req.files?.shop_profile_image?.[0]?.path || null;
+    // Upload helper function
+    const uploadToImageKit = async (fileBuffer, originalname) => {
+      return await imagekit.upload({
+        file: fileBuffer, // Buffer
+        fileName: originalname, // file name
+      });
+    };
 
-    // Create a new shop
+    let shop_image = [];
+    if (req.files?.shop_image) {
+      for (const file of req.files.shop_image) {
+        const result = await uploadToImageKit(file.buffer, file.originalname);
+        shop_image.push(result.url);
+      }
+    }
+
+    let shop_cover_image = null;
+    if (req.files?.shop_cover_image?.[0]) {
+      const result = await uploadToImageKit(req.files.shop_cover_image[0].buffer, req.files.shop_cover_image[0].originalname);
+      shop_cover_image = result.url;
+    }
+
+    let shop_profile_image = null;
+    if (req.files?.shop_profile_image?.[0]) {
+      const result = await uploadToImageKit(req.files.shop_profile_image[0].buffer, req.files.shop_profile_image[0].originalname);
+      shop_profile_image = result.url;
+    }
+
     const shop = new Shop({
       farmer_id: farmerId,
       shop_name,
@@ -87,10 +159,13 @@ const createShop = async (req, res) => {
 
     const savedShop = await shop.save();
     res.status(201).json({ success: true, data: savedShop });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 // Get Shop by Farmer ID
