@@ -8,7 +8,10 @@ const sharp = require('sharp');
 
 
 // -------------------- Multer Config --------------------
+
+
 const storage = multer.memoryStorage();
+
 
 const upload = multer({
   storage,
@@ -25,7 +28,9 @@ const upload = multer({
   },
 });
 
+
 // -------------------- Helper: Upload to ImageKit --------------------
+
 const uploadToImageKit = async (fileBuffer, originalname) => {
   try {
     const resizedBuffer = await sharp(fileBuffer)
@@ -47,6 +52,7 @@ const uploadToImageKit = async (fileBuffer, originalname) => {
     console.error("❌ Error uploading to ImageKit:", error);
     throw new Error("Image upload failed");
   }
+
 };
 
 
@@ -178,7 +184,6 @@ const getAllShops = async (req, res) => {
   }
   
 };
-
 
 
 // -------------------- Update Shop --------------------

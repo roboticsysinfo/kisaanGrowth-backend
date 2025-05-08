@@ -2,34 +2,78 @@ const Farmer = require('../models/Farmer');
 const pointsTransactionHistory = require('../models/pointsTransactionHistory');
 const RedeemProduct = require('../models/RedeemProduct');
 const RedemptionHistory = require('../models/RedemptionHistory');
+const imagekit = require('../utils/imagekit');
 
 
 
 // Add redeem product
 
+// const createRedeemProduct = async (req, res) => {
+//     try {
+//         const { name, description, requiredPoints } = req.body;
+//         const r_product_img = req.file ? req.file.path : null;
+
+//         if (!name || !description || !requiredPoints) {
+//             return res.status(400).json({ message: 'All fields are required' });
+//         }
+
+//         const product = new RedeemProduct({
+//             name,
+//             description,
+//             requiredPoints,
+//             r_product_img
+//         });
+
+//         await product.save();
+//         res.status(201).json({ message: 'Redeem product created successfully', product });
+
+//     } catch (error) {
+//         res.status(500).json({ message: 'Server Error', error: error.message });
+//     }
+// };
+
 const createRedeemProduct = async (req, res) => {
     try {
         const { name, description, requiredPoints } = req.body;
-        const r_product_img = req.file ? req.file.path : null;
+        const r_product_img = req.file ? req.file : null;
 
         if (!name || !description || !requiredPoints) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const product = new RedeemProduct({
-            name,
-            description,
-            requiredPoints,
-            r_product_img
-        });
+        if (r_product_img) {
+            // Upload image to ImageKit
+            const file = r_product_img.buffer; // file buffer from multer
 
-        await product.save();
-        res.status(201).json({ message: 'Redeem product created successfully', product });
+            // Upload to ImageKit
+            const uploadResult = await imagekit.upload({
+                file: file,
+                fileName: r_product_img.originalname,
+                folder: "/uploads", // Specify folder if needed
+            });
 
+            // Get the URL of the uploaded image
+            const imageUrl = uploadResult.url;
+
+            // Create the product with the URL of the image
+            const product = new RedeemProduct({
+                name,
+                description,
+                requiredPoints,
+                r_product_img: imageUrl, // Store the ImageKit URL here
+            });
+
+            await product.save();
+            return res.status(201).json({ message: 'Redeem product created successfully', product });
+        } else {
+            return res.status(400).json({ message: "Product image is required" });
+        }
+        
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
 
 // get all redeem products
 const getAllRedeemProducts = async (req, res) => {
@@ -42,29 +86,75 @@ const getAllRedeemProducts = async (req, res) => {
 };
 
 //update
+// const updateRedeemProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { name, description, requiredPoints } = req.body;
+//         const r_product_img = req.file ? req.file.path : undefined;
+
+//         const product = await RedeemProduct.findById(id);
+//         if (!product) {
+//             return res.status(404).json({ message: 'Product not found' });
+//         }
+
+//         product.name = name || product.name;
+//         product.description = description || product.description;
+//         product.requiredPoints = requiredPoints || product.requiredPoints;
+//         if (r_product_img) product.r_product_img = r_product_img;
+
+//         await product.save();
+//         res.status(200).json({ message: 'Redeem product updated', product });
+
+//     } catch (error) {
+//         res.status(500).json({ message: 'Server Error', error: error.message });
+//     }
+// };
+
+
 const updateRedeemProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, requiredPoints } = req.body;
-        const r_product_img = req.file ? req.file.path : undefined;
+        const r_product_img = req.file ? req.file : undefined; // File uploaded via Multer
 
         const product = await RedeemProduct.findById(id);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
+        // Handle image update if a new image is uploaded
+        if (r_product_img) {
+            const file = r_product_img.buffer; // Multer buffer
+
+            // Upload the image to ImageKit
+            const uploadResult = await imagekit.upload({
+                file: file,
+                fileName: r_product_img.originalname,
+                folder: "/redeem_products/", // Optional: Set the folder name in ImageKit
+            });
+
+            // Get the ImageKit URL for the new image
+            const newImageUrl = uploadResult.url;
+
+            // Update the image URL in the product document
+            product.r_product_img = newImageUrl;
+        }
+
+        // Update other fields (name, description, requiredPoints)
         product.name = name || product.name;
         product.description = description || product.description;
         product.requiredPoints = requiredPoints || product.requiredPoints;
-        if (r_product_img) product.r_product_img = r_product_img;
 
+        // Save the updated product
         await product.save();
-        res.status(200).json({ message: 'Redeem product updated', product });
+
+        res.status(200).json({ message: 'Redeem product updated successfully', product });
 
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
 
 // delete
 const deleteRedeemProduct = async (req, res) => {
