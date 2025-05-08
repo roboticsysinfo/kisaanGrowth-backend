@@ -114,10 +114,19 @@ const getAllRedeemProducts = async (req, res) => {
 const updateRedeemProduct = async (req, res) => {
     try {
         const { id } = req.params;
+
+        console.log("id", id);
+
         const { name, description, requiredPoints } = req.body;
         const r_product_img = req.file ? req.file : undefined; // File uploaded via Multer
 
+        console.log("r_product_img", r_product_img);
+
         const product = await RedeemProduct.findById(id);
+
+        console.log("product", product);
+
+
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -126,6 +135,8 @@ const updateRedeemProduct = async (req, res) => {
         if (r_product_img) {
             const file = r_product_img.buffer; // Multer buffer
 
+            console.log("file :-", file)
+
             // Upload the image to ImageKit
             const uploadResult = await imagekit.upload({
                 file: file,
@@ -133,11 +144,17 @@ const updateRedeemProduct = async (req, res) => {
                 folder: "/uploads", // Optional: Set the folder name in ImageKit
             });
 
+            console.log("uploadResult :-", uploadResult)
+
             // Get the ImageKit URL for the new image
             const newImageUrl = uploadResult.url;
 
+            console.log("newImageUrl :-", newImageUrl)
+
             // Update the image URL in the product document
             product.r_product_img = newImageUrl;
+
+            console.log("product.r_product_img :-", product.r_product_img)
         }
 
         // Update other fields (name, description, requiredPoints)
@@ -147,6 +164,8 @@ const updateRedeemProduct = async (req, res) => {
 
         // Save the updated product
         await product.save();
+
+        console.log("product saved :-", product)
 
         res.status(200).json({ message: 'Redeem product updated successfully', product });
 
