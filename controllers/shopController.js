@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const mongoose = require('mongoose');
 const imagekit = require('../utils/imagekit');
+const sharp = require('sharp');
 
 
 // -------------------- Multer Config --------------------
