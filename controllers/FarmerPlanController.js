@@ -4,7 +4,9 @@ const FarmerUpgradePlanHistory = require('../models/FarmerUpgradePlanHistory');
 
 
 const getActiveFarmerPlanById = async (req, res) => {
+
   try {
+
     const { farmerId } = req.params;
 
     const activePlan = await FarmerUpgradePlanHistory.findOne({
@@ -22,12 +24,15 @@ const getActiveFarmerPlanById = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
   }
+
 };
 
 
 // Get all plan histories (admin or reporting)
 const getAllFarmerPlans = async (req, res) => {
+
   try {
+
     const plans = await FarmerUpgradePlanHistory.find()
       .populate('farmerId', 'name phoneNumber email') // optional: fetch farmer info
       .sort({ purchasedAt: -1 }); // latest first
@@ -37,10 +42,12 @@ const getAllFarmerPlans = async (req, res) => {
       count: plans.length,
       data: plans,
     });
+
   } catch (error) {
     console.error("Error fetching plans:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
+
 };
 
 module.exports = {

@@ -2,8 +2,71 @@ const Product = require('../models/Product');
 const Shop = require('../models/Shop');
 const PointsTransaction = require('../models/pointsTransactionHistory')
 const Farmer = require("../models/Farmer")
+const imagekit = require("../utils/imagekit");
+const fs = require("fs");
 
 // Create a new product
+
+// const createProduct = async (req, res) => {
+
+//   try {
+
+//     if (!req.user || !req.user._id) {
+//       return res.status(400).json({ message: 'Farmer ID is required' });
+//     }
+
+//     const farmerId = req.user._id;
+
+//     // Fetch shop based on farmer_id
+//     let shop = await Shop.findOne({ farmer_id: farmerId });
+
+//     if (!shop) {
+//       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
+//     }
+
+//     // Build the product object
+//     const newProductData = {
+//       ...req.body,
+//       farmer_id: farmerId,
+//       shop_id: shop._id,
+//     };
+
+//     // If there's a file, add it to the product data
+//     if (req.file) {
+//       newProductData.product_image = `/uploads/${req.file.filename}`;
+//     }
+
+//     // Create and save product
+//     const newProduct = new Product(newProductData);
+//     await newProduct.save();
+
+//     // ✅ 1. Award 3 points to farmer
+//     await Farmer.findByIdAndUpdate(farmerId, {
+//       $inc: { points: 2 }
+//     });
+
+//     // ✅ 2. Add points transaction entry
+//     await PointsTransaction.create({
+//       farmer: farmerId,
+//       type: 'new_product_added',
+//       points: 2,
+//       description: 'Points awarded for adding a new product',
+//       date: new Date()
+//     });
+
+//     res.status(201).json({
+//       message: 'Product added successfully',
+//       product: newProduct,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+
+// };
+
+
 
 const createProduct = async (req, res) => {
   try {
@@ -12,52 +75,54 @@ const createProduct = async (req, res) => {
     }
 
     const farmerId = req.user._id;
-
-    // Fetch shop based on farmer_id
     let shop = await Shop.findOne({ farmer_id: farmerId });
 
     if (!shop) {
       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
     }
 
-    // Build the product object
     const newProductData = {
       ...req.body,
       farmer_id: farmerId,
       shop_id: shop._id,
     };
 
-    // If there's a file, add it to the product data
+    // 🔁 Image upload to ImageKit
     if (req.file) {
-      newProductData.product_image = `/uploads/${req.file.filename}`;
+      const uploadedImage = await imagekit.upload({
+        file: fs.readFileSync(req.file.path), // file buffer
+        fileName: req.file.originalname,
+        folder: "/products", // optional: organize in folder
+      });
+
+      newProductData.product_image = uploadedImage.url;
+
+      // Remove temp file from local uploads/
+      fs.unlinkSync(req.file.path);
     }
 
-    // Create and save product
     const newProduct = new Product(newProductData);
     await newProduct.save();
 
-    // ✅ 1. Award 3 points to farmer
     await Farmer.findByIdAndUpdate(farmerId, {
-      $inc: { points: 3 }
+      $inc: { points: 2 },
     });
 
-    // ✅ 2. Add points transaction entry
     await PointsTransaction.create({
       farmer: farmerId,
-      type: 'new_product_added',
-      points: 3,
-      description: 'Points awarded for adding a new product',
-      date: new Date()
+      type: "new_product_added",
+      points: 2,
+      description: "Points awarded for adding a new product",
+      date: new Date(),
     });
 
     res.status(201).json({
-      message: 'Product added successfully',
+      message: "Product added successfully",
       product: newProduct,
     });
-
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 

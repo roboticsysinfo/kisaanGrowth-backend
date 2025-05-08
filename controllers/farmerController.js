@@ -556,14 +556,14 @@ const incrementReferralShare = async (req, res) => {
     }
 
     farmer.referralShares += 1;
-    farmer.points += 5;
+    farmer.points += 1;
 
     await farmer.save();
 
     // ✅ Add transaction history
     await PointTransaction.create({
       farmer: farmer._id,
-      points: 5,
+      points: 1,
       type: "daily_share",
       description: "Points awarded for sharing referral code"
     });

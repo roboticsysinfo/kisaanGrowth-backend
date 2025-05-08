@@ -20,7 +20,6 @@ const registerCustomer = async (req, res) => {
 
   const { name, email, password, phoneNumber, address, referralCode, agreedToPrivacyPolicyAndTermsAndConditions, agreementTimestamp } = req.body;
 
-
   try {
 
     // Check existing
@@ -62,6 +61,7 @@ const registerCustomer = async (req, res) => {
     await newCustomer.save();
 
     if (referringCustomer) {
+
       // Both get 10 points
       const referralPoints = 10;
       referringCustomer.points += referralPoints;
@@ -440,7 +440,9 @@ const rewardDailyPointsCustomer = async (req, res) => {
 
 
 // Customer Refer Share Detail Count ( How Many Share Farmer did )
+
 const incrementReferralShareCustomer = async (req, res) => {
+  
   try {
     const { customerId } = req.body;
     const customer = await Customer.findById(customerId);
@@ -462,14 +464,14 @@ const incrementReferralShareCustomer = async (req, res) => {
     }
 
     customer.referralShares += 1;
-    customer.points += 5;
+    customer.points += 1;
 
     await customer.save();
 
     // ✅ Add transaction history
     await CustomerPointsTransactions.create({
       customer: customer._id,
-      points: 5,
+      points: 1,
       type: "daily_share",
       description: "Points awarded for sharing referral code"
     });
