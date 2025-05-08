@@ -22,11 +22,7 @@ const createPlanOrder = async (req, res) => {
       receipt: `receipt_${Date.now()}`,
     };
 
-    console.log("🟢 Creating Razorpay order with:", options);
-
     const order = await razorpayInstance.orders.create(options);
-
-    console.log("✅ Razorpay Order Created:", order);
 
     res.status(200).json({
       success: true,

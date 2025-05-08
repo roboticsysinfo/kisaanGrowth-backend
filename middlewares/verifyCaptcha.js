@@ -12,9 +12,7 @@ const verifyCaptcha = async (req, res, next) => {
   try {
     
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-
-    console.log("secretKey middleware", secretKey)
-
+    
     const response = await axios.post(
       `https://www.google.com/recaptcha/api/siteverify`,
       null,

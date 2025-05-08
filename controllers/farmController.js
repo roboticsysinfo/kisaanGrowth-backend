@@ -36,7 +36,6 @@ const getAllFarms = async (req, res) => {
     try {
       const farms = await Farm.find().populate( 'farmer_id' ,'name'); // Populate farmer name
       res.status(200).json(farms); // Return all farms
-      console.log(farms)
     } catch (err) {
       res.status(500).json({ message: err.message }); // Handle errors
     }

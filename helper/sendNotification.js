@@ -21,7 +21,6 @@ const sendNotification = async (userId, userType, type, message, actorId, actorT
     });
 
     await notification.save();
-    console.log("Notification saved successfully.");
   } catch (error) {
     console.error("Error sending notification:", error);
   }

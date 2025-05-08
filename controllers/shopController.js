@@ -38,14 +38,10 @@ const uploadToImageKit = async (fileBuffer, originalname) => {
       .jpeg({ quality: 70 })
       .toBuffer();
 
-      console.log("resizedBuffer", resizedBuffer)
-
     const result = await imagekit.upload({
       file: resizedBuffer,
       fileName: originalname,
     });
-
-    console.log("image sharp result", result)
 
     return result;
   } catch (error) {
