@@ -85,7 +85,6 @@ const upload = multer({
 //   }
 // };
 
-
 const createShop = async (req, res) => {
   try {
     const farmerId = req.user._id;
@@ -167,7 +166,6 @@ const createShop = async (req, res) => {
 };
 
 
-
 // Get Shop by Farmer ID
 const getShopByFarmerId = async (req, res) => {
   try {
@@ -216,27 +214,87 @@ const getAllShops = async (req, res) => {
 
 
 // Update a shop
+// const updateShop = async (req, res) => {
+//   try {
+//     const shopId = req.params.id;
+//     const updates = req.body;
+
+//     if (req.files.shop_image) {
+//       updates.shop_image = req.files.shop_image.map(file => file.path);
+//     }
+//     if (req.files.shop_cover_image) {
+//       updates.shop_cover_image = req.files.shop_cover_image[0].path;
+//     }
+//     if (req.files.shop_profile_image) {
+//       updates.shop_profile_image = req.files.shop_profile_image[0].path;
+//     }
+
+//     const updatedShop = await Shop.findByIdAndUpdate(shopId, updates, { new: true });
+
+//     res.status(200).json(updatedShop);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+// Update a shop
 const updateShop = async (req, res) => {
   try {
     const shopId = req.params.id;
     const updates = req.body;
 
     if (req.files.shop_image) {
-      updates.shop_image = req.files.shop_image.map(file => file.path);
-    }
-    if (req.files.shop_cover_image) {
-      updates.shop_cover_image = req.files.shop_cover_image[0].path;
-    }
-    if (req.files.shop_profile_image) {
-      updates.shop_profile_image = req.files.shop_profile_image[0].path;
+      // If new shop images are uploaded, upload them to ImageKit and update the shop_image field
+      const shopImageUrls = [];
+      for (const file of req.files.shop_image) {
+        const result = await uploadToImageKit(file.buffer, file.originalname);
+        shopImageUrls.push(result.url);
+      }
+      updates.shop_image = shopImageUrls;
     }
 
+    if (req.files.shop_cover_image) {
+      // If a new cover image is uploaded, upload it to ImageKit and update the shop_cover_image field
+      const coverImageResult = await uploadToImageKit(req.files.shop_cover_image[0].buffer, req.files.shop_cover_image[0].originalname);
+      updates.shop_cover_image = coverImageResult.url;
+    }
+
+    if (req.files.shop_profile_image) {
+      // If a new profile image is uploaded, upload it to ImageKit and update the shop_profile_image field
+      const profileImageResult = await uploadToImageKit(req.files.shop_profile_image[0].buffer, req.files.shop_profile_image[0].originalname);
+      updates.shop_profile_image = profileImageResult.url;
+    }
+
+    // Find the shop and apply updates
     const updatedShop = await Shop.findByIdAndUpdate(shopId, updates, { new: true });
-    res.status(200).json(updatedShop);
+
+    if (!updatedShop) {
+      return res.status(404).json({ success: false, message: "Shop not found" });
+    }
+
+    res.status(200).json({ success: true, data: updatedShop });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Error updating shop:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// Helper function to upload images to ImageKit
+const uploadToImageKit = async (fileBuffer, originalname) => {
+  try {
+    const result = await imagekit.upload({
+      file: fileBuffer,  // Buffer
+      fileName: originalname,  // File name
+    });
+    return result;  // Return ImageKit result containing image URL
+  } catch (error) {
+    console.error("❌ Error uploading image to ImageKit:", error);
+    throw new Error("Image upload failed");
+  }
+};
+
+
 
 // Delete a shop
 const deleteShop = async (req, res) => {
