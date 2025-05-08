@@ -11,7 +11,7 @@ const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+  limits: { fileSize: 10 * 1024 * 1024 }, // 20MB max
   fileFilter: (req, file, cb) => {
     const fileTypes = /jpeg|jpg|png|webp/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
@@ -32,10 +32,14 @@ const uploadToImageKit = async (fileBuffer, originalname) => {
       .jpeg({ quality: 70 })
       .toBuffer();
 
+      console.log("resizedBuffer", resizedBuffer)
+
     const result = await imagekit.upload({
       file: resizedBuffer,
       fileName: originalname,
     });
+
+    console.log("image sharp result", result)
 
     return result;
   } catch (error) {
