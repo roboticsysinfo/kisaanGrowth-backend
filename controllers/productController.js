@@ -83,7 +83,7 @@ const createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in createProduct:", error.message);
-    console.log("Error in createProduct:", error.message);
+    console.log("Error in createProduct:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
