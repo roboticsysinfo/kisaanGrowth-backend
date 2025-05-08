@@ -16,6 +16,7 @@ const createProduct = async (req, res) => {
     const farmerId = req.user._id;
     let shop = await Shop.findOne({ farmer_id: farmerId });
 
+
     if (!shop) {
       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
     }
@@ -26,9 +27,13 @@ const createProduct = async (req, res) => {
       shop_id: shop._id,
     };
 
+    console.log("newProductData", newProductData)
+
     // 🔁 Image upload to ImageKit
     if (req.file) {
       const filePath = req.file.path;
+
+      console.log("filePath", filePath)
 
       if (!fs.existsSync(filePath)) {
         return res.status(400).json({ message: "Uploaded file not found" });
@@ -36,13 +41,19 @@ const createProduct = async (req, res) => {
 
       const fileBuffer = fs.readFileSync(filePath);
 
+      console.log("fileBuffer", fileBuffer)
+
       const uploadedImage = await imagekit.upload({
         file: fileBuffer,
         fileName: req.file.originalname,
-        folder: "/products",
+        folder: "/uploads",
       });
 
+      console.log("uploadedImage", uploadedImage)
+
       newProductData.product_image = uploadedImage.url;
+
+      console.log("newProductData.product_image", newProductData.product_image)
 
       // ✅ Safely delete temp file
       if (fs.existsSync(filePath)) {
@@ -51,6 +62,9 @@ const createProduct = async (req, res) => {
     }
 
     const newProduct = new Product(newProductData);
+
+    console.log("newProduct", newProduct)
+
     await newProduct.save();
 
     await Farmer.findByIdAndUpdate(farmerId, { $inc: { points: 2 } });
@@ -69,6 +83,7 @@ const createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in createProduct:", error.message);
+    console.log("Error in createProduct:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
