@@ -14,7 +14,7 @@ router.get('/products', getAllProducts);
 router.get('/product/:id', getProductById); 
 
 
-router.put('/product/:id', authorize(['admin', 'farmer', 'sub_admin']), updateProduct); 
+router.put('/product/:id', upload.single('product_image'), authorize(['admin', 'farmer', 'sub_admin']), updateProduct); 
 
 
 router.delete('/product/:id', authorize(['admin', 'farmer', 'sub_admin']),  deleteProduct); 

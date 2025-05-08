@@ -27,13 +27,9 @@ const createProduct = async (req, res) => {
       shop_id: shop._id,
     };
 
-    console.log("newProductData", newProductData)
-
     // 🔁 Image upload to ImageKit
     if (req.file) {
       const filePath = req.file.path;
-
-      console.log("filePath", filePath)
 
       if (!fs.existsSync(filePath)) {
         return res.status(400).json({ message: "Uploaded file not found" });
@@ -41,15 +37,11 @@ const createProduct = async (req, res) => {
 
       const fileBuffer = fs.readFileSync(filePath);
 
-      console.log("fileBuffer", fileBuffer)
-
       const uploadedImage = await imagekit.upload({
         file: fileBuffer,
         fileName: req.file.originalname,
         folder: "/uploads",
       });
-
-      console.log("uploadedImage", uploadedImage)
 
       newProductData.product_image = uploadedImage.url;
 
@@ -89,73 +81,6 @@ const createProduct = async (req, res) => {
 };
 
 
-
-
-
-// const createProduct = async (req, res) => {
-
-//   try {
-
-//     if (!req.user || !req.user._id) {
-//       return res.status(400).json({ message: 'Farmer ID is required' });
-//     }
-
-//     const farmerId = req.user._id;
-
-//     // Fetch shop based on farmer_id
-//     let shop = await Shop.findOne({ farmer_id: farmerId });
-
-//     if (!shop) {
-//       shop = await Shop.create({ farmer_id: farmerId, name: 'Default Shop' });
-//     }
-
-//     // Build the product object
-//     const newProductData = {
-//       ...req.body,
-//       farmer_id: farmerId,
-//       shop_id: shop._id,
-//     };
-
-//     // If there's a file, add it to the product data
-//     if (req.file) {
-//       newProductData.product_image = `/uploads/${req.file.filename}`;
-//     }
-
-//     // Create and save product
-//     const newProduct = new Product(newProductData);
-//     await newProduct.save();
-
-//     // ✅ 1. Award 3 points to farmer
-//     await Farmer.findByIdAndUpdate(farmerId, {
-//       $inc: { points: 2 }
-//     });
-
-//     // ✅ 2. Add points transaction entry
-//     await PointsTransaction.create({
-//       farmer: farmerId,
-//       type: 'new_product_added',
-//       points: 2,
-//       description: 'Points awarded for adding a new product',
-//       date: new Date()
-//     });
-
-//     res.status(201).json({
-//       message: 'Product added successfully',
-//       product: newProduct,
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-
-// };
-
-
-
-
-
-
 const getAllProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -182,6 +107,7 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Get a product by ID
 const getProductById = async (req, res) => {
@@ -226,9 +152,44 @@ const getProductByFarmerId = async (req, res) => {
 };
 
 // Update a product
+// const updateProduct = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const {
+//       name,
+//       season,
+//       category_id,
+//       price_per_unit,
+//       quantity,
+//       unit,
+//       description,
+//       harvest_date,
+//       product_image,
+//     } = req.body;
+
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       id,
+//       { name, season, category_id, price_per_unit, quantity, unit, description, harvest_date, product_image },
+//       { new: true }
+//     );
+
+//     if (!updatedProduct) {
+//       return res.status(404).json({ message: 'Product not found' });
+//     }
+
+//     res.status(200).json({
+//       message: 'Product updated successfully',
+//       product: updatedProduct,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
+
     const {
       name,
       season,
@@ -238,27 +199,69 @@ const updateProduct = async (req, res) => {
       unit,
       description,
       harvest_date,
-      product_image,
     } = req.body;
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      { name, season, category_id, price_per_unit, quantity, unit, description, harvest_date, product_image },
-      { new: true }
-    );
+    const updateData = {
+      name,
+      season,
+      category_id,
+      price_per_unit,
+      quantity,
+      unit,
+      description,
+      harvest_date,
+    };
+
+    // 🖼️ Check if image file is included
+    if (req.file) {
+      const filePath = req.file.path;
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(400).json({ message: "Uploaded file not found" });
+      }
+
+      try {
+        const fileBuffer = fs.readFileSync(filePath);
+
+        const uploadedImage = await imagekit.upload({
+          file: fileBuffer,
+          fileName: req.file.originalname,
+          folder: "/uploads",
+        });
+
+        updateData.product_image = uploadedImage.url;
+
+        // 🧹 Delete temp file
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (uploadErr) {
+        console.error("Image upload error:", uploadErr.message);
+        return res.status(500).json({ message: "Image upload failed", error: uploadErr.message });
+      }
+    } else if (req.body.product_image) {
+      // 📝 If URL is sent in body (optional fallback)
+      updateData.product_image = req.body.product_image;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     res.status(200).json({
-      message: 'Product updated successfully',
+      message: "Product updated successfully",
       product: updatedProduct,
     });
+
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error updating product:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+
 
 // Delete a product
 const deleteProduct = async (req, res) => {
