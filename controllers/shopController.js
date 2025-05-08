@@ -6,11 +6,12 @@ const mongoose = require('mongoose');
 const imagekit = require('../utils/imagekit');
 
 
+// -------------------- Multer Config --------------------
 const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
   fileFilter: (req, file, cb) => {
     const fileTypes = /jpeg|jpg|png|webp/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
@@ -23,67 +24,26 @@ const upload = multer({
   },
 });
 
+// -------------------- Helper: Upload to ImageKit --------------------
+const uploadToImageKit = async (fileBuffer, originalname) => {
+  try {
+    const resizedBuffer = await sharp(fileBuffer)
+      .resize({ width: 1280 })
+      .jpeg({ quality: 70 })
+      .toBuffer();
 
-// Create Shop 
-// const createShop = async (req, res) => {
-//   try {
-//     const farmerId = req.user._id; // Assuming farmer_id is fetched from the authenticated user
+    const result = await imagekit.upload({
+      file: resizedBuffer,
+      fileName: originalname,
+    });
 
-//     // Check if the farmer already has a shop
-//     const existingShop = await Shop.findOne({ farmer_id: farmerId });
+    return result;
+  } catch (error) {
+    console.error("❌ Error uploading to ImageKit:", error);
+    throw new Error("Image upload failed");
+  }
+};
 
-//     if (existingShop) {
-//       // If a shop already exists for the farmer, send an error message
-//       return res.status(400).json({ message: "You can only create one shop. Please update your existing shop details." });
-//     }
-
-//     const {
-//       shop_name,
-//       phoneNumber,
-//       whatsappNumber,
-//       city_district,
-//       state,
-//       shop_address,
-//       shop_description,
-//       pricing_preference,
-//       preferred_buyers,
-//       village_name,
-//     } = req.body;
-
-//     // Validate required fields
-//     if (!shop_name || !phoneNumber || !whatsappNumber || !city_district || !state || !shop_address) {
-//       return res.status(400).json({ message: "Missing required fields" });
-//     }
-
-//     // Process file uploads
-//     const shop_image = req.files?.shop_image ? req.files.shop_image.map(file => file.path) : [];
-//     const shop_cover_image = req.files?.shop_cover_image?.[0]?.path || null;
-//     const shop_profile_image = req.files?.shop_profile_image?.[0]?.path || null;
-
-//     // Create a new shop
-//     const shop = new Shop({
-//       farmer_id: farmerId,
-//       shop_name,
-//       phoneNumber,
-//       whatsappNumber,
-//       city_district,
-//       state,
-//       shop_address,
-//       shop_description,
-//       pricing_preference,
-//       preferred_buyers,
-//       village_name,
-//       shop_image,
-//       shop_cover_image,
-//       shop_profile_image,
-//     });
-
-//     const savedShop = await shop.save();
-//     res.status(201).json({ success: true, data: savedShop });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
 
 const createShop = async (req, res) => {
   try {
@@ -207,66 +167,40 @@ const getAllShops = async (req, res) => {
         totalPages: Math.ceil(totalShops / limit),
       },
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+  
 };
 
 
-// Update a shop
-// const updateShop = async (req, res) => {
-//   try {
-//     const shopId = req.params.id;
-//     const updates = req.body;
 
-//     if (req.files.shop_image) {
-//       updates.shop_image = req.files.shop_image.map(file => file.path);
-//     }
-//     if (req.files.shop_cover_image) {
-//       updates.shop_cover_image = req.files.shop_cover_image[0].path;
-//     }
-//     if (req.files.shop_profile_image) {
-//       updates.shop_profile_image = req.files.shop_profile_image[0].path;
-//     }
-
-//     const updatedShop = await Shop.findByIdAndUpdate(shopId, updates, { new: true });
-
-//     res.status(200).json(updatedShop);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-
-// Update a shop
+// -------------------- Update Shop --------------------
 const updateShop = async (req, res) => {
   try {
     const shopId = req.params.id;
     const updates = req.body;
 
-    if (req.files.shop_image) {
-      // If new shop images are uploaded, upload them to ImageKit and update the shop_image field
-      const shopImageUrls = [];
+    if (req.files?.shop_image) {
+      const imageUrls = [];
       for (const file of req.files.shop_image) {
         const result = await uploadToImageKit(file.buffer, file.originalname);
-        shopImageUrls.push(result.url);
+        imageUrls.push(result.url);
       }
-      updates.shop_image = shopImageUrls;
+      updates.shop_image = imageUrls;
     }
 
-    if (req.files.shop_cover_image) {
-      // If a new cover image is uploaded, upload it to ImageKit and update the shop_cover_image field
-      const coverImageResult = await uploadToImageKit(req.files.shop_cover_image[0].buffer, req.files.shop_cover_image[0].originalname);
-      updates.shop_cover_image = coverImageResult.url;
+    if (req.files?.shop_cover_image?.[0]) {
+      const result = await uploadToImageKit(req.files.shop_cover_image[0].buffer, req.files.shop_cover_image[0].originalname);
+      updates.shop_cover_image = result.url;
     }
 
-    if (req.files.shop_profile_image) {
-      // If a new profile image is uploaded, upload it to ImageKit and update the shop_profile_image field
-      const profileImageResult = await uploadToImageKit(req.files.shop_profile_image[0].buffer, req.files.shop_profile_image[0].originalname);
-      updates.shop_profile_image = profileImageResult.url;
+    if (req.files?.shop_profile_image?.[0]) {
+      const result = await uploadToImageKit(req.files.shop_profile_image[0].buffer, req.files.shop_profile_image[0].originalname);
+      updates.shop_profile_image = result.url;
     }
 
-    // Find the shop and apply updates
     const updatedShop = await Shop.findByIdAndUpdate(shopId, updates, { new: true });
 
     if (!updatedShop) {
@@ -276,21 +210,7 @@ const updateShop = async (req, res) => {
     res.status(200).json({ success: true, data: updatedShop });
   } catch (error) {
     console.error("❌ Error updating shop:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-};
-
-// Helper function to upload images to ImageKit
-const uploadToImageKit = async (fileBuffer, originalname) => {
-  try {
-    const result = await imagekit.upload({
-      file: fileBuffer,  // Buffer
-      fileName: originalname,  // File name
-    });
-    return result;  // Return ImageKit result containing image URL
-  } catch (error) {
-    console.error("❌ Error uploading image to ImageKit:", error);
-    throw new Error("Image upload failed");
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
