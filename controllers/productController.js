@@ -214,7 +214,12 @@ const updateProduct = async (req, res) => {
 
     // 🖼️ Check if image file is included
     if (req.file) {
+
+      console.log("req file :-", req.file)
+
       const filePath = req.file.path;
+
+      console.log("filePath :-", filePath)
 
       if (!fs.existsSync(filePath)) {
         return res.status(400).json({ message: "Uploaded file not found" });
@@ -223,11 +228,15 @@ const updateProduct = async (req, res) => {
       try {
         const fileBuffer = fs.readFileSync(filePath);
 
+        console.log("fileBuffer :-", fileBuffer)
+
         const uploadedImage = await imagekit.upload({
           file: fileBuffer,
           fileName: req.file.originalname,
           folder: "/uploads",
         });
+
+        console.log("uploadedImage :- ", uploadedImage)
 
         updateData.product_image = uploadedImage.url;
 
@@ -245,6 +254,8 @@ const updateProduct = async (req, res) => {
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
+
+    console.log("updatedProduct :-", updatedProduct)
 
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });
