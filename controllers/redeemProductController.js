@@ -130,7 +130,7 @@ const updateRedeemProduct = async (req, res) => {
             const uploadResult = await imagekit.upload({
                 file: file,
                 fileName: r_product_img.originalname,
-                folder: "/redeem_products/", // Optional: Set the folder name in ImageKit
+                folder: "/uploads", // Optional: Set the folder name in ImageKit
             });
 
             // Get the ImageKit URL for the new image
