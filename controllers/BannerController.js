@@ -27,7 +27,7 @@ exports.addBanner = async (req, res) => {
       const uploadResponse = await imagekit.upload({
         file: file.buffer,
         fileName: file.originalname,
-        folder: "/uploads/banners"
+        folder: "/uploads"
       });
   
       const banner_image = uploadResponse.url; // Get the full image URL
@@ -71,7 +71,7 @@ exports.updateBanner = async (req, res) => {
         const uploadResponse = await imagekit.upload({
           file: file.buffer,
           fileName: file.originalname,
-          folder: "/uploads/banners"
+          folder: "/uploads"
         });
   
         banner.banner_image = uploadResponse.url;
