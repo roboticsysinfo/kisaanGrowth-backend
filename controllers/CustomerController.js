@@ -162,7 +162,7 @@ const getCustomerById = async (req, res) => {
 const updateCustomer = async (req, res) => {
   try {
     const { name, email, phoneNumber, address } = req.body;
-    let profileImageUrl = req.body.profile_image; // fallback in case no file is uploaded
+    let profileImageUrl = req.body.profileImage; // fallback in case no file is uploaded
 
     // Upload image to ImageKit if file exists
     if (req.file) {
@@ -183,7 +183,7 @@ const updateCustomer = async (req, res) => {
         email,
         phoneNumber,
         address,
-        profile_image: profileImageUrl,
+        profileImage: profileImageUrl,
       },
       { new: true, runValidators: true }
     ).select("-password");
