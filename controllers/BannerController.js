@@ -1,4 +1,6 @@
 const SiteDetails = require("../models/SiteDetails");
+const imagekit = require("../utils/imagekit");
+const fs = require("fs");
 
 
 // Get all banners
