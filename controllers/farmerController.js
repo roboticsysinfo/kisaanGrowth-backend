@@ -234,17 +234,16 @@ const updateFarmerById = async (req, res) => {
     const farmerId = req.params.farmerId;
     const updates = req.body;
 
-    console.log("farmer Id", farmerId)
-    console.log("updates", updates)
+    console.log("farmer Id", farmerId);
+    console.log("updates", updates);
 
     // Handle profile image upload via ImageKit
     if (req.file) {
+      console.log("req.file", req.file);
 
-      console.log("req.file", req.file)
-
-      const fileBuffer = fs.readFileSync(req.file.path);
-
-      console.log("fileBuffer", fileBuffer)
+      // Directly using the buffer from memory storage (no need for fs.readFileSync)
+      const fileBuffer = req.file.buffer;
+      console.log("fileBuffer", fileBuffer);
 
       const uploadResponse = await imagekit.upload({
         file: fileBuffer, // required
@@ -252,24 +251,22 @@ const updateFarmerById = async (req, res) => {
         folder: "/uploads", // optional
       });
 
-      console.log("uploadResponse", uploadResponse)
-
-      // Remove local file after upload (optional but recommended)
-      fs.unlinkSync(req.file.path);
+      console.log("uploadResponse", uploadResponse);
 
       // Set the profileImg field in the updates
       updates.profileImg = uploadResponse.url;
 
-      console.log("updates.profileImg", updates.profileImg)
+      console.log("updates.profileImg", updates.profileImg);
     }
 
+    // Update the farmer in the database with the new details
     const updatedFarmer = await Farmer.findByIdAndUpdate(
       farmerId,
       updates,
       { new: true, runValidators: true }
     ).select("-password");
 
-    console.log("updatedFarmer", updatedFarmer)
+    console.log("updatedFarmer", updatedFarmer);
 
     if (!updatedFarmer) {
       return res.status(404).json({ message: "Farmer not found" });
