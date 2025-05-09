@@ -30,12 +30,11 @@ const registerFarmer = async (req, res) => {
     state,
     city_district,
     village,
-    agreedToPrivacyPolicyAndTermsAndConditions, 
+    agreedToPrivacyPolicyAndTermsAndConditions,
     agreementTimestamp
   } = req.body;
 
-  const uploadAadharCard = req.files?.uploadAadharCard?.[0]?.path;
-  const profileImg = req.files?.profileImg?.[0]?.path || "https://avatar.iran.liara.run/public";
+  const uploadAadharCard = req.file?.path;
 
   try {
     if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard || !state || !city_district) {
@@ -43,11 +42,7 @@ const registerFarmer = async (req, res) => {
     }
 
     const existingFarmer = await Farmer.findOne({
-      $or: [
-        { email },
-        { aadharCard },
-        { phoneNumber }
-      ],
+      $or: [{ email }, { aadharCard }, { phoneNumber }],
     });
 
     if (existingFarmer) {
@@ -75,7 +70,6 @@ const registerFarmer = async (req, res) => {
       address,
       aadharCard,
       uploadAadharCard,
-      profileImg,
       state,
       city_district,
       village,
@@ -84,8 +78,8 @@ const registerFarmer = async (req, res) => {
       referralCode: generateReferralCode(),
       referredBy: referringFarmer ? referringFarmer._id : null,
       points: 0,
-      agreedToPrivacyPolicyAndTermsAndConditions, 
-      agreementTimestamp
+      agreedToPrivacyPolicyAndTermsAndConditions,
+      agreementTimestamp,
     });
 
     await newFarmer.save();
@@ -114,6 +108,104 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
+
+
+// const registerFarmer = async (req, res) => {
+//   const {
+//     name,
+//     email,
+//     password,
+//     phoneNumber,
+//     address,
+//     aadharCard,
+//     referralCode,
+//     state,
+//     city_district,
+//     village,
+//     agreedToPrivacyPolicyAndTermsAndConditions, 
+//     agreementTimestamp
+//   } = req.body;
+
+//   const uploadAadharCard = req.files?.uploadAadharCard?.[0]?.path;
+//   const profileImg = req.files?.profileImg?.[0]?.path || "https://avatar.iran.liara.run/public";
+
+//   try {
+//     if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard || !state || !city_district) {
+//       return res.status(400).json({ message: "Required fields are missing" });
+//     }
+
+//     const existingFarmer = await Farmer.findOne({
+//       $or: [
+//         { email },
+//         { aadharCard },
+//         { phoneNumber }
+//       ],
+//     });
+
+//     if (existingFarmer) {
+//       let duplicateField = '';
+//       if (existingFarmer.email === email) duplicateField = "Email";
+//       else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
+//       else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
+
+//       return res.status(409).json({ message: `${duplicateField} already exists` });
+//     }
+
+//     let referringFarmer = null;
+//     if (referralCode) {
+//       referringFarmer = await Farmer.findOne({ referralCode });
+//       if (!referringFarmer) {
+//         return res.status(400).json({ message: "Invalid referral code" });
+//       }
+//     }
+
+//     const newFarmer = new Farmer({
+//       name,
+//       email,
+//       password,
+//       phoneNumber,
+//       address,
+//       aadharCard,
+//       uploadAadharCard,
+//       profileImg,
+//       state,
+//       city_district,
+//       village,
+//       isKYCVerified: false,
+//       kycRequested: true,
+//       referralCode: generateReferralCode(),
+//       referredBy: referringFarmer ? referringFarmer._id : null,
+//       points: 0,
+//       agreedToPrivacyPolicyAndTermsAndConditions, 
+//       agreementTimestamp
+//     });
+
+//     await newFarmer.save();
+
+//     if (!referringFarmer) {
+//       const selfRegisterPoints = 10;
+//       newFarmer.points += selfRegisterPoints;
+//       await newFarmer.save();
+
+//       await PointTransaction.create({
+//         farmer: newFarmer._id,
+//         points: selfRegisterPoints,
+//         type: "self_register",
+//         description: "Points awarded for signing up without referral",
+//       });
+//     }
+
+//     res.status(201).json({
+//       message: "Farmer registered successfully. KYC request has been sent.",
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Server error occurred",
+//       error: error.message,
+//     });
+//   }
+// };
 
 const getFarmerById = async (req, res) => {
 
@@ -197,53 +289,18 @@ const farmerLogin = async (req, res) => {
 };
 
 
-// const updateFarmerById = async (req, res) => {
-
-//   try {
-
-//     const farmerId = req.params.id;
-//     const updates = req.body; // Data to be updated
-
-//     // Find the farmer and update the fields
-//     const updatedFarmer = await Farmer.findByIdAndUpdate(
-//       farmerId,
-//       updates,
-//       { new: true, runValidators: true } // Return updated doc & validate input
-//     ).select("-password");
-
-//     if (!updatedFarmer) {
-//       return res.status(404).json({ message: "Farmer not found" });
-//     }
-
-//     res.status(200).json({
-//       message: "Farmer updated successfully",
-//       farmer: updatedFarmer,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-
-// };
-
-
-// Request KYC verification
-
-
 const updateFarmerById = async (req, res) => {
+
   try {
+
     const farmerId = req.params.farmerId;
     const updates = req.body;
 
-    console.log("farmer Id", farmerId);
-    console.log("updates", updates);
-
     // Handle profile image upload via ImageKit
     if (req.file) {
-      console.log("req.file", req.file);
 
       // Directly using the buffer from memory storage (no need for fs.readFileSync)
       const fileBuffer = req.file.buffer;
-      console.log("fileBuffer", fileBuffer);
 
       const uploadResponse = await imagekit.upload({
         file: fileBuffer, // required
@@ -251,12 +308,9 @@ const updateFarmerById = async (req, res) => {
         folder: "/uploads", // optional
       });
 
-      console.log("uploadResponse", uploadResponse);
-
       // Set the profileImg field in the updates
       updates.profileImg = uploadResponse.url;
 
-      console.log("updates.profileImg", updates.profileImg);
     }
 
     // Update the farmer in the database with the new details
@@ -265,8 +319,6 @@ const updateFarmerById = async (req, res) => {
       updates,
       { new: true, runValidators: true }
     ).select("-password");
-
-    console.log("updatedFarmer", updatedFarmer);
 
     if (!updatedFarmer) {
       return res.status(404).json({ message: "Farmer not found" });
@@ -280,7 +332,6 @@ const updateFarmerById = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 
 const requestKYC = async (req, res) => {
@@ -749,7 +800,7 @@ const getFarmerDetailsById = async (req, res) => {
 
 
 const upgradeFarmerPoints = async (req, res) => {
-  
+
   try {
     const { upgradedpoints, paymentId, paymentStatus } = req.body;
     const { farmerId } = req.params;
