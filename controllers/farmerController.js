@@ -231,7 +231,7 @@ const farmerLogin = async (req, res) => {
 
 const updateFarmerById = async (req, res) => {
   try {
-    const farmerId = req.params.id;
+    const farmerId = req.params.farmerId;
     const updates = req.body;
 
     console.log("farmer Id", farmerId)
