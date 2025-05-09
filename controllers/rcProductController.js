@@ -4,23 +4,61 @@ const CustomerPointsTransactions = require('../models/customerPointsTransactions
 const CustomerRedeemProduct = require("../models/CustomerRedeemProduct")
 const CustomerRedemptionHistory = require("../models/CustomerRedeemptionHistory");
 const RedemptionHistory = require("../models/RedemptionHistory");
+const imagekit = require("../utils/imagekit");
+const fs = require("fs")
 
 // Add redeem product
 
+// const addRedeemProductCustomer = async (req, res) => {
+
+//     try {
+
+//         const { name, description, requiredPoints } = req.body;
+//         const rc_product_img = req.file ? req.file.path : null;
+
+//         if (!name || !description || !requiredPoints) {
+//             return res.status(400).json({ message: 'All fields are required' });
+//         }
+
+//         const product = new CustomerRedeemProduct({
+//             name,
+//             description,
+//             requiredPoints,
+//             rc_product_img
+//         });
+
+//         await product.save();
+//         res.status(201).json({ message: 'Redeem product created successfully', product });
+
+//     } catch (error) {
+//         res.status(500).json({ message: 'Server Error', error: error.message });
+//     }
+
+// };
+
 const addRedeemProductCustomer = async (req, res) => {
+
     try {
         const { name, description, requiredPoints } = req.body;
-        const rc_product_img = req.file ? req.file.path : null;
+        const file = req.file;
 
-        if (!name || !description || !requiredPoints) {
+        if (!name || !description || !requiredPoints || !file) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
+        // Upload to ImageKit
+        const uploadResponse = await imagekit.upload({
+            file: fs.readFileSync(file.path),  // buffer
+            fileName: file.originalname,
+            folder: "/uploads",
+        });
+
+        // Save to DB
         const product = new CustomerRedeemProduct({
             name,
             description,
             requiredPoints,
-            rc_product_img
+            rc_product_img: uploadResponse.url
         });
 
         await product.save();
@@ -29,7 +67,73 @@ const addRedeemProductCustomer = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
+
 };
+
+
+//update
+
+const updateCustomerRedeemProduct = async (req, res) => {
+
+    try {
+        const { id } = req.params;
+        const { name, description, requiredPoints } = req.body;
+        const file = req.file;
+
+        const product = await CustomerRedeemProduct.findById(id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        let newImageUrl = product.rc_product_img;
+
+        if (file) {
+            const uploadResponse = await imagekit.upload({
+                file: fs.readFileSync(file.path),
+                fileName: file.originalname,
+                folder: "/redeem_products",
+            });
+            newImageUrl = uploadResponse.url;
+        }
+
+        product.name = name || product.name;
+        product.description = description || product.description;
+        product.requiredPoints = requiredPoints || product.requiredPoints;
+        product.rc_product_img = newImageUrl;
+
+        await product.save();
+        res.status(200).json({ message: 'Redeem product updated', product });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+
+};
+
+
+// const updateCustomerRedeemProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { name, description, requiredPoints } = req.body;
+//         const rc_product_img = req.file ? req.file.path : undefined;
+
+//         const product = await CustomerRedeemProduct.findById(id);
+//         if (!product) {
+//             return res.status(404).json({ message: 'Product not found' });
+//         }
+
+//         product.name = name || product.name;
+//         product.description = description || product.description;
+//         product.requiredPoints = requiredPoints || product.requiredPoints;
+//         if (rc_product_img) product.rc_product_img = rc_product_img;
+
+//         await product.save();
+//         res.status(200).json({ message: 'Redeem product updated', product });
+
+//     } catch (error) {
+//         res.status(500).json({ message: 'Server Error', error: error.message });
+//     }
+// };
 
 
 // get all redeem products
@@ -42,30 +146,6 @@ const getAllRedeemProductsCustomer = async (req, res) => {
     }
 };
 
-//update
-const updateCustomerRedeemProduct = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, description, requiredPoints } = req.body;
-        const rc_product_img = req.file ? req.file.path : undefined;
-
-        const product = await CustomerRedeemProduct.findById(id);
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        product.name = name || product.name;
-        product.description = description || product.description;
-        product.requiredPoints = requiredPoints || product.requiredPoints;
-        if (rc_product_img) product.rc_product_img = rc_product_img;
-
-        await product.save();
-        res.status(200).json({ message: 'Redeem product updated', product });
-
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', error: error.message });
-    }
-};
 
 // delete
 const deleteCustomerRedeemProduct = async (req, res) => {
@@ -84,48 +164,49 @@ const deleteCustomerRedeemProduct = async (req, res) => {
     }
 };
 
+
 // Redeem Product Customer ( Customer can redeem product )
 const redeemProductCustomer = async (req, res) => {
     const { customer_Id, redeemProductId } = req.body;
-  
+
     try {
-      const customer = await Customer.findById(customer_Id);
-      const product = await CustomerRedeemProduct.findById(redeemProductId);
-  
-      if (!customer || !product) {
-        return res.status(404).json({ message: 'Customer or Product not found' });
-      }
-  
-      if (customer.points < product.requiredPoints) {
-        return res.status(400).json({ message: 'Not enough points to redeem this product' });
-      }
-  
-      // Deduct points
-      customer.points -= product.requiredPoints;
-      await customer.save();
-  
-      // Save redemption history
-      const redemption = new CustomerRedemptionHistory({
-        customer_Id: customer._id,
-        redeemProductId: product._id,
-        pointsDeducted: product.requiredPoints
-      });
-      await redemption.save();
-  
-      // ✅ Add points transaction
-      await CustomerPointsTransactions.create({
-        customer: customer._id,
-        points: -product.requiredPoints, // 👈 Negative points for deduction
-        type: "redeem",
-        description: `Redeemed product: ${product.name}`
-      });
-  
-      res.status(200).json({ message: 'Product redeemed successfully', redemption });
+        const customer = await Customer.findById(customer_Id);
+        const product = await CustomerRedeemProduct.findById(redeemProductId);
+
+        if (!customer || !product) {
+            return res.status(404).json({ message: 'Customer or Product not found' });
+        }
+
+        if (customer.points < product.requiredPoints) {
+            return res.status(400).json({ message: 'Not enough points to redeem this product' });
+        }
+
+        // Deduct points
+        customer.points -= product.requiredPoints;
+        await customer.save();
+
+        // Save redemption history
+        const redemption = new CustomerRedemptionHistory({
+            customer_Id: customer._id,
+            redeemProductId: product._id,
+            pointsDeducted: product.requiredPoints
+        });
+        await redemption.save();
+
+        // ✅ Add points transaction
+        await CustomerPointsTransactions.create({
+            customer: customer._id,
+            points: -product.requiredPoints, // 👈 Negative points for deduction
+            type: "redeem",
+            description: `Redeemed product: ${product.name}`
+        });
+
+        res.status(200).json({ message: 'Product redeemed successfully', redemption });
     } catch (err) {
-      res.status(500).json({ message: 'Something went wrong', error: err.message });
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
-  };
-  
+};
+
 
 // Get redemption history with farmer & redeem product details
 const getRedeemProductHistoryCustomer = async (req, res) => {

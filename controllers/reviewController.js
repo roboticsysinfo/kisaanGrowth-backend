@@ -120,6 +120,7 @@ const createReview = async (req, res) => {
 
 const getAllReviews = async (req, res) => {
   try {
+    
     const { shop_id } = req.params;
 
     if (!shop_id) {
