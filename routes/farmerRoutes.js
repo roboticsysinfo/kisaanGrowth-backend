@@ -55,7 +55,7 @@ router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
 
 
-router.get('/farmer/update/:farmerId', authorize(["farmer"]), upload.single('profileImg'), updateFarmerById);
+router.put('/farmer/update/:farmerId', authorize(["farmer"]), upload.single('profileImg'), updateFarmerById);
 
 
 router.get('/get/farmer-details/:farmerId', getFarmerDetailsById);
