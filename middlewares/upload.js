@@ -1,22 +1,25 @@
-// multer-config.js
-const multer = require('multer');
-const path = require('path');
+// middlewares/upload.js
 
-const storage = multer.memoryStorage(); // Use memory storage instead of disk
+const multer = require("multer");
+const path = require("path");
 
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif|webp/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
+const storage = multer.memoryStorage();
 
-    if (extname && mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WEBP are allowed.'));
-    }
+const fileFilter = (req, file, cb) => {
+  const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+  const isMimeTypeValid = allowedMimeTypes.includes(file.mimetype);
+
+  const extname = path.extname(file.originalname).toLowerCase();
+  const allowedExtensions = [".jpeg", ".jpg", ".png", ".gif", ".webp"];
+  const isExtNameValid = allowedExtensions.includes(extname);
+
+  if (isMimeTypeValid && isExtNameValid) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only JPEG, PNG, GIF, and WEBP are allowed."));
   }
-});
+};
+
+const upload = multer({ storage, fileFilter });
 
 module.exports = upload;
