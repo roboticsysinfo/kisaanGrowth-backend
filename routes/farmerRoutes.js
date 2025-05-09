@@ -1,7 +1,7 @@
 const express = require('express');
 const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
-// const upload = require('../middlewares/upload');
+const upload = require('../middlewares/upload');
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
@@ -9,25 +9,27 @@ const { createRazorpayOrderForFarmerPoints, applyFarmerUpgradePlan, createPlanOr
 const { getActiveFarmerPlanById, getAllFarmerPlans } = require('../controllers/FarmerPlanController');
 const { getRedeemProductsByFarmerId } = require('../controllers/rcProductController');
 
-// Setup multer storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Make sure this folder exists
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+
+// // Setup multer storage
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/"); // Make sure this folder exists
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   },
+// });
 
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 
-// Handle both fields
+// // Handle both fields
 const multipleUploads = upload.fields([
   { name: "uploadAadharCard", maxCount: 1 },
   { name: "profileImg", maxCount: 1 },
 ]);
+
 
 // Register Farmer
 router.post("/farmer/register", multipleUploads, registerFarmer);
@@ -53,7 +55,7 @@ router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
 
 
-router.get('/farmer/update/:farmerId', authorize(["farmer"]), updateFarmerById);
+router.get('/farmer/update/:farmerId', authorize(["farmer"]), upload.single('profileImg'), updateFarmerById);
 
 
 router.get('/get/farmer-details/:farmerId', getFarmerDetailsById);

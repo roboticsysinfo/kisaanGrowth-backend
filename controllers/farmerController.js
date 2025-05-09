@@ -5,7 +5,9 @@ const generateToken = require("../utils/jwtGenerator");
 const { ObjectId } = require('mongodb');
 const axios = require("axios")
 require('dotenv').config();
-const FarmerOTPModel = require("../models/FarmerOTPModel")
+const FarmerOTPModel = require("../models/FarmerOTPModel");
+const imagekit = require("../utils/imagekit");
+const fs = require("fs")
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -197,17 +199,63 @@ const farmerLogin = async (req, res) => {
 };
 
 
-const updateFarmerById = async (req, res) => {
+// const updateFarmerById = async (req, res) => {
 
+//   try {
+
+//     const farmerId = req.params.id;
+//     const updates = req.body; // Data to be updated
+
+//     // Find the farmer and update the fields
+//     const updatedFarmer = await Farmer.findByIdAndUpdate(
+//       farmerId,
+//       updates,
+//       { new: true, runValidators: true } // Return updated doc & validate input
+//     ).select("-password");
+
+//     if (!updatedFarmer) {
+//       return res.status(404).json({ message: "Farmer not found" });
+//     }
+
+//     res.status(200).json({
+//       message: "Farmer updated successfully",
+//       farmer: updatedFarmer,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+
+// };
+
+
+// Request KYC verification
+
+const updateFarmerById = async (req, res) => {
   try {
     const farmerId = req.params.id;
-    const updates = req.body; // Data to be updated
+    const updates = req.body;
 
-    // Find the farmer and update the fields
+    // Handle profile image upload via ImageKit
+    if (req.file) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+
+      const uploadResponse = await imagekit.upload({
+        file: fileBuffer, // required
+        fileName: req.file.originalname, // required
+        folder: "/uploads", // optional
+      });
+
+      // Remove local file after upload (optional but recommended)
+      fs.unlinkSync(req.file.path);
+
+      // Set the profileImg field in the updates
+      updates.profileImg = uploadResponse.url;
+    }
+
     const updatedFarmer = await Farmer.findByIdAndUpdate(
       farmerId,
       updates,
-      { new: true, runValidators: true } // Return updated doc & validate input
+      { new: true, runValidators: true }
     ).select("-password");
 
     if (!updatedFarmer) {
@@ -221,11 +269,10 @@ const updateFarmerById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-
 };
 
 
-// Request KYC verification
+
 const requestKYC = async (req, res) => {
 
   try {
@@ -492,8 +539,6 @@ const farmerLoginWithOTP = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
 
 
 // Daily 5 min stay reward points function
