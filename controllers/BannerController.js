@@ -51,16 +51,29 @@ exports.addBanner = async (req, res) => {
 
 
 // Update a banner
+
 exports.updateBanner = async (req, res) => {
     const { bannerId } = req.params;
     const { title, category } = req.body;
     const file = req.file;
   
+    console.log("bannerId", bannerId)
+    console.log("title", title)
+    console.log("category", category)
+    console.log("file", file)
+
+
     try {
       const siteDetails = await SiteDetails.findOne();
+
+      console.log("siteDetails", siteDetails)
+
       if (!siteDetails) return res.status(404).json({ message: "Site details not found" });
   
       const banner = siteDetails.banners.id(bannerId);
+
+      console.log("banner", banner)
+
       if (!banner) return res.status(404).json({ message: "Banner not found" });
   
       if (title) banner.title = title;
@@ -74,7 +87,12 @@ exports.updateBanner = async (req, res) => {
           folder: "/uploads"
         });
   
+        console.log("uploadResponse", uploadResponse)
+
         banner.banner_image = uploadResponse.url;
+
+        console.log("banner.banner_image", banner.banner_image)
+
       }
   
       await siteDetails.save();
