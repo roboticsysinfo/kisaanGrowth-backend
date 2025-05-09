@@ -91,7 +91,7 @@ const updateCustomerRedeemProduct = async (req, res) => {
             const uploadResponse = await imagekit.upload({
                 file: fs.readFileSync(file.path),
                 fileName: file.originalname,
-                folder: "/redeem_products",
+                folder: "/uploads",
             });
             newImageUrl = uploadResponse.url;
         }
