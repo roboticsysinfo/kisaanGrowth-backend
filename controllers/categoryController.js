@@ -1,24 +1,69 @@
 const Category = require("../models/Category");
+const ImageKit = require("../utils/imagekit")
 
 
-// Create a category
+// Helper: upload to ImageKit
+const uploadToImageKit = (file) => {
+  return new Promise((resolve, reject) => {
+    ImageKit.upload({
+      file: file.buffer,
+      fileName: file.originalname,
+      folder: "/uploads"
+    }, (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
+  });
+};
+
+// Create Category
 const createCategory = async (req, res) => {
   try {
+    const { name } = req.body;
+    let imageUrl;
 
-    const {
-      name,
-    } = req.body;
+    if (req.file) {
+      const uploadedImage = await uploadToImageKit(req.file);
+      imageUrl = uploadedImage.url;
+    }
 
     const category = new Category({
       name,
-      category_image : req.file ? req.file.filename : undefined,
+      category_image: imageUrl,
     });
+
     await category.save();
     res.status(201).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}
+};
+
+// Update Category
+const updateCategory = async (req, res) => {
+
+  try {
+    const updates = { name: req.body.name };
+
+    if (req.file) {
+      const uploadedImage = await uploadToImageKit(req.file);
+      updates.category_image = uploadedImage.url;
+    }
+
+    const category = await Category.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 
 const getAllCategories = async (req, res) => {
@@ -33,36 +78,6 @@ const getAllCategories = async (req, res) => {
 
 
 
-
-// Update a category
-const updateCategory = async (req, res) => {
-  try {
-    const updates = {
-      name: req.body.name,
-    };
-
-    // Check if a file was uploaded and include it in the updates
-    if (req.file) {
-      updates.category_image = req.file.filename;
-    }
-
-    // Perform the update
-    const category = await Category.findByIdAndUpdate(req.params.id, updates, {
-      new: true, // Return the updated document
-      runValidators: true, // Validate the updates
-    });
-
-    // If category not found, return 404
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
-    // Respond with the updated category
-    res.status(200).json(category);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
 
 
 // Delete a category

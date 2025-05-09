@@ -288,6 +288,7 @@ const updateCustomer = async (req, res) => {
 
 // Send OTP to Customer Phone Number with FAST 2 SMS
 
+
 const sendOtptoCustomer = async (req, res) => {
   const { phoneNumber } = req.body;
 
