@@ -135,7 +135,6 @@ const getFarmerById = async (req, res) => {
 
 };
 
-
 // For admin: get farmer by ID from params
 const getFarmerByIdForAdmin = async (req, res) => {
   try {
@@ -152,7 +151,6 @@ const getFarmerByIdForAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 // Farmer Login
 const farmerLogin = async (req, res) => {
@@ -230,14 +228,23 @@ const farmerLogin = async (req, res) => {
 
 // Request KYC verification
 
+
 const updateFarmerById = async (req, res) => {
   try {
     const farmerId = req.params.id;
     const updates = req.body;
 
+    console.log("farmer Id", farmerId)
+    console.log("updates", updates)
+
     // Handle profile image upload via ImageKit
     if (req.file) {
+
+      console.log("req.file", req.file)
+
       const fileBuffer = fs.readFileSync(req.file.path);
+
+      console.log("fileBuffer", fileBuffer)
 
       const uploadResponse = await imagekit.upload({
         file: fileBuffer, // required
@@ -245,11 +252,15 @@ const updateFarmerById = async (req, res) => {
         folder: "/uploads", // optional
       });
 
+      console.log("uploadResponse", uploadResponse)
+
       // Remove local file after upload (optional but recommended)
       fs.unlinkSync(req.file.path);
 
       // Set the profileImg field in the updates
       updates.profileImg = uploadResponse.url;
+
+      console.log("updates.profileImg", updates.profileImg)
     }
 
     const updatedFarmer = await Farmer.findByIdAndUpdate(
@@ -257,6 +268,8 @@ const updateFarmerById = async (req, res) => {
       updates,
       { new: true, runValidators: true }
     ).select("-password");
+
+    console.log("updatedFarmer", updatedFarmer)
 
     if (!updatedFarmer) {
       return res.status(404).json({ message: "Farmer not found" });
