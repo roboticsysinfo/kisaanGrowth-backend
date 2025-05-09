@@ -21,7 +21,7 @@ router.get("/customer/:id", authorize(['customer', 'admin']),  CustomerControlle
 
 
 // Update Customer
-router.put("/update-customer/:id", upload.single('profile_image'), authorize(['customer']), CustomerController.updateCustomer);
+router.put("/update-customer/:id", upload.single('profileImage'), authorize(['customer']), CustomerController.updateCustomer);
 
 
 router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
