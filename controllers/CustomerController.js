@@ -5,7 +5,9 @@ const Farmer = require('../models/Farmer');
 const generateToken = require('../utils/jwtGenerator');
 const CustomerPointsTransactions = require('../models/customerPointsTransactions');
 const CustomerOTPModel = require("../models/CustomerOTPModel")
-const axios = require("axios")
+const axios = require("axios");
+const ImageKit = require("../utils/imagekit")
+const fs = require("fs")
 require('dotenv').config();
 
 
@@ -159,11 +161,30 @@ const getCustomerById = async (req, res) => {
 // Update Customer Details
 const updateCustomer = async (req, res) => {
   try {
-    const { name, email, phoneNumber, address, profile_image } = req.body;
+    const { name, email, phoneNumber, address } = req.body;
+    let profileImageUrl = req.body.profile_image; // fallback in case no file is uploaded
 
+    // Upload image to ImageKit if file exists
+    if (req.file) {
+      const uploadedImage = await ImageKit.upload({
+        file: req.file.buffer, // actual file buffer
+        fileName: `${req.params.id}_profile_${Date.now()}.jpg`, // unique filename
+        folder: "/uploads", // optional folder in ImageKit
+      });
+
+      profileImageUrl = uploadedImage.url; // get the image URL
+    }
+
+    // Update customer
     const updatedCustomer = await Customer.findByIdAndUpdate(
       req.params.id,
-      { name, email, phoneNumber, address, profile_image },
+      {
+        name,
+        email,
+        phoneNumber,
+        address,
+        profile_image: profileImageUrl,
+      },
       { new: true, runValidators: true }
     ).select("-password");
 
@@ -171,8 +192,12 @@ const updateCustomer = async (req, res) => {
       return res.status(404).json({ message: "Customer not found" });
     }
 
-    res.status(200).json({ message: "Customer updated successfully", customer: updatedCustomer });
+    res.status(200).json({
+      message: "Customer updated successfully",
+      customer: updatedCustomer,
+    });
   } catch (error) {
+    console.error("Error updating customer:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
