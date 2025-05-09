@@ -7,34 +7,8 @@ const RedemptionHistory = require("../models/RedemptionHistory");
 const imagekit = require("../utils/imagekit");
 const fs = require("fs")
 
+
 // Add redeem product
-
-// const addRedeemProductCustomer = async (req, res) => {
-
-//     try {
-
-//         const { name, description, requiredPoints } = req.body;
-//         const rc_product_img = req.file ? req.file.path : null;
-
-//         if (!name || !description || !requiredPoints) {
-//             return res.status(400).json({ message: 'All fields are required' });
-//         }
-
-//         const product = new CustomerRedeemProduct({
-//             name,
-//             description,
-//             requiredPoints,
-//             rc_product_img
-//         });
-
-//         await product.save();
-//         res.status(201).json({ message: 'Redeem product created successfully', product });
-
-//     } catch (error) {
-//         res.status(500).json({ message: 'Server Error', error: error.message });
-//     }
-
-// };
 
 const addRedeemProductCustomer = async (req, res) => {
     try {
@@ -66,6 +40,7 @@ const addRedeemProductCustomer = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
 
 //update
 
@@ -104,37 +79,10 @@ const updateCustomerRedeemProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
-    
+
 };
 
 
-
-// const updateCustomerRedeemProduct = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { name, description, requiredPoints } = req.body;
-//         const rc_product_img = req.file ? req.file.path : undefined;
-
-//         const product = await CustomerRedeemProduct.findById(id);
-//         if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//         }
-
-//         product.name = name || product.name;
-//         product.description = description || product.description;
-//         product.requiredPoints = requiredPoints || product.requiredPoints;
-//         if (rc_product_img) product.rc_product_img = rc_product_img;
-
-//         await product.save();
-//         res.status(200).json({ message: 'Redeem product updated', product });
-
-//     } catch (error) {
-//         res.status(500).json({ message: 'Server Error', error: error.message });
-//     }
-// };
-
-
-// get all redeem products
 const getAllRedeemProductsCustomer = async (req, res) => {
     try {
         const products = await CustomerRedeemProduct.find().sort({ createdAt: -1 });
