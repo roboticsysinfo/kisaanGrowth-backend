@@ -2,9 +2,7 @@
 const multer = require('multer');
 const path = require('path');
 
-
 const storage = multer.memoryStorage(); // Use memory storage instead of disk
-
 
 const upload = multer({
   storage: storage,
@@ -20,6 +18,5 @@ const upload = multer({
     }
   }
 });
-
 
 module.exports = upload;

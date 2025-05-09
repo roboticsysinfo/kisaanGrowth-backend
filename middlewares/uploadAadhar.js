@@ -1,24 +1,29 @@
 // config/aadharUpload.js
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
 
-// Disk storage config for Aadhar Card
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = "/uploads";
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // specify the folder to store images
   },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `aadhar-${Date.now()}${ext}`;
-    cb(null, uniqueName);
-  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // create unique file name
+  }
 });
 
-const uploadAadhar = multer({ storage });
+const uploadAadhar = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, and GIF are allowed.'));
+    }
+  }
+});
 
 module.exports = uploadAadhar;
+
