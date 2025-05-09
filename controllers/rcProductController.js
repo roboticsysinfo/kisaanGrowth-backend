@@ -37,7 +37,6 @@ const fs = require("fs")
 // };
 
 const addRedeemProductCustomer = async (req, res) => {
-
     try {
         const { name, description, requiredPoints } = req.body;
         const file = req.file;
@@ -46,14 +45,13 @@ const addRedeemProductCustomer = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Upload to ImageKit
+        // Upload to ImageKit using memory buffer
         const uploadResponse = await imagekit.upload({
-            file: fs.readFileSync(file.path),  // buffer
+            file: file.buffer, // ✅ buffer used instead of path
             fileName: file.originalname,
             folder: "/uploads",
         });
 
-        // Save to DB
         const product = new CustomerRedeemProduct({
             name,
             description,
@@ -67,15 +65,14 @@ const addRedeemProductCustomer = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
-
 };
-
 
 //update
 
 const updateCustomerRedeemProduct = async (req, res) => {
 
     try {
+
         const { id } = req.params;
         const { name, description, requiredPoints } = req.body;
         const file = req.file;
@@ -89,7 +86,7 @@ const updateCustomerRedeemProduct = async (req, res) => {
 
         if (file) {
             const uploadResponse = await imagekit.upload({
-                file: fs.readFileSync(file.path),
+                file: file.buffer, // ✅ buffer instead of path
                 fileName: file.originalname,
                 folder: "/uploads",
             });
@@ -107,8 +104,9 @@ const updateCustomerRedeemProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
-
+    
 };
+
 
 
 // const updateCustomerRedeemProduct = async (req, res) => {
