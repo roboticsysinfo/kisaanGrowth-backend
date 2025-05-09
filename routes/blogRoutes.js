@@ -17,14 +17,18 @@ const router = express.Router();
 // ✅ Create a new blog (Admin only)
 router.post("/add_blog", upload.single("blog_image"), authorize(["admin"]), createBlog);
 
+// ✅ Update a blog (Admin only)
+router.put("/update-blog/:id", upload.single("blog_image"), authorize(["admin"]), updateBlog);
+
+
+
 // ✅ Get all blogs
 router.get("/blogs", getBlogs);
+
 
 // ✅ Get a single blog by ID
 router.get("/blog/:id", getBlogById);
 
-// ✅ Update a blog (Admin only)
-router.put("/update-blog/:id", authorize(["admin"]), updateBlog);
 
 // ✅ Delete a blog (Admin only)
 router.delete("/delete-blog/:id", authorize(["admin"]), deleteBlog);

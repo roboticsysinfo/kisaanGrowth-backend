@@ -1,8 +1,10 @@
 const { default: mongoose } = require("mongoose");
 const Blog = require("../models/Blog");
+const uploadToImageKit = require("../utils/uploadToImageKit");
 
 
-// ✅ Create Blog
+// ----------- Create BLog -----------
+
 exports.createBlog = async (req, res) => {
     try {
         const {
@@ -15,26 +17,26 @@ exports.createBlog = async (req, res) => {
             metaKeywords
         } = req.body;
 
-        // Check if required fields are provided
         if (!blog_title || !blog_content || !blog_category) {
             return res.status(400).json({ message: "All required fields must be provided" });
         }
 
-        // Convert blog_category to ObjectId
         if (!mongoose.Types.ObjectId.isValid(blog_category)) {
             return res.status(400).json({ message: "Invalid category ID" });
         }
 
-        // Handling file upload
-        const blogImage = req.file ? req.file.path : ""; 
+        let blogImageUrl = "";
+        if (req.file) {
+            const result = await uploadToImageKit(req.file.buffer, req.file.originalname);
+            blogImageUrl = result.url;
+        }
 
-        // Creating a new blog post
         const newBlog = new Blog({
             blog_title,
             blog_content,
-            author: req.user.userId,  // Use req.user.userId directly
-            blog_category: new mongoose.Types.ObjectId(blog_category), // Ensure it's ObjectId
-            blog_image: blogImage,
+            author: req.user.userId,
+            blog_category: new mongoose.Types.ObjectId(blog_category),
+            blog_image: blogImageUrl,
             imageAltText,
             metaTitle,
             metaDescription,
@@ -47,17 +49,6 @@ exports.createBlog = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-
-// ✅ Get All Blogs
-// exports.getBlogs = async (req, res) => {
-//     try {
-//         const blogs = await Blog.find().populate("author", "name").populate("blog_category", "Blog_category_name").sort({ createdAt: -1 });
-//         res.status(200).json(blogs);
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
 
 
 // ✅ Get All Blogs with Pagination
@@ -107,21 +98,37 @@ exports.getBlogById = async (req, res) => {
 };
 
 // ✅ Update Blog
+
 exports.updateBlog = async (req, res) => {
     try {
-        const { blog_title, blog_content, blog_category, imageAltText, metaTitle, metaDescription, metaKeywords } = req.body;
+        const {
+            blog_title,
+            blog_content,
+            blog_category,
+            imageAltText,
+            metaTitle,
+            metaDescription,
+            metaKeywords
+        } = req.body;
+
+        let updateData = {
+            blog_title,
+            blog_content,
+            blog_category,
+            imageAltText,
+            metaTitle,
+            metaDescription,
+            metaKeywords
+        };
+
+        if (req.file) {
+            const result = await uploadToImageKit(req.file.buffer, req.file.originalname);
+            updateData.blog_image = result.url;
+        }
 
         const updatedBlog = await Blog.findByIdAndUpdate(
             req.params.id,
-            {
-                blog_title,
-                blog_content,
-                blog_category,
-                imageAltText,
-                metaTitle,
-                metaDescription,
-                metaKeywords
-            },
+            updateData,
             { new: true, runValidators: true }
         );
 
@@ -134,6 +141,10 @@ exports.updateBlog = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+
+
 
 // ✅ Delete Blog
 exports.deleteBlog = async (req, res) => {
@@ -153,30 +164,30 @@ exports.deleteBlog = async (req, res) => {
 // Blog view count increase API
 exports.blogViewCount = async (req, res) => {
     try {
-      const { id } = req.params;
-      
-      // Blog ka view count increase kare
-      const blog = await Blog.findByIdAndUpdate(
-        id,
-        { $inc: { blog_views: 1 } },  // Views count increase
-        { new: true }
-      );
-  
-      if (!blog) return res.status(404).json({ message: "Blog not found" });
-  
-      res.json({ success: true, blog_views: blog.blog_views });
+        const { id } = req.params;
+
+        // Blog ka view count increase kare
+        const blog = await Blog.findByIdAndUpdate(
+            id,
+            { $inc: { blog_views: 1 } },  // Views count increase
+            { new: true }
+        );
+
+        if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+        res.json({ success: true, blog_views: blog.blog_views });
     } catch (error) {
-      res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: "Server error", error });
     }
-  }
+}
 
 
-  exports.searchBlogs = async (req, res) => {
+exports.searchBlogs = async (req, res) => {
     try {
         const { query } = req.query;
         if (!query) return res.status(400).json({ message: "Search query is required" });
 
-        const blogs = await Blog.find({ 
+        const blogs = await Blog.find({
             title: { $regex: query, $options: "i" }  // Case-insensitive search
         });
 
