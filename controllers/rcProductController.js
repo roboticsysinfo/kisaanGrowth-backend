@@ -12,10 +12,10 @@ const fs = require("fs")
 
 const addRedeemProductCustomer = async (req, res) => {
     try {
-        const { name, description, requiredPoints } = req.body;
+        const { name, description, requiredPoints, price_value } = req.body;
         const file = req.file;
 
-        if (!name || !description || !requiredPoints || !file) {
+        if (!name || !description || !requiredPoints || !price_value || !file) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -30,6 +30,7 @@ const addRedeemProductCustomer = async (req, res) => {
             name,
             description,
             requiredPoints,
+            price_value,
             rc_product_img: uploadResponse.url
         });
 
@@ -43,13 +44,12 @@ const addRedeemProductCustomer = async (req, res) => {
 
 
 //update
-
 const updateCustomerRedeemProduct = async (req, res) => {
 
     try {
 
         const { id } = req.params;
-        const { name, description, requiredPoints } = req.body;
+        const { name, description, requiredPoints, price_value } = req.body;
         const file = req.file;
 
         const product = await CustomerRedeemProduct.findById(id);
@@ -71,6 +71,7 @@ const updateCustomerRedeemProduct = async (req, res) => {
         product.name = name || product.name;
         product.description = description || product.description;
         product.requiredPoints = requiredPoints || product.requiredPoints;
+        product.price_value = price_value || product.price_value;
         product.rc_product_img = newImageUrl;
 
         await product.save();
@@ -109,7 +110,6 @@ const deleteCustomerRedeemProduct = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
-
 
 // Redeem Product Customer ( Customer can redeem product )
 const redeemProductCustomer = async (req, res) => {
@@ -186,7 +186,6 @@ const getRedeemProductHistoryCustomer = async (req, res) => {
 };
 
 
-
 // Get customer redemption history by customer ID
 const getRedeemProductsByCustomerId = async (req, res) => {
     const { customerId } = req.params;
@@ -214,7 +213,6 @@ const getRedeemProductsByCustomerId = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
-
 
 
 // Get farmer redemption history by farmer ID

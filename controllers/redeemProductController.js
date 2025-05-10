@@ -225,8 +225,11 @@ const redeemProduct = async (req, res) => {
 // Get redemption history with farmer & redeem product details
 
 const getRedeemProductHistoryFarmer = async (req, res) => {
+    
     try {
+
         const history = await RedemptionHistory.find()
+
             .sort({ redeemedAt: -1 })
             .populate({
                 path: 'farmerId',
@@ -249,9 +252,11 @@ const getRedeemProductHistoryFarmer = async (req, res) => {
         }));
 
         res.status(200).json(formattedHistory);
+
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
+
 };
 
 
