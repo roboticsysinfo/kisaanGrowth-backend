@@ -180,7 +180,7 @@ const redeemProductCustomer = async (req, res) => {
         customer.points -= product.requiredPoints;
         await customer.save();
 
-        // Generate unique Order ID (format: ORD + timestamp + random)
+        // Generate unique Order ID
         const orderId = 'ORD' + Date.now() + Math.floor(1000 + Math.random() * 9000);
 
         // Save redemption history
@@ -188,25 +188,25 @@ const redeemProductCustomer = async (req, res) => {
             customer_Id: customer._id,
             redeemProductId: product._id,
             pointsDeducted: product.requiredPoints,
-            orderId // 👈 new field
+            orderId
         });
         await redemption.save();
 
-        // ✅ Add points transaction
+        // Add points transaction
         await CustomerPointsTransactions.create({
             customer: customer._id,
-            points: -product.requiredPoints, // 👈 Negative points for deduction
+            points: -product.requiredPoints,
             type: "redeem",
             description: `Redeemed product: ${product.name}`
         });
 
-        // After saving redemption
-        const priceValue = product.price_value || 0; // get product price
-        const gstAmount = +(priceValue * 0.18).toFixed(2); // 18% GST
+        // Calculate billing amounts
+        const priceValue = product.price_value || 0;
+        const gstAmount = +(priceValue * 0.18).toFixed(2);
         const totalAmount = +(priceValue + gstAmount).toFixed(2);
 
-        // Save Bill
-        await CustomerRedeemBill.create({
+        // ✅ Create Bill and save reference
+        const bill = new CustomerRedeemBill({
             customer_Id: customer._id,
             redeemProductId: product._id,
             orderId,
@@ -216,20 +216,30 @@ const redeemProductCustomer = async (req, res) => {
             totalAmount
         });
 
+        await bill.save(); // Save initially to get _id
+
+        // Generate PDF
         const billFileName = `invoice_${orderId}.pdf`;
         const billPath = path.join(__dirname, '../uploads/bills', billFileName);
 
         await generateCustomerBillPdf({
-            ...bill.toObject(), // all bill data
+            ...bill.toObject(),
             orderId
         }, billPath);
 
-        // Optionally, save file path in bill model:
+        // ✅ Update bill with PDF path
         bill.pdfPath = `bills/${billFileName}`;
-        await bill.save();
+        await bill.save(); // Update with pdfPath
 
-
-        res.status(200).json({ message: 'Product redeemed successfully', redemption });
+        res.status(200).json({
+            message: 'Product redeemed successfully',
+            redemption,
+            bill: {
+                orderId,
+                totalAmount,
+                pdf: bill.pdfPath
+            }
+        });
 
     } catch (err) {
         res.status(500).json({ message: 'Something went wrong', error: err.message });
