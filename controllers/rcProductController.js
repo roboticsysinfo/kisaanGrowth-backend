@@ -359,35 +359,49 @@ const getRedeemProductsByFarmerId = async (req, res) => {
 };
 
 
+const path = require('path');
+const fs = require('fs');
+const CustomerRedeemBill = require('../models/CustomerRedeemBill'); // adjust path if needed
+
 const getBillPdf = async (req, res) => {
     const { orderId } = req.params;
-
     console.log("🔍 Requested orderId:", orderId);
 
     try {
         const bill = await CustomerRedeemBill.findOne({ orderId });
 
-    
-        if (!bill || !bill.pdfPath) {
-            return res.status(404).json({ message: 'Bill not found or missing pdfPath' });
+        if (!bill) {
+            return res.status(404).json({ message: 'Bill not found in database' });
         }
 
-        const filePath = path.join(__dirname, '../uploads', bill.pdfPath); // Fix path handling
-        console.log("📁 Resolved file path:", filePath);
+        // Fallback file path logic
+        const pdfRelativePath = bill.pdfPath || `bills/invoice_${orderId}.pdf`;
+        const filePath = path.resolve(__dirname, '../uploads', pdfRelativePath);
 
+        console.log("📁 Looking for file at:", filePath);
+
+        // Check if file exists
         if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ message: 'File not found on server' });
+            return res.status(404).json({ message: 'PDF file not found on server', path: filePath });
         }
 
+        // Serve the file
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${orderId}.pdf"`);
-        fs.createReadStream(filePath).pipe(res);
+
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+
+        fileStream.on('error', (err) => {
+            console.error("❌ Stream error:", err);
+            res.status(500).json({ message: 'Error reading file', error: err.message });
+        });
+
     } catch (err) {
-        console.error("❌ Error serving bill:", err);
-        res.status(500).json({ message: 'Error generating bill', error: err.message });
+        console.error("❌ Server error while serving bill:", err);
+        res.status(500).json({ message: 'Internal server error', error: err.message });
     }
 };
-
 
 
 module.exports = {
