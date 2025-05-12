@@ -359,10 +359,6 @@ const getRedeemProductsByFarmerId = async (req, res) => {
 };
 
 
-const path = require('path');
-const fs = require('fs');
-const CustomerRedeemBill = require('../models/CustomerRedeemBill'); // adjust path if needed
-
 const getBillPdf = async (req, res) => {
     const { orderId } = req.params;
     console.log("🔍 Requested orderId:", orderId);
