@@ -213,7 +213,7 @@ const redeemProductCustomer = async (req, res) => {
             productName: product.name,
             priceValue,
             gstAmount,
-            totalAmount
+            totalAmount,
         });
 
         await bill.save(); // Save initially to get _id

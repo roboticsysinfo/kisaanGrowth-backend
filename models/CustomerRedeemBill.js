@@ -20,7 +20,6 @@ const customerRedeemBillSchema = new mongoose.Schema({
   },
   pdfPath: {
     type: String,
-    required: true // or false if you want it optional initially
   },
   productName: {
     type: String,
