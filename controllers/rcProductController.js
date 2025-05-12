@@ -223,7 +223,7 @@ const redeemProductCustomer = async (req, res) => {
 
         console.log("billFileName", billFileName)
 
-        const billPath = path.join(__dirname, '/uploads/', billFileName);
+        const billPath = path.join(__dirname, '../uploads/bills', billFileName);
 
         console.log("billPath", billPath)
 
