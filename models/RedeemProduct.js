@@ -11,7 +11,10 @@ const redeemProductSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-
+    price_value: {
+        type: Number,
+        required: true
+    },
     requiredPoints: {
         type: Number,
         required: true
