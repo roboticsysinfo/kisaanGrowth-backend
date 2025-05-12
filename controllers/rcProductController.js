@@ -220,7 +220,7 @@ const redeemProductCustomer = async (req, res) => {
 
         // Generate PDF
         const billFileName = `invoice_${orderId}.pdf`;
-        const billPath = path.join(__dirname, '../uploads/bills', billFileName);
+        const billPath = path.join(__dirname, '/uploads/', billFileName);
 
         await generateCustomerBillPdf({
             ...bill.toObject(),
