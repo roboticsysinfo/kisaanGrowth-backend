@@ -284,6 +284,8 @@ const getRedeemProductHistoryCustomer = async (req, res) => {
 const getRedeemProductsByCustomerId = async (req, res) => {
     const { customerId } = req.params;
 
+    console.log("customer id", customerId)
+
     try {
         const history = await CustomerRedemptionHistory.find({ customer_Id: customerId })
             .sort({ redeemedAt: -1 })
@@ -291,6 +293,8 @@ const getRedeemProductsByCustomerId = async (req, res) => {
                 path: 'redeemProductId',
                 select: 'name rc_product_img requiredPoints description orderId'
             });
+
+        console.log("history", history)
 
         const formattedHistory = history.map(entry => ({
             redeemProductId: entry.redeemProductId?._id,
@@ -302,6 +306,8 @@ const getRedeemProductsByCustomerId = async (req, res) => {
             orderId: entry.orderId,
             redeemedAt: entry.redeemedAt
         }));
+
+        console.log("formattedHistory", formattedHistory)
 
         res.status(200).json(formattedHistory);
     } catch (error) {
