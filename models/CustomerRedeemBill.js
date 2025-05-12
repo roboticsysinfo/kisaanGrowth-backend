@@ -13,7 +13,6 @@ const customerRedeemBillSchema = new mongoose.Schema({
     ref: 'CustomerRedeemProduct',
     required: true
   },
-
   orderId: {
     type: String,
     required: true
