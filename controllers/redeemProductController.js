@@ -259,7 +259,7 @@ const redeemProduct = async (req, res) => {
             farmerName: farmer.name,
             farmerAddress: farmer.address,
             farmerState: farmer.state,
-            farmerCity: farmer.city,
+            farmerCity: farmer.city_district,
             farmerPhone: farmer.phoneNumber
         }, billPath);
 
