@@ -5,6 +5,8 @@ const RedeemProduct = require('../models/RedeemProduct');
 const RedemptionHistory = require('../models/RedemptionHistory');
 const generateFarmerBillPdf = require('../utils/generateFarmerBillPdf');
 const imagekit = require('../utils/imagekit');
+const fs = require("fs")
+const path = require('path');
 
 
 // Add redeem product
