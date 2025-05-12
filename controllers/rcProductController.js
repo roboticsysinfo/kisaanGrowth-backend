@@ -161,6 +161,7 @@ const deleteCustomerRedeemProduct = async (req, res) => {
 
 
 // Redeem Product Customer ( Customer can redeem product )
+
 const redeemProductCustomer = async (req, res) => {
     const { customer_Id, redeemProductId } = req.body;
 
@@ -205,7 +206,7 @@ const redeemProductCustomer = async (req, res) => {
         const gstAmount = +(priceValue * 0.18).toFixed(2);
         const totalAmount = +(priceValue + gstAmount).toFixed(2);
 
-        // ✅ Create Bill and save reference
+        // Create initial bill document
         const bill = new CustomerRedeemBill({
             customer_Id: customer._id,
             redeemProductId: product._id,
@@ -213,32 +214,31 @@ const redeemProductCustomer = async (req, res) => {
             productName: product.name,
             priceValue,
             gstAmount,
-            totalAmount,
+            totalAmount
         });
 
-        await bill.save(); // Save initially to get _id
+        await bill.save(); // Save first to get _id and timestamps
 
         // Generate PDF
         const billFileName = `invoice_${orderId}.pdf`;
-
-        console.log("billFileName", billFileName)
-
         const billPath = path.join(__dirname, '../uploads/bills', billFileName);
 
-        console.log("billPath", billPath)
-
+        // Send plain object to PDF generator (avoid bill.toObject())
         await generateCustomerBillPdf({
-            ...bill.toObject(),
-            orderId
+            orderId,
+            productName: product.name,
+            priceValue,
+            gstAmount,
+            totalAmount,
+            billGeneratedAt: bill.billGeneratedAt,
+            customer_Id: customer._id.toString()
         }, billPath);
 
-        // ✅ Update bill with PDF path
+        // Update pdfPath and save
         bill.pdfPath = `bills/${billFileName}`;
+        const updatedBill = await bill.save();
 
-        console.log("bill.pdfpath", bill.pdfPath)
-        await bill.save(); // Update with pdfPath
-
-
+        console.log("✅ Bill saved with PDF path:", updatedBill.pdfPath);
 
         res.status(200).json({
             message: 'Product redeemed successfully',
@@ -251,9 +251,11 @@ const redeemProductCustomer = async (req, res) => {
         });
 
     } catch (err) {
+        console.error("❌ Error redeeming product:", err);
         res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 };
+
 
 
 
