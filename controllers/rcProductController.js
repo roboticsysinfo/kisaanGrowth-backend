@@ -214,7 +214,8 @@ const redeemProductCustomer = async (req, res) => {
             productName: product.name,
             priceValue,
             gstAmount,
-            totalAmount
+            totalAmount,
+            pdfPath
         });
 
         await bill.save(); // Save first to get _id and timestamps
