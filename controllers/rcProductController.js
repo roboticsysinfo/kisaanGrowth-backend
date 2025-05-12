@@ -220,7 +220,12 @@ const redeemProductCustomer = async (req, res) => {
 
         // Generate PDF
         const billFileName = `invoice_${orderId}.pdf`;
+
+        console.log("billFileName", billFileName)
+
         const billPath = path.join(__dirname, '/uploads/', billFileName);
+
+        console.log("billPath", billPath)
 
         await generateCustomerBillPdf({
             ...bill.toObject(),
@@ -229,7 +234,11 @@ const redeemProductCustomer = async (req, res) => {
 
         // ✅ Update bill with PDF path
         bill.pdfPath = `bills/${billFileName}`;
+
+        console.log("bill.pdfpath", bill.pdfPath)
         await bill.save(); // Update with pdfPath
+
+
 
         res.status(200).json({
             message: 'Product redeemed successfully',
