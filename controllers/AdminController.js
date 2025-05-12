@@ -78,7 +78,9 @@ const getAllAdmins = async (req, res) => {
 
 
 const approveKYC = async (req, res) => {
+  
   try {
+
     const farmer = await Farmer.findById(req.params.id);
 
     if (!farmer) {
@@ -153,11 +155,13 @@ const deleteAdmin = async (req, res) => {
 
 
 const updateAdmin = async (req, res) => {
+  
   const { id } = req.params;
   const { name, email, password } = req.body;
 
   try {
     const admin = await Admin.findById(id);
+
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
@@ -179,12 +183,15 @@ const updateAdmin = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Failed to update admin", error: error.message });
   }
+
 };
 
 
 // Reject KYC verification
 const rejectKYC = async (req, res) => {
+
   try {
+
     const farmer = await Farmer.findById(req.params.farmerId);
 
     if (!farmer) {
@@ -196,13 +203,17 @@ const rejectKYC = async (req, res) => {
     await farmer.save();
 
     res.status(200).json({ message: "KYC rejected" });
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
+
 };
 
 const getKYCRequests = async (req, res) => {
+
   try {
+
     const farmers = await Farmer.find({ kycRequested: true });
 
     if (farmers.length === 0) {
@@ -210,12 +221,15 @@ const getKYCRequests = async (req, res) => {
     }
 
     res.status(200).json({ farmers });
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
+
 };
 
 module.exports = {
+
   registerAdmin,
   loginAdmin,
   approveKYC,
@@ -224,4 +238,5 @@ module.exports = {
   getAllAdmins,
   deleteAdmin,
   updateAdmin
+
 };
