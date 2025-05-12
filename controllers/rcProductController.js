@@ -117,52 +117,10 @@ const deleteCustomerRedeemProduct = async (req, res) => {
 };
 
 
-// Redeem Product Customer ( Customer can redeem product )
-// const redeemProductCustomer = async (req, res) => {
-//     const { customer_Id, redeemProductId } = req.body;
-
-//     try {
-//         const customer = await Customer.findById(customer_Id);
-//         const product = await CustomerRedeemProduct.findById(redeemProductId);
-
-//         if (!customer || !product) {
-//             return res.status(404).json({ message: 'Customer or Product not found' });
-//         }
-
-//         if (customer.points < product.requiredPoints) {
-//             return res.status(400).json({ message: 'Not enough points to redeem this product' });
-//         }
-
-//         // Deduct points
-//         customer.points -= product.requiredPoints;
-//         await customer.save();
-
-//         // Save redemption history
-//         const redemption = new CustomerRedemptionHistory({
-//             customer_Id: customer._id,
-//             redeemProductId: product._id,
-//             pointsDeducted: product.requiredPoints
-//         });
-//         await redemption.save();
-
-//         // ✅ Add points transaction
-//         await CustomerPointsTransactions.create({
-//             customer: customer._id,
-//             points: -product.requiredPoints, // 👈 Negative points for deduction
-//             type: "redeem",
-//             description: `Redeemed product: ${product.name}`
-//         });
-
-//         res.status(200).json({ message: 'Product redeemed successfully', redemption });
-//     } catch (err) {
-//         res.status(500).json({ message: 'Something went wrong', error: err.message });
-//     }
-// };
-
 
 // Redeem Product Customer ( Customer can redeem product )
-
 const redeemProductCustomer = async (req, res) => {
+
     const { customer_Id, redeemProductId } = req.body;
 
     try {
@@ -206,6 +164,7 @@ const redeemProductCustomer = async (req, res) => {
         const gstAmount = +(priceValue * 0.18).toFixed(2);
         const totalAmount = +(priceValue + gstAmount).toFixed(2);
 
+
         // Create bill document
         const bill = new CustomerRedeemBill({
             customer_Id: customer._id,
@@ -230,7 +189,14 @@ const redeemProductCustomer = async (req, res) => {
             gstAmount,
             totalAmount,
             billGeneratedAt: bill.billGeneratedAt,
-            customer_Id: customer._id.toString()
+            customer_Id: customer._id.toString(),
+
+            customerName: customer.name,
+            customerAddress: customer.address,
+            customerState: customer.state,
+            customerCity: customer.city,
+            customerPhone: customer.phoneNumber
+
         }, billPath);
 
         // DEBUG: Check before update
@@ -243,7 +209,6 @@ const redeemProductCustomer = async (req, res) => {
             { new: true } // Return updated document
         );
 
-        console.log("✅ Bill updated with pdfPath:", updated.pdfPath);
 
         res.status(200).json({
             message: 'Product redeemed successfully',
@@ -260,6 +225,7 @@ const redeemProductCustomer = async (req, res) => {
         res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 };
+
 
 // Get redemption history with farmer & redeem product details
 const getRedeemProductHistoryCustomer = async (req, res) => {
