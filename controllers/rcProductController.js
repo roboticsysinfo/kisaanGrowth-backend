@@ -289,7 +289,7 @@ const getRedeemProductsByCustomerId = async (req, res) => {
             .sort({ redeemedAt: -1 })
             .populate({
                 path: 'redeemProductId',
-                select: 'name rc_product_img requiredPoints description'
+                select: 'name rc_product_img requiredPoints description orderId'
             });
 
         const formattedHistory = history.map(entry => ({
@@ -299,6 +299,7 @@ const getRedeemProductsByCustomerId = async (req, res) => {
             requiredPoints: entry.redeemProductId?.requiredPoints,
             description: entry.redeemProductId?.description,
             pointsDeducted: entry.pointsDeducted,
+            orderId: entry.orderId,
             redeemedAt: entry.redeemedAt
         }));
 
