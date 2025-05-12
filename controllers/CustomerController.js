@@ -159,23 +159,23 @@ const getCustomerById = async (req, res) => {
 
 
 // Update Customer Details
+// Update Customer Details
 const updateCustomer = async (req, res) => {
   try {
-    const { name, email, phoneNumber, address } = req.body;
-    let profileImageUrl = req.body.profileImage; // fallback in case no file is uploaded
+    const { name, email, phoneNumber, address, state, city } = req.body;
+    let profileImageUrl = req.body.profileImage;
 
-    // Upload image to ImageKit if file exists
     if (req.file) {
       const uploadedImage = await ImageKit.upload({
-        file: req.file.buffer, // actual file buffer
-        fileName: `${req.params.id}_profile_${Date.now()}.jpg`, // unique filename
-        folder: "/uploads", // optional folder in ImageKit
+        file: req.file.buffer,
+        fileName: `${req.params.id}_profile_${Date.now()}.jpg`,
+        folder: "/uploads",
       });
 
-      profileImageUrl = uploadedImage.url; // get the image URL
+      profileImageUrl = uploadedImage.url;
     }
 
-    // Update customer
+    // ✅ Add state and city in update object
     const updatedCustomer = await Customer.findByIdAndUpdate(
       req.params.id,
       {
@@ -183,6 +183,8 @@ const updateCustomer = async (req, res) => {
         email,
         phoneNumber,
         address,
+        state,
+        city,
         profileImage: profileImageUrl,
       },
       { new: true, runValidators: true }
@@ -201,6 +203,7 @@ const updateCustomer = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 // // Send OTP (mocked as 1234)

@@ -3,54 +3,56 @@ const bcrypt = require('bcryptjs');
 
 // Customer Schema
 const customerSchema = new mongoose.Schema({
-  
+
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  phoneNumber: {type: Number, required: true},
-  address: {type: String, required: true},
-  profileImage: {type: String, default: 'https://avatar.iran.liara.run/public/boy'},
+  phoneNumber: { type: Number, required: true },
+  address: { type: String, required: true },
+  state: { type: String, },
+  city: { type: String, },
+  profileImage: { type: String, default: 'https://avatar.iran.liara.run/public/boy' },
 
-      // Refer and Earn
-      referralCode: { type: String, unique: true },
-  
-      referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", default: null },
-  
-      referralShares: {
-        type: Number,
-        default: 0
-      },
-      
-      referralDownloads: {
-        type: Number,
-        default: 0
-      },
-  
-      points: { type: Number, default: 0 },
-  
-      lastRewardDate: {
-        type: Date,
-      },
-  
-      lastReferralShareDate: {
-        type: Date,
-        default: null,
-      },
-      todayReferralShareCount: {
-        type: Number,
-        default: 0,
-      },
+  // Refer and Earn
+  referralCode: { type: String, unique: true },
 
-      agreedToPrivacyPolicyAndTermsAndConditions: {
-        type: Boolean,
-        required: true
-      },
-      agreementTimestamp: {
-        type: Date,
-        required: true
-      }
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", default: null },
 
-},{
+  referralShares: {
+    type: Number,
+    default: 0
+  },
+
+  referralDownloads: {
+    type: Number,
+    default: 0
+  },
+
+  points: { type: Number, default: 0 },
+
+  lastRewardDate: {
+    type: Date,
+  },
+
+  lastReferralShareDate: {
+    type: Date,
+    default: null,
+  },
+  todayReferralShareCount: {
+    type: Number,
+    default: 0,
+  },
+
+  agreedToPrivacyPolicyAndTermsAndConditions: {
+    type: Boolean,
+    required: true
+  },
+  agreementTimestamp: {
+    type: Date,
+    required: true
+  }
+
+}, {
   timestamps: true
 });
 
