@@ -263,7 +263,6 @@ const getCustomerOrders = async (req, res) => {
 };
 
 
-
 const cancelRequest = async (req, res) => {
   try {
     const { requestId } = req.params;

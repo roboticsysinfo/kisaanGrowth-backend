@@ -15,7 +15,7 @@ const createRedeemProduct = async (req, res) => {
 
     try {
 
-        const { name, description, requiredPoints } = req.body;
+        const { name, description, requiredPoints, price_value } = req.body;
         const r_product_img = req.file ? req.file : null;
 
         if (!name || !description || !requiredPoints) {
@@ -41,6 +41,7 @@ const createRedeemProduct = async (req, res) => {
                 name,
                 description,
                 requiredPoints,
+                price_value,
                 r_product_img: imageUrl, // Store the ImageKit URL here
             });
 
@@ -74,7 +75,7 @@ const updateRedeemProduct = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { name, description, requiredPoints } = req.body;
+        const { name, description, requiredPoints, price_value } = req.body;
         const r_product_img = req.file ? req.file : undefined; // File uploaded via Multer
 
         const product = await RedeemProduct.findById(id);
@@ -105,6 +106,7 @@ const updateRedeemProduct = async (req, res) => {
         // Update other fields (name, description, requiredPoints)
         product.name = name || product.name;
         product.description = description || product.description;
+        product.price_value = price_value || product.price_value;
         product.requiredPoints = requiredPoints || product.requiredPoints;
 
         // Save the updated product
