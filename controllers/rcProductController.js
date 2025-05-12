@@ -349,16 +349,22 @@ const getRedeemProductsByFarmerId = async (req, res) => {
 const getBillPdf = async (req, res) => {
     const { orderId } = req.params;
 
+    console.log("orderId", orderId)
+
     try {
         const bill = await CustomerRedeemBill.findOne({ orderId });
         if (!bill || !bill.pdfPath) {
             return res.status(404).json({ message: 'Bill not found' });
         }
 
-        const filePath = path.join(__dirname, '..', bill.pdfPath);
+        console.log("bill", bill)
+
+        const filePath = path.join(__dirname, '/uploads/bills', bill.pdfPath);
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ message: 'File not found' });
         }
+
+        console.log("filePath", filePath)
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${orderId}.pdf"`);
