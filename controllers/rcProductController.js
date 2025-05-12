@@ -119,6 +119,114 @@ const deleteCustomerRedeemProduct = async (req, res) => {
 
 
 // Redeem Product Customer ( Customer can redeem product )
+// const redeemProductCustomer = async (req, res) => {
+
+//     const { customer_Id, redeemProductId } = req.body;
+
+//     try {
+        
+//         const customer = await Customer.findById(customer_Id);
+//         const product = await CustomerRedeemProduct.findById(redeemProductId);
+
+//         if (!customer || !product) {
+//             return res.status(404).json({ message: 'Customer or Product not found' });
+//         }
+
+//         if (customer.points < product.requiredPoints) {
+//             return res.status(400).json({ message: 'Not enough points to redeem this product' });
+//         }
+
+//         // Deduct points
+//         customer.points -= product.requiredPoints;
+//         await customer.save();
+
+//         // Generate unique Order ID
+//         const orderId = 'ORD' + Date.now() + Math.floor(1000 + Math.random() * 9000);
+
+//         // Save redemption history
+//         const redemption = new CustomerRedemptionHistory({
+//             customer_Id: customer._id,
+//             redeemProductId: product._id,
+//             pointsDeducted: product.requiredPoints,
+//             orderId
+//         });
+//         await redemption.save();
+
+//         // Add points transaction
+//         await CustomerPointsTransactions.create({
+//             customer: customer._id,
+//             points: -product.requiredPoints,
+//             type: "redeem",
+//             description: `Redeemed product: ${product.name}`
+//         });
+
+//         // Calculate billing amounts
+//         const priceValue = product.price_value || 0;
+//         const gstAmount = +(priceValue * 0.18).toFixed(2);
+//         const totalAmount = +(priceValue + gstAmount).toFixed(2);
+
+
+//         // Create bill document
+//         const bill = new CustomerRedeemBill({
+//             customer_Id: customer._id,
+//             redeemProductId: product._id,
+//             orderId,
+//             productName: product.name,
+//             priceValue,
+//             gstAmount,
+//             totalAmount
+//         });
+
+//         await bill.save();
+
+//         // Generate PDF
+//         const billFileName = `invoice_${orderId}.pdf`;
+//         const billPath = path.join(__dirname, '../uploads/bills', billFileName);
+
+//         await generateCustomerBillPdf({
+//             orderId,
+//             productName: product.name,
+//             priceValue,
+//             gstAmount,
+//             totalAmount,
+//             billGeneratedAt: bill.billGeneratedAt,
+//             customer_Id: customer._id.toString(),
+
+//             customerName: customer.name,
+//             customerAddress: customer.address,
+//             customerState: customer.state,
+//             customerCity: customer.city,
+//             customerPhone: customer.phoneNumber
+
+//         }, billPath);
+
+//         // DEBUG: Check before update
+//         console.log("✅ Bill PDF Generated:", billFileName);
+
+//         // Update pdfPath forcefully using findByIdAndUpdate
+//         const updated = await CustomerRedeemBill.findByIdAndUpdate(
+//             bill._id,
+//             { pdfPath: `bills/${billFileName}` },
+//             { new: true } // Return updated document
+//         );
+
+
+//         res.status(200).json({
+//             message: 'Product redeemed successfully',
+//             redemption,
+//             bill: {
+//                 orderId,
+//                 totalAmount,
+//                 pdf: updated.pdfPath
+//             }
+//         });
+
+//     } catch (err) {
+//         console.error("❌ Error redeeming product:", err);
+//         res.status(500).json({ message: 'Something went wrong', error: err.message });
+//     }
+// };
+
 const redeemProductCustomer = async (req, res) => {
 
     const { customer_Id, redeemProductId } = req.body;
@@ -165,7 +273,6 @@ const redeemProductCustomer = async (req, res) => {
         const gstAmount = +(priceValue * 0.18).toFixed(2);
         const totalAmount = +(priceValue + gstAmount).toFixed(2);
 
-
         // Create bill document
         const bill = new CustomerRedeemBill({
             customer_Id: customer._id,
@@ -179,37 +286,13 @@ const redeemProductCustomer = async (req, res) => {
 
         await bill.save();
 
-        // Generate PDF
+        // Update PDF path in the bill
         const billFileName = `invoice_${orderId}.pdf`;
-        const billPath = path.join(__dirname, '../uploads/bills', billFileName);
-
-        await generateCustomerBillPdf({
-            orderId,
-            productName: product.name,
-            priceValue,
-            gstAmount,
-            totalAmount,
-            billGeneratedAt: bill.billGeneratedAt,
-            customer_Id: customer._id.toString(),
-
-            customerName: customer.name,
-            customerAddress: customer.address,
-            customerState: customer.state,
-            customerCity: customer.city,
-            customerPhone: customer.phoneNumber
-
-        }, billPath);
-
-        // DEBUG: Check before update
-        console.log("✅ Bill PDF Generated:", billFileName);
-
-        // Update pdfPath forcefully using findByIdAndUpdate
         const updated = await CustomerRedeemBill.findByIdAndUpdate(
             bill._id,
             { pdfPath: `bills/${billFileName}` },
             { new: true } // Return updated document
         );
-
 
         res.status(200).json({
             message: 'Product redeemed successfully',
@@ -226,6 +309,7 @@ const redeemProductCustomer = async (req, res) => {
         res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
 };
+
 
 
 // Get redemption history with farmer & redeem product details
@@ -366,6 +450,54 @@ const getBillPdf = async (req, res) => {
     }
 };
 
+// Get customer invoice details by order ID
+const getCustomerInvoiceDetails = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        // Fetch the bill document by orderId
+        const bill = await CustomerRedeemBill.findOne({ orderId })
+            .populate({
+                path: 'customer_Id',
+                select: 'name address phoneNumber email'
+            })
+            .populate({
+                path: 'redeemProductId',
+                select: 'name price_value requiredPoints description'
+            });
+
+        // Check if bill exists
+        if (!bill) {
+            return res.status(404).json({ message: 'Invoice not found for the given order ID' });
+        }
+
+        // Prepare the invoice details
+        const invoiceDetails = {
+            orderId: bill.orderId,
+            customer: {
+                name: bill.customer_Id.name,
+                address: bill.customer_Id.address,
+                phoneNumber: bill.customer_Id.phoneNumber,
+                email: bill.customer_Id.email,
+            },
+            product: {
+                name: bill.redeemProductId.name,
+                priceValue: bill.priceValue,
+                requiredPoints: bill.redeemProductId.requiredPoints,
+                description: bill.redeemProductId.description,
+            },
+            gstAmount: bill.gstAmount,
+            totalAmount: bill.totalAmount,
+            redeemedAt: bill.redeemedAt,
+            pdfPath: bill.pdfPath
+        };
+
+        res.status(200).json({ invoiceDetails });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 
 module.exports = {
     addRedeemProductCustomer,
@@ -376,7 +508,8 @@ module.exports = {
     getRedeemProductHistoryCustomer,
     getRedeemProductsByCustomerId,
     getRedeemProductsByFarmerId,
-    getBillPdf
+    getBillPdf,
+    getCustomerInvoiceDetails
 };
 
 

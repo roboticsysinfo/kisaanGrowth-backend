@@ -7,7 +7,8 @@ const axios = require("axios")
 require('dotenv').config();
 const FarmerOTPModel = require("../models/FarmerOTPModel");
 const imagekit = require("../utils/imagekit");
-const fs = require("fs")
+const fs = require("fs");
+const FarmerRedeemBill = require("../models/FarmerRedeemBill")
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -797,8 +798,6 @@ const getFarmerDetailsById = async (req, res) => {
 
 
 // Controller to update farmer's points after payment
-
-
 const upgradeFarmerPoints = async (req, res) => {
 
   try {
@@ -841,49 +840,62 @@ const upgradeFarmerPoints = async (req, res) => {
 };
 
 
-const getFarmerInvoiceByOrderId = async (req, res) => {
+const getFarmerInvoiceByFarmerId = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { farmerId } = req.params;  // `farmerId` ko params mein lena
+    const trimmedFarmerId = farmerId.trim();
 
-    const bill = await FarmerRedeemBill.findOne({ orderId })
+    console.log("🔍 Searching Bill with Farmer ID:", trimmedFarmerId);
+
+    // Optional debug
+    const all = await FarmerRedeemBill.find({});
+    console.log("📦 All stored Farmer IDs:", all.map(b => b.farmerId.toString()));  // Showing all stored farmer IDs
+
+    // Query to find all bills by farmerId
+    const bills = await FarmerRedeemBill.find({ farmerId: trimmedFarmerId })
       .populate('farmerId')
       .populate('redeemProductId');
 
-    if (!bill) {
-      return res.status(404).json({ message: 'Bill not found' });
+    if (!bills || bills.length === 0) {
+      console.log("❌ No bills found for Farmer ID:", trimmedFarmerId);
+      return res.status(404).json({ message: 'No bills found for this farmer' });
     }
 
-    const farmer = bill.farmerId;
+    const response = bills.map(bill => {
+      const farmer = bill.farmerId;
 
-    const response = {
-      invoice: {
-        orderId: bill.orderId,
-        billGeneratedAt: bill.billGeneratedAt,
-        productName: bill.productName,
-        priceValue: bill.priceValue,
-        gstAmount: bill.gstAmount,
-        totalAmount: bill.totalAmount,
-        pdfPath: bill.pdfPath || null,
-      },
-      farmer: {
-        id: farmer._id,
-        name: farmer.name,
-        phoneNumber: farmer.phoneNumber,
-        email: farmer.email,
-        state: farmer.state,
-        city_district: farmer.city_district,
-        village: farmer.village,
-        address: farmer.address,
-        registrationNumber: farmer.registrationNumber,
-      },
-    };
+      return {
+        invoice: {
+          orderId: bill.orderId,
+          billGeneratedAt: bill.billGeneratedAt,
+          productName: bill.productName,
+          priceValue: bill.priceValue,
+          gstAmount: bill.gstAmount,
+          totalAmount: bill.totalAmount,
+          pdfPath: bill.pdfPath || null,
+        },
+        farmer: {
+          id: farmer._id,
+          name: farmer.name,
+          phoneNumber: farmer.phoneNumber,
+          email: farmer.email,
+          state: farmer.state,
+          city_district: farmer.city_district,
+          village: farmer.village,
+          address: farmer.address,
+          registrationNumber: farmer.registrationNumber,
+        },
+      };
+    });
 
     res.status(200).json(response);
   } catch (error) {
-    console.error('Error fetching invoice by orderId:', error);
+    console.error('Error fetching invoice by farmerId:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
 
 
 module.exports = {
@@ -903,5 +915,6 @@ module.exports = {
   getFarmersByCity,
   getFarmerDetailsById,
   upgradeFarmerPoints,
-  getFarmerInvoiceByOrderId
+  // getFarmerInvoiceByOrderId,
+  getFarmerInvoiceByFarmerId
 };

@@ -13,10 +13,7 @@ const farmerRedeemBillSchema = new mongoose.Schema({
         ref: 'RedeemProduct',
         required: true
     },
-    orderId: {
-        type: String,
-        required: true
-    },
+    orderId: { type: String, required: true, unique: true },
     pdfPath: {
         type: String,
     },

@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, getFarmerInvoiceByFarmerId, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -88,7 +88,7 @@ router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemP
 router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
 
 
-router.get('/get/farmer/invoice/:orderId', getFarmerInvoiceByOrderId);
+router.get('/farmer/invoice/:farmerId', getFarmerInvoiceByFarmerId);
 
 
 module.exports = router;

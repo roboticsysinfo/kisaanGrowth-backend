@@ -9,7 +9,8 @@ const {
     updateCustomerRedeemProduct,
     addRedeemProductCustomer,
     getRedeemProductsByCustomerId,
-    getBillPdf
+    getBillPdf,
+    getCustomerInvoiceDetails
 } = require("../controllers/rcProductController")
 const { authorize } = require('../middlewares/authMiddleware');
 
@@ -43,5 +44,8 @@ router.get('/customer/redeem-history/:customerId', authorize(["customer"]), getR
 
 // get generated bill for customer redeem product
 router.get('/redeem-product/customer/bills/:orderId', getBillPdf);
+
+// Define the route for fetching customer invoice details by order ID
+router.get('/customer/invoice/:orderId', getCustomerInvoiceDetails);
 
 module.exports = router;
