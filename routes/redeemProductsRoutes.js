@@ -7,7 +7,8 @@ const {
   updateRedeemProduct,
   deleteRedeemProduct,
   redeemProduct,
-  getRedeemProductHistoryFarmer
+  getRedeemProductHistoryFarmer,
+  getFarmerBillPdf
 } = require('../controllers/redeemProductController');
 const { authorize } = require('../middlewares/authMiddleware');
 
@@ -34,6 +35,9 @@ router.post('/redeem-product', authorize(["farmer"]), redeemProduct);
 
 // Redeem Product by farmers history
 router.get('/farmer/redeem-product-history', authorize(["admin"]), getRedeemProductHistoryFarmer);
+
+// get generated bill for Farmer redeem product
+router.get('/redeem-product/farmer/bills/:orderId', getFarmerBillPdf);
 
 
 module.exports = router;

@@ -286,6 +286,8 @@ const redeemProduct = async (req, res) => {
     }
 };
 
+
+
 // Get redemption history with farmer & redeem product details
 
 const getRedeemProductHistoryFarmer = async (req, res) => {
@@ -324,13 +326,52 @@ const getRedeemProductHistoryFarmer = async (req, res) => {
 };
 
 
+const getFarmerBillPdf = async (req, res) => {
+    const { orderId } = req.params;
+    try {
+        const bill = await FarmerRedeemBill.findOne({ orderId });
+
+        if (!bill) {
+            return res.status(404).json({ message: 'Bill not found in database' });
+        }
+
+        // Fallback file path logic
+        const pdfRelativePath = bill.pdfPath || `bills/farmer_invoice_${orderId}.pdf`;
+        const filePath = path.resolve(__dirname, '../uploads', pdfRelativePath);
+
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: 'PDF file not found on server', path: filePath });
+        }
+
+        // Serve the file
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${orderId}.pdf"`);
+
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+
+        fileStream.on('error', (err) => {
+            console.error("❌ Stream error:", err);
+            res.status(500).json({ message: 'Error reading file', error: err.message });
+        });
+
+    } catch (err) {
+        console.error("❌ Server error while serving bill:", err);
+        res.status(500).json({ message: 'Internal server error', error: err.message });
+    }
+};
+
+
+
 module.exports = {
     createRedeemProduct,
     getAllRedeemProducts,
     updateRedeemProduct,
     deleteRedeemProduct,
     redeemProduct,
-    getRedeemProductHistoryFarmer
+    getRedeemProductHistoryFarmer,
+    getFarmerBillPdf
 };
 
 
