@@ -215,7 +215,6 @@ const redeemProductCustomer = async (req, res) => {
             priceValue,
             gstAmount,
             totalAmount,
-            pdfPath
         });
 
         await bill.save(); // Save first to get _id and timestamps
@@ -359,34 +358,33 @@ const getRedeemProductsByFarmerId = async (req, res) => {
 
 
 const getBillPdf = async (req, res) => {
-
     const { orderId } = req.params;
 
-    console.log("orderId", orderId)
+    console.log("🔍 Requested orderId:", orderId);
 
     try {
-
         const bill = await CustomerRedeemBill.findOne({ orderId });
-        if (!bill) {
-            return res.status(404).json({ message: 'Bill not found' });
+
+        if (!bill || !bill.pdfPath) {
+            return res.status(404).json({ message: 'Bill not found or missing pdfPath' });
         }
 
-        console.log("bill", bill)
+        const filePath = path.join(__dirname, '../uploads', bill.pdfPath); // Fix path handling
+        console.log("📁 Resolved file path:", filePath);
 
-        const filePath = path.join(__dirname, '/uploads/bills', bill.pdfPath);
         if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ message: 'File not found' });
+            return res.status(404).json({ message: 'File not found on server' });
         }
-
-        console.log("filePath", filePath)
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${orderId}.pdf"`);
         fs.createReadStream(filePath).pipe(res);
     } catch (err) {
+        console.error("❌ Error serving bill:", err);
         res.status(500).json({ message: 'Error generating bill', error: err.message });
     }
 };
+
 
 
 module.exports = {
