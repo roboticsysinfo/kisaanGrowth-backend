@@ -841,6 +841,50 @@ const upgradeFarmerPoints = async (req, res) => {
 };
 
 
+const getFarmerInvoiceByOrderId = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const bill = await FarmerRedeemBill.findOne({ orderId })
+      .populate('farmerId')
+      .populate('redeemProductId');
+
+    if (!bill) {
+      return res.status(404).json({ message: 'Bill not found' });
+    }
+
+    const farmer = bill.farmerId;
+
+    const response = {
+      invoice: {
+        orderId: bill.orderId,
+        billGeneratedAt: bill.billGeneratedAt,
+        productName: bill.productName,
+        priceValue: bill.priceValue,
+        gstAmount: bill.gstAmount,
+        totalAmount: bill.totalAmount,
+        pdfPath: bill.pdfPath || null,
+      },
+      farmer: {
+        id: farmer._id,
+        name: farmer.name,
+        phoneNumber: farmer.phoneNumber,
+        email: farmer.email,
+        state: farmer.state,
+        city_district: farmer.city_district,
+        village: farmer.village,
+        address: farmer.address,
+        registrationNumber: farmer.registrationNumber,
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error('Error fetching invoice by orderId:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
   registerFarmer,
@@ -858,5 +902,6 @@ module.exports = {
   getFarmerByIdForAdmin,
   getFarmersByCity,
   getFarmerDetailsById,
-  upgradeFarmerPoints
+  upgradeFarmerPoints,
+  getFarmerInvoiceByOrderId
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -66,15 +66,15 @@ router.get("/farmers/by-city", getFarmersByCity);
 
 
 // upgrade farmer points
-router.post('/farmer/upgradePoints/:farmerId', authorize(["farmer"]), upgradeFarmerPoints);  
+router.post('/farmer/upgradePoints/:farmerId', authorize(["farmer"]), upgradeFarmerPoints);
 
 
 // Route for creating Razorpay order for farmer upgrade plan
-router.post('/farmer/create-order-plan',  authorize(["farmer"]), createPlanOrder);
+router.post('/farmer/create-order-plan', authorize(["farmer"]), createPlanOrder);
 
 
 // Route for creating Razorpay order for farmer upgrade points
-router.post('/farmer/createRazorpayOrder',  authorize(["farmer"]), createRazorpayOrderForFarmerPoints);
+router.post('/farmer/createRazorpayOrder', authorize(["farmer"]), createRazorpayOrderForFarmerPoints);
 
 
 // upgrade farmer plan api
@@ -86,6 +86,9 @@ router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemP
 
 
 router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
+
+
+router.get('/get/farmer/invoice/:orderId', getFarmerInvoiceByOrderId);
 
 
 module.exports = router;

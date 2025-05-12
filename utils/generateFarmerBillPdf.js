@@ -2,7 +2,9 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
+
 const generateFarmerBillPdf = (billData, outputPath) => {
+  
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50 });
 

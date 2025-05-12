@@ -180,12 +180,117 @@ const deleteRedeemProduct = async (req, res) => {
 //   };
 
 
-const redeemProduct = async (req, res) => {
+// const redeemProduct = async (req, res) => {
 
+//     const { farmerId, redeemProductId } = req.body;
+
+//     try {
+
+//         const farmer = await Farmer.findById(farmerId);
+//         const product = await RedeemProduct.findById(redeemProductId);
+
+//         if (!farmer || !product) {
+//             return res.status(404).json({ message: 'Farmer or Product not found' });
+//         }
+
+
+//         if (farmer.points < product.requiredPoints) {
+//             return res.status(400).json({ message: 'Not enough points to redeem this product' });
+//         }
+
+
+//         // Deduct points
+//         farmer.points -= product.requiredPoints;
+//         await farmer.save();
+
+
+//         // Generate unique Order ID
+//         const orderId = 'ORD' + Date.now() + Math.floor(1000 + Math.random() * 9000);
+
+
+//         // Save redemption history
+//         const redemption = new RedemptionHistory({
+//             farmerId: farmer._id,
+//             redeemProductId: product._id,
+//             pointsDeducted: product.requiredPoints,
+//             orderId
+//         });
+//         await redemption.save();
+
+//         // Add points transaction
+//         await pointsTransactionHistory.create({
+//             farmer: farmer._id,
+//             points: -product.requiredPoints,
+//             type: "redeem",
+//             description: `Redeemed product: ${product.name}`
+//         });
+
+//         // Calculate billing amounts
+//         const priceValue = product.price_value || 0;
+//         const gstAmount = +(priceValue * 0.18).toFixed(2);
+//         const totalAmount = +(priceValue + gstAmount).toFixed(2);
+
+//         // Create bill document
+//         const bill = new FarmerRedeemBill({
+//             farmerId: farmer._id,
+//             redeemProductId: product._id,
+//             orderId,
+//             productName: product.name,
+//             priceValue,
+//             gstAmount,
+//             totalAmount
+//         });
+
+//         await bill.save();
+
+//         // Generate PDF
+//         const billFileName = `farmer_invoice_${orderId}.pdf`;
+//         const billPath = path.join(__dirname, '../uploads/bills', billFileName);
+
+//         await generateFarmerBillPdf({
+//             orderId,
+//             productName: product.name,
+//             priceValue,
+//             gstAmount,
+//             totalAmount,
+//             billGeneratedAt: bill.billGeneratedAt,
+//             farmerId: farmer._id.toString(),
+
+//             farmerName: farmer.name,
+//             farmerAddress: farmer.address,
+//             farmerState: farmer.state,
+//             farmerCity: farmer.city_district,
+//             farmerPhone: farmer.phoneNumber
+//         }, billPath);
+
+//         // Update pdfPath
+//         const updated = await FarmerRedeemBill.findByIdAndUpdate(
+//             bill._id,
+//             { pdfPath: `bills/${billFileName}` },
+//             { new: true }
+//         );
+
+//         res.status(200).json({
+//             message: 'Product redeemed successfully',
+//             redemption,
+//             bill: {
+//                 orderId,
+//                 totalAmount,
+//                 pdf: updated.pdfPath
+//             }
+//         });
+
+//     } catch (err) {
+//         console.error("❌ Error redeeming product:", err);
+//         res.status(500).json({ message: 'Something went wrong', error: err.message });
+//     }
+// };
+
+
+const redeemProduct = async (req, res) => {
     const { farmerId, redeemProductId } = req.body;
 
     try {
-
         const farmer = await Farmer.findById(farmerId);
         const product = await RedeemProduct.findById(redeemProductId);
 
@@ -193,20 +298,16 @@ const redeemProduct = async (req, res) => {
             return res.status(404).json({ message: 'Farmer or Product not found' });
         }
 
-
         if (farmer.points < product.requiredPoints) {
             return res.status(400).json({ message: 'Not enough points to redeem this product' });
         }
-
 
         // Deduct points
         farmer.points -= product.requiredPoints;
         await farmer.save();
 
-
         // Generate unique Order ID
         const orderId = 'ORD' + Date.now() + Math.floor(1000 + Math.random() * 9000);
-
 
         // Save redemption history
         const redemption = new RedemptionHistory({
@@ -230,7 +331,7 @@ const redeemProduct = async (req, res) => {
         const gstAmount = +(priceValue * 0.18).toFixed(2);
         const totalAmount = +(priceValue + gstAmount).toFixed(2);
 
-        // Create bill document
+        // Save bill data (without generating PDF)
         const bill = new FarmerRedeemBill({
             farmerId: farmer._id,
             redeemProductId: product._id,
@@ -243,40 +344,14 @@ const redeemProduct = async (req, res) => {
 
         await bill.save();
 
-        // Generate PDF
-        const billFileName = `farmer_invoice_${orderId}.pdf`;
-        const billPath = path.join(__dirname, '../uploads/bills', billFileName);
-
-        await generateFarmerBillPdf({
-            orderId,
-            productName: product.name,
-            priceValue,
-            gstAmount,
-            totalAmount,
-            billGeneratedAt: bill.billGeneratedAt,
-            farmerId: farmer._id.toString(),
-
-            farmerName: farmer.name,
-            farmerAddress: farmer.address,
-            farmerState: farmer.state,
-            farmerCity: farmer.city_district,
-            farmerPhone: farmer.phoneNumber
-        }, billPath);
-
-        // Update pdfPath
-        const updated = await FarmerRedeemBill.findByIdAndUpdate(
-            bill._id,
-            { pdfPath: `bills/${billFileName}` },
-            { new: true }
-        );
-
         res.status(200).json({
             message: 'Product redeemed successfully',
             redemption,
             bill: {
                 orderId,
-                totalAmount,
-                pdf: updated.pdfPath
+                priceValue,
+                gstAmount,
+                totalAmount
             }
         });
 
