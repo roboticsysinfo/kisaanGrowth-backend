@@ -8,14 +8,17 @@ const redemptionHistorySchema = new mongoose.Schema({
     ref: 'Farmer',
     required: true
   },
-  
+
   redeemProductId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RedeemProduct',
     required: true
   },
-
-
+  orderId: {
+    type: String,
+    required: true,
+    unique: true
+  },
   pointsDeducted: {
     type: Number,
     required: true

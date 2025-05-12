@@ -124,6 +124,7 @@ const redeemProductCustomer = async (req, res) => {
     const { customer_Id, redeemProductId } = req.body;
 
     try {
+        
         const customer = await Customer.findById(customer_Id);
         const product = await CustomerRedeemProduct.findById(redeemProductId);
 

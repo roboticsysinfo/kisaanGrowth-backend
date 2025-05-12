@@ -1,39 +1,18 @@
 const Farmer = require('../models/Farmer');
+const FarmerRedeemBill = require('../models/FarmerRedeemBill');
 const pointsTransactionHistory = require('../models/pointsTransactionHistory');
 const RedeemProduct = require('../models/RedeemProduct');
 const RedemptionHistory = require('../models/RedemptionHistory');
+const generateFarmerBillPdf = require('../utils/generateFarmerBillPdf');
 const imagekit = require('../utils/imagekit');
-
 
 
 // Add redeem product
 
-// const createRedeemProduct = async (req, res) => {
-//     try {
-//         const { name, description, requiredPoints } = req.body;
-//         const r_product_img = req.file ? req.file.path : null;
-
-//         if (!name || !description || !requiredPoints) {
-//             return res.status(400).json({ message: 'All fields are required' });
-//         }
-
-//         const product = new RedeemProduct({
-//             name,
-//             description,
-//             requiredPoints,
-//             r_product_img
-//         });
-
-//         await product.save();
-//         res.status(201).json({ message: 'Redeem product created successfully', product });
-
-//     } catch (error) {
-//         res.status(500).json({ message: 'Server Error', error: error.message });
-//     }
-// };
-
 const createRedeemProduct = async (req, res) => {
+
     try {
+
         const { name, description, requiredPoints } = req.body;
         const r_product_img = req.file ? req.file : null;
 
@@ -65,6 +44,7 @@ const createRedeemProduct = async (req, res) => {
 
             await product.save();
             return res.status(201).json({ message: 'Redeem product created successfully', product });
+
         } else {
             return res.status(400).json({ message: "Product image is required" });
         }
@@ -72,6 +52,7 @@ const createRedeemProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
+
 };
 
 
@@ -86,30 +67,6 @@ const getAllRedeemProducts = async (req, res) => {
 };
 
 //update
-// const updateRedeemProduct = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { name, description, requiredPoints } = req.body;
-//         const r_product_img = req.file ? req.file.path : undefined;
-
-//         const product = await RedeemProduct.findById(id);
-//         if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//         }
-
-//         product.name = name || product.name;
-//         product.description = description || product.description;
-//         product.requiredPoints = requiredPoints || product.requiredPoints;
-//         if (r_product_img) product.r_product_img = r_product_img;
-
-//         await product.save();
-//         res.status(200).json({ message: 'Redeem product updated', product });
-
-//     } catch (error) {
-//         res.status(500).json({ message: 'Server Error', error: error.message });
-//     }
-// };
-
 
 const updateRedeemProduct = async (req, res) => {
     try {
@@ -177,50 +134,155 @@ const deleteRedeemProduct = async (req, res) => {
 };
 
 // Redeem Product farmer
+// const redeemProduct = async (req, res) => {
+
+//     const { farmerId, redeemProductId } = req.body;
+
+//     try {
+
+//       const farmer = await Farmer.findById(farmerId);
+//       const product = await RedeemProduct.findById(redeemProductId);
+
+//       if (!farmer || !product) {
+//         return res.status(404).json({ message: 'Farmer or Product not found' });
+//       }
+  
+//       if (farmer.points < product.requiredPoints) {
+//         return res.status(400).json({ message: 'Not enough points to redeem this product' });
+//       }
+  
+//       // Deduct points
+//       farmer.points -= product.requiredPoints;
+//       await farmer.save();
+
+//       // Save redemption history
+//       const redemption = new RedemptionHistory({
+//         farmerId: farmer._id,
+//         redeemProductId: product._id,
+//         pointsDeducted: product.requiredPoints
+//       });
+//       await redemption.save();
+
+//       // ✅ Add points transaction
+//       await pointsTransactionHistory.create({
+//         farmer: farmer._id,
+//         points: -product.requiredPoints, // 👈 Negative points for deduction
+//         type: "redeem",
+//         description: `Redeemed product: ${product.name}`
+//       });
+      
+//       res.status(200).json({ message: 'Product redeemed successfully', redemption });
+//     } catch (err) {
+//       res.status(500).json({ message: 'Something went wrong', error: err.message });
+//     }
+//   };
+
+
 const redeemProduct = async (req, res) => {
 
     const { farmerId, redeemProductId } = req.body;
 
     try {
 
-      const farmer = await Farmer.findById(farmerId);
-      const product = await RedeemProduct.findById(redeemProductId);
+        const farmer = await Farmer.findById(farmerId);
+        const product = await RedeemProduct.findById(redeemProductId);
 
-      if (!farmer || !product) {
-        return res.status(404).json({ message: 'Farmer or Product not found' });
-      }
-  
-      if (farmer.points < product.requiredPoints) {
-        return res.status(400).json({ message: 'Not enough points to redeem this product' });
-      }
-  
-      // Deduct points
-      farmer.points -= product.requiredPoints;
-      await farmer.save();
+        if (!farmer || !product) {
+            return res.status(404).json({ message: 'Farmer or Product not found' });
+        }
 
-      // Save redemption history
-      const redemption = new RedemptionHistory({
-        farmerId: farmer._id,
-        redeemProductId: product._id,
-        pointsDeducted: product.requiredPoints
-      });
-      await redemption.save();
 
-      // ✅ Add points transaction
-      await pointsTransactionHistory.create({
-        farmer: farmer._id,
-        points: -product.requiredPoints, // 👈 Negative points for deduction
-        type: "redeem",
-        description: `Redeemed product: ${product.name}`
-      });
-      
-      res.status(200).json({ message: 'Product redeemed successfully', redemption });
+        if (farmer.points < product.requiredPoints) {
+            return res.status(400).json({ message: 'Not enough points to redeem this product' });
+        }
+
+
+        // Deduct points
+        farmer.points -= product.requiredPoints;
+        await farmer.save();
+
+
+        // Generate unique Order ID
+        const orderId = 'ORD' + Date.now() + Math.floor(1000 + Math.random() * 9000);
+
+
+        // Save redemption history
+        const redemption = new RedemptionHistory({
+            farmerId: farmer._id,
+            redeemProductId: product._id,
+            pointsDeducted: product.requiredPoints,
+            orderId
+        });
+        await redemption.save();
+
+        // Add points transaction
+        await pointsTransactionHistory.create({
+            farmer: farmer._id,
+            points: -product.requiredPoints,
+            type: "redeem",
+            description: `Redeemed product: ${product.name}`
+        });
+
+        // Calculate billing amounts
+        const priceValue = product.price_value || 0;
+        const gstAmount = +(priceValue * 0.18).toFixed(2);
+        const totalAmount = +(priceValue + gstAmount).toFixed(2);
+
+        // Create bill document
+        const bill = new FarmerRedeemBill({
+            farmerId: farmer._id,
+            redeemProductId: product._id,
+            orderId,
+            productName: product.name,
+            priceValue,
+            gstAmount,
+            totalAmount
+        });
+
+        await bill.save();
+
+        // Generate PDF
+        const billFileName = `farmer_invoice_${orderId}.pdf`;
+        const billPath = path.join(__dirname, '../uploads/bills', billFileName);
+
+        await generateFarmerBillPdf({
+            orderId,
+            productName: product.name,
+            priceValue,
+            gstAmount,
+            totalAmount,
+            billGeneratedAt: bill.billGeneratedAt,
+            farmerId: farmer._id.toString(),
+
+            farmerName: farmer.name,
+            farmerAddress: farmer.address,
+            farmerState: farmer.state,
+            farmerCity: farmer.city,
+            farmerPhone: farmer.phoneNumber
+        }, billPath);
+
+        // Update pdfPath
+        const updated = await FarmerRedeemBill.findByIdAndUpdate(
+            bill._id,
+            { pdfPath: `bills/${billFileName}` },
+            { new: true }
+        );
+
+        res.status(200).json({
+            message: 'Product redeemed successfully',
+            redemption,
+            bill: {
+                orderId,
+                totalAmount,
+                pdf: updated.pdfPath
+            }
+        });
+
     } catch (err) {
-      res.status(500).json({ message: 'Something went wrong', error: err.message });
+        console.error("❌ Error redeeming product:", err);
+        res.status(500).json({ message: 'Something went wrong', error: err.message });
     }
-  };
-  
-
+};
 
 // Get redemption history with farmer & redeem product details
 
