@@ -88,7 +88,7 @@ router.get('/farmer/redeem-history/:farmerId', authorize(["farmer"]), getRedeemP
 router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
 
 
-router.get('/farmer/invoice/:farmerId', getFarmerInvoiceByFarmerId);
+router.get('/farmer/invoice/:orderId', getFarmerInvoiceByOrderId);
 
 
 module.exports = router;

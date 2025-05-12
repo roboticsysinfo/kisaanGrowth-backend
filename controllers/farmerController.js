@@ -840,57 +840,50 @@ const upgradeFarmerPoints = async (req, res) => {
 };
 
 
-const getFarmerInvoiceByFarmerId = async (req, res) => {
+const getFarmerInvoiceByOrderId = async (req, res) => {
   try {
-    const { farmerId } = req.params;  // `farmerId` ko params mein lena
-    const trimmedFarmerId = farmerId.trim();
+    const { orderId } = req.params;
+    const trimmedOrderId = orderId.trim();
 
-    console.log("🔍 Searching Bill with Farmer ID:", trimmedFarmerId);
+    console.log("🔍 Searching Bill with Order ID:", trimmedOrderId);
 
-    // Optional debug
-    const all = await FarmerRedeemBill.find({});
-    console.log("📦 All stored Farmer IDs:", all.map(b => b.farmerId.toString()));  // Showing all stored farmer IDs
-
-    // Query to find all bills by farmerId
-    const bills = await FarmerRedeemBill.find({ farmerId: trimmedFarmerId })
+    const bill = await FarmerRedeemBill.findOne({ orderId: trimmedOrderId })
       .populate('farmerId')
       .populate('redeemProductId');
 
-    if (!bills || bills.length === 0) {
-      console.log("❌ No bills found for Farmer ID:", trimmedFarmerId);
-      return res.status(404).json({ message: 'No bills found for this farmer' });
+    if (!bill) {
+      console.log("❌ No bill found for Order ID:", trimmedOrderId);
+      return res.status(404).json({ message: 'No bill found for this order ID' });
     }
 
-    const response = bills.map(bill => {
-      const farmer = bill.farmerId;
+    const farmer = bill.farmerId;
 
-      return {
-        invoice: {
-          orderId: bill.orderId,
-          billGeneratedAt: bill.billGeneratedAt,
-          productName: bill.productName,
-          priceValue: bill.priceValue,
-          gstAmount: bill.gstAmount,
-          totalAmount: bill.totalAmount,
-          pdfPath: bill.pdfPath || null,
-        },
-        farmer: {
-          id: farmer._id,
-          name: farmer.name,
-          phoneNumber: farmer.phoneNumber,
-          email: farmer.email,
-          state: farmer.state,
-          city_district: farmer.city_district,
-          village: farmer.village,
-          address: farmer.address,
-          registrationNumber: farmer.registrationNumber,
-        },
-      };
-    });
+    const response = {
+      invoice: {
+        orderId: bill.orderId,
+        billGeneratedAt: bill.billGeneratedAt,
+        productName: bill.productName,
+        priceValue: bill.priceValue,
+        gstAmount: bill.gstAmount,
+        totalAmount: bill.totalAmount,
+        pdfPath: bill.pdfPath || null,
+      },
+      farmer: {
+        id: farmer._id,
+        name: farmer.name,
+        phoneNumber: farmer.phoneNumber,
+        email: farmer.email,
+        state: farmer.state,
+        city_district: farmer.city_district,
+        village: farmer.village,
+        address: farmer.address,
+        registrationNumber: farmer.registrationNumber,
+      },
+    };
 
     res.status(200).json(response);
   } catch (error) {
-    console.error('Error fetching invoice by farmerId:', error);
+    console.error('Error fetching invoice by orderId:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -915,6 +908,5 @@ module.exports = {
   getFarmersByCity,
   getFarmerDetailsById,
   upgradeFarmerPoints,
-  // getFarmerInvoiceByOrderId,
-  getFarmerInvoiceByFarmerId
+  getFarmerInvoiceByOrderId
 };
