@@ -40,7 +40,8 @@ router.get('/get/customer/redeem-product-history', authorize(["admin"]), getRede
 // Get redemption history for a specific customer by customerId
 router.get('/customer/redeem-history/:customerId', authorize(["customer"]), getRedeemProductsByCustomerId);
 
+
 // get generated bill for customer redeem product
-router.get('/customer/bills/:orderId', getBillPdf);
+router.get('/redeem-product/customer/bills/:orderId', getBillPdf);
 
 module.exports = router;

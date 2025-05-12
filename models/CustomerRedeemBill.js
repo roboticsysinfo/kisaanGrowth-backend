@@ -18,7 +18,10 @@ const customerRedeemBillSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-
+  pdfPath: {
+    type: String,
+    required: true // or false if you want it optional initially
+  },
   productName: {
     type: String,
     required: true
@@ -43,7 +46,7 @@ const customerRedeemBillSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-  
+
 }, { timestamps: true });
 
 

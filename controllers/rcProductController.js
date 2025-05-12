@@ -347,15 +347,15 @@ const getRedeemProductsByFarmerId = async (req, res) => {
 
 
 const getBillPdf = async (req, res) => {
+
     const { orderId } = req.params;
 
     console.log("orderId", orderId)
-    const cleanedOrderId = orderId.trim();
 
     try {
 
-        const bill = await CustomerRedeemBill.findOne({ cleanedOrderId });
-        if (!bill || !bill.pdfPath) {
+        const bill = await CustomerRedeemBill.findOne({ orderId });
+        if (!bill) {
             return res.status(404).json({ message: 'Bill not found' });
         }
 
