@@ -10,7 +10,7 @@ const verifyCaptcha = require("../middlewares/verifyCaptcha");
 router.post('/admin/register', registerAdmin);
 
 // User login
-router.post('/admin/login', verifyCaptcha, loginAdmin);
+router.post('/admin/login', loginAdmin);
 
 
 router.get('/admin/users', authorize(["admin"]), getAllAdmins)
