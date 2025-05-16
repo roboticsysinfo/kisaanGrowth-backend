@@ -115,9 +115,9 @@ const updateRequestStatus = async (req, res) => {
     // ✅ Send notification to the customer
     let message = "";
     if (status === 'accepted') {
-      message = `Accepted, Good news! Your family farmer request to ${updated.toFarmer.name} has been accepted. 👨‍🌾`;
+      message = `Accepted, Good news! Your family farmer request to ${updated.toFarmer.name} has been accepted.`;
     } else if (status === 'rejected') {
-      message = `Rejected, Oops! Your family farmer request to ${updated.toFarmer.name} has been rejected. 😔`;
+      message = `Rejected, Oops! Your family farmer request to ${updated.toFarmer.name} has been rejected.`;
     }
 
     await sendNotification(
