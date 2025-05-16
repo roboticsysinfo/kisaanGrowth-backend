@@ -20,14 +20,12 @@ router.post("/add_blog", upload.single("blog_image"), authorize(["admin"]), crea
 // ✅ Update a blog (Admin only)
 router.put("/update-blog/:id", upload.single("blog_image"), authorize(["admin"]), updateBlog);
 
-
-
 // ✅ Get all blogs
 router.get("/blogs", getBlogs);
 
 
 // ✅ Get a single blog by ID
-router.get("/blog/:id", getBlogById);
+router.get("/blog/:blogId", getBlogById);
 
 
 // ✅ Delete a blog (Admin only)
