@@ -6,7 +6,39 @@ const { sendNotification } = require("../helper/sendNotification");
 
 
 // Send request (Customer → Farmer)
-// Send request (Customer → Farmer)
+// const sendFamilyRequest = async (req, res) => {
+//   try {
+//     const { fromCustomer, toFarmer } = req.body;
+
+//     if (!fromCustomer || !toFarmer) {
+//       return res.status(400).json({ message: 'Customer and Farmer are required.' });
+//     }
+
+//     // Optional: Check if request already exists
+//     const existing = await FamilyFarmerRequest.findOne({ fromCustomer, toFarmer });
+//     if (existing) {
+//       return res.status(409).json({ message: 'Request already sent.' });
+//     }
+
+//     const newRequest = await FamilyFarmerRequest.create({ fromCustomer, toFarmer });
+
+//     // ✅ Send notification to the farmer
+//     const message = "Congratulations! You received a new Family Request.";
+//     await sendNotification(
+//       toFarmer,          // userId (farmer who should get notified)
+//       "farmer",          // userType
+//       "familyRequest",   // type of notification (family Request)
+//       message,           // message to display
+//       fromCustomer,      // actorId (customer who made the request)
+//       "customer"         // actorType
+//     );
+
+//     res.status(201).json({ message: 'Request sent successfully.', request: newRequest });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Something went wrong.', error: error.message });
+//   }
+// };
+
 const sendFamilyRequest = async (req, res) => {
   try {
     const { fromCustomer, toFarmer } = req.body;
@@ -15,23 +47,44 @@ const sendFamilyRequest = async (req, res) => {
       return res.status(400).json({ message: 'Customer and Farmer are required.' });
     }
 
-    // Optional: Check if request already exists
+    // Check if request already exists
     const existing = await FamilyFarmerRequest.findOne({ fromCustomer, toFarmer });
+
     if (existing) {
+      if (existing.status === 'rejected') {
+        // Update existing rejected request to pending
+        existing.status = 'pending';
+        await existing.save();
+
+        // Send notification again
+        const message = "You received a new Family Request (resent).";
+        await sendNotification(
+          toFarmer,
+          "farmer",
+          "familyRequest",
+          message,
+          fromCustomer,
+          "customer"
+        );
+
+        return res.status(200).json({ message: 'Request resent successfully.', request: existing });
+      }
+
+      // If request already sent and not rejected
       return res.status(409).json({ message: 'Request already sent.' });
     }
 
+    // Create new request if none exists
     const newRequest = await FamilyFarmerRequest.create({ fromCustomer, toFarmer });
 
-    // ✅ Send notification to the farmer
     const message = "Congratulations! You received a new Family Request.";
     await sendNotification(
-      toFarmer,          // userId (farmer who should get notified)
-      "farmer",          // userType
-      "familyRequest",   // type of notification (family Request)
-      message,           // message to display
-      fromCustomer,      // actorId (customer who made the request)
-      "customer"         // actorType
+      toFarmer,
+      "farmer",
+      "familyRequest",
+      message,
+      fromCustomer,
+      "customer"
     );
 
     res.status(201).json({ message: 'Request sent successfully.', request: newRequest });
@@ -120,6 +173,7 @@ const updateRequestStatus = async (req, res) => {
       message = `Rejected, Oops! Your family farmer request to ${updated.toFarmer.name} has been rejected.`;
     }
 
+
     await sendNotification(
       updated.fromCustomer._id,   // userId (customer who should be notified)
       "customer",                 // userType
@@ -129,6 +183,7 @@ const updateRequestStatus = async (req, res) => {
       "farmer"                    // actorType
     );
 
+    
     res.status(200).json({ message: `Request ${status}`, request: updated });
   } catch (error) {
     res.status(500).json({ message: 'Error updating status', error: error.message });
