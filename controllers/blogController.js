@@ -87,15 +87,40 @@ exports.getBlogs = async (req, res) => {
 // ✅ Get Single Blog by ID
 exports.getBlogById = async (req, res) => {
     try {
-        const blog = await Blog.findById(req.params.blogId).populate("author", "name").populate("blog_category", "Blog_category_name");
+        const { blogId } = req.params;
+
+        console.log("blogId params", blogId)
+
+        const blog = await Blog.findById(blogId)
+            .populate("author", "name")
+            .populate("blog_category", "Blog_category_name");
+
+        console.log("blog found", blog)
+
         if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Blog not found",
+                data: null
+            });
         }
-        res.status(200).json(blog);
+
+        res.status(200).json({
+            success: true,
+            message: "Blog fetched successfully",
+            data: blog
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: error.message,
+            data: null
+        });
     }
 };
+
+
+
 
 // ✅ Update Blog
 
