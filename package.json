@@ -21,6 +21,7 @@
     "express": "^4.21.2",
     "express-sitemap": "^1.8.0",
     "express-validator": "^7.2.1",
+    "firebase-admin": "^13.4.0",
     "imagekit": "^6.0.0",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
@@ -33,6 +34,7 @@
     "pdfkit": "^0.17.1",
     "razorpay": "^2.9.6",
     "sharp": "^0.34.1",
+    "socket.io": "^4.8.1",
     "uuid": "^11.0.5",
     "xml": "^1.0.1",
     "xmlbuilder2": "^3.1.1"

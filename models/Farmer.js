@@ -6,14 +6,14 @@ const { v4: uuidv4 } = require("uuid"); // Use UUID for unique registration numb
 const farmerSchema = new mongoose.Schema(
 
   {
-    
+
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profileImg: { type: String, default: "https://avatar.iran.liara.run/public" },
     state: { type: String, required: true },
     city_district: { type: String, required: true },
-    village: { type: String,  },
+    village: { type: String, },
     phoneNumber: { type: Number, required: true },
     address: { type: String, required: true },
     isKYCVerified: { type: Boolean, default: false },
@@ -44,7 +44,7 @@ const farmerSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    
+
     referralDownloads: {
       type: Number,
       default: 0
@@ -60,12 +60,12 @@ const farmerSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    
+
     todayReferralShareCount: {
       type: Number,
       default: 0,
     },
-    
+
     agreedToPrivacyPolicyAndTermsAndConditions: {
       type: Boolean,
       required: true
@@ -81,8 +81,11 @@ const farmerSchema = new mongoose.Schema(
     },
     upgradedAt: {
       type: Date,
-    }
-    
+    },
+
+    fcmToken: { type: String },
+    isOnline: { type: Boolean, default: false },
+
   },
 
   { timestamps: true }

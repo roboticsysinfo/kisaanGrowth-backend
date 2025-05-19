@@ -3,6 +3,10 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 require('dotenv').config();
 const path = require('path');
+const http = require('http');
+const socketIo = require('socket.io');
+const { setupSocket } = require('./socket/socketHandler'); // ✅ new
+
 const adminRoutes = require('./routes/adminRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -27,10 +31,14 @@ const farmingTipsRoutes = require('./routes/farmingTipsRoutes')
 const familyFarmerRoutes = require('./routes/familyFarmerRoutes')
 const customerRedeemProductRoutes = require('./routes/customerRedeemProductRoutes')
 const CustomerHelpSupportRoutes = require('./routes/CustomerHelpSupportRoutes')
-const sitemapRoutes = require("./routes/sitemapRoutes")
+const sitemapRoutes = require("./routes/sitemapRoutes");
+const fcmRoutes = require('./routes/fcmRoutes');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const server = http.createServer(app);
+const io = socketIo(server, { cors: { origin: "*" } }); // ✅ socket setup
+
+
 
 
 const corsOptions = {
@@ -47,16 +55,6 @@ app.use(express.urlencoded({ extended: true })); // URL parameters parsing
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 connectDB();
-
-
-app.get('/', (req, res) => {
-    res.send('Hello Kissan Growth')
-})
-
-app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'no-cache');
-  next();
-});
 
 // ========= Routes=============
 app.use('/api', sitemapRoutes)
@@ -84,9 +82,23 @@ app.use('/api', farmingTipsRoutes);
 app.use('/api', familyFarmerRoutes)
 app.use('/api', customerRedeemProductRoutes);
 app.use('/api', CustomerHelpSupportRoutes)
+app.use('/api', fcmRoutes);
 
 // ========= Routes end=============
 
+app.get('/', (req, res) => {
+    res.send('Hello Kissan Growth')
+})
+
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  next();
+});
+
+
+setupSocket(io); // ✅ Initialize socket handling
+
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running successfully on ${port}`);
 });

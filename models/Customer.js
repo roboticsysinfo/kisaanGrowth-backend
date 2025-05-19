@@ -50,7 +50,9 @@ const customerSchema = new mongoose.Schema({
   agreementTimestamp: {
     type: Date,
     required: true
-  }
+  },
+  fcmToken: { type: String },
+  isOnline: { type: Boolean, default: false },
 
 }, {
   timestamps: true
