@@ -16,7 +16,7 @@ router.get('/farmer/chat-details/:farmerId/:customerId', chatController.getChatB
 
 // PUT route to mark messages as read
 router.put(
-  "/mark-read/:farmerId/:customerId",
+  "/farmer-messages/mark-read/:farmerId/:customerId",
   chatController.markMessagesAsRead
 );
 
