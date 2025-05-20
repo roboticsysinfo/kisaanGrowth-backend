@@ -33,13 +33,12 @@ const customerRedeemProductRoutes = require('./routes/customerRedeemProductRoute
 const CustomerHelpSupportRoutes = require('./routes/CustomerHelpSupportRoutes')
 const sitemapRoutes = require("./routes/sitemapRoutes");
 const fcmRoutes = require('./routes/fcmRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: "*" } }); // ✅ socket setup
-
-
-
+const io = socketIo(server, { cors: { origin: "*" } }); // ✅ socket setu
 
 const corsOptions = {
   origin: "*", // Allow all origins
@@ -83,11 +82,12 @@ app.use('/api', familyFarmerRoutes)
 app.use('/api', customerRedeemProductRoutes);
 app.use('/api', CustomerHelpSupportRoutes)
 app.use('/api', fcmRoutes);
+app.use('.api', chatRoutes)
 
 // ========= Routes end=============
 
 app.get('/', (req, res) => {
-    res.send('Hello Kissan Growth')
+  res.send('Hello Kissan Growth')
 })
 
 app.use((req, res, next) => {
