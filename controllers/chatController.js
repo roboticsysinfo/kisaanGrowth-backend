@@ -123,9 +123,6 @@ exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
 
 // mark as read unread message for farmer 
 
-const mongoose = require("mongoose");
-const ChatMessage = require("../models/ChatMessage");
-
 exports.markMessagesAsRead = async (req, res) => {
   try {
     const { customerId, farmerId } = req.params;
