@@ -127,10 +127,13 @@ exports.markMessagesAsRead = async (req, res) => {
   try {
     const { farmerId, customerId } = req.params;
 
+    console.log("farmerid", farmerId);
+    console.log("customerId", customerId);
+
     await ChatMessage.updateMany(
       {
-        senderId: customerId,
-        receiverId: farmerId,
+        senderId: mongoose.Types.ObjectId(customerId),
+        receiverId: mongoose.Types.ObjectId(farmerId),
         receiverType: "farmer",
         senderType: "customer",
         isRead: false,
