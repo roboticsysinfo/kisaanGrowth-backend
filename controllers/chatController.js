@@ -1,14 +1,49 @@
-// controllers/chatController.js
 const { default: mongoose } = require("mongoose");
 const ChatMessage = require("../models/ChatMessage");
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
 const { sendPushNotification } = require("../utils/fcm");
+const { decrypt } = require("../utils/encryption"); 
+
+
+// exports.sendMessage = async (req, res) => {
+
+
+//   const { senderId, senderType, receiverId, receiverType, message } = req.body;
+
+//   console.log("Message Body:", {
+//     senderId,
+//     senderType,
+//     receiverId,
+//     receiverType,
+//     message,
+//   });
+
+//   const chat = await ChatMessage.create({ senderId, senderType, receiverId, receiverType, message });
+
+//   console.log("chat create", chat);
+
+//   let receiver;
+
+//   if (receiverType === "customer") {
+//     receiver = await Customer.findById(receiverId);
+//   } else {
+//     receiver = await Farmer.findById(receiverId);
+//   }
+
+//   if (receiver?.fcmToken) {
+//     await sendPushNotification(receiver.fcmToken, "New Message", message);
+//   }
+
+//   res.status(200).json({ success: true, chat });
+
+// };
+
+
+// Get Farmer Chats List
 
 
 exports.sendMessage = async (req, res) => {
-
-
   const { senderId, senderType, receiverId, receiverType, message } = req.body;
 
   console.log("Message Body:", {
@@ -19,12 +54,17 @@ exports.sendMessage = async (req, res) => {
     message,
   });
 
-  const chat = await ChatMessage.create({ senderId, senderType, receiverId, receiverType, message });
+  const chat = await ChatMessage.create({
+    senderId,
+    senderType,
+    receiverId,
+    receiverType,
+    message, // will be auto-encrypted by model's pre-save
+  });
 
   console.log("chat create", chat);
 
   let receiver;
-
   if (receiverType === "customer") {
     receiver = await Customer.findById(receiverId);
   } else {
@@ -32,15 +72,18 @@ exports.sendMessage = async (req, res) => {
   }
 
   if (receiver?.fcmToken) {
-    await sendPushNotification(receiver.fcmToken, "New Message", message);
+    await sendPushNotification(receiver.fcmToken, "New Message", message); // plain message for notification
   }
 
-  res.status(200).json({ success: true, chat });
-
+  res.status(200).json({
+    success: true,
+    chat: {
+      ...chat.toObject(),
+      message, // return plain message instead of encrypted one
+    },
+  });
 };
 
-
-// Get Farmer Chats List
 
 exports.getFarmerChatList = async (req, res) => {
   try {
@@ -54,19 +97,17 @@ exports.getFarmerChatList = async (req, res) => {
           senderType: "customer",
         },
       },
-      {
-        $sort: { createdAt: -1 },
-      },
+      { $sort: { createdAt: -1 } },
       {
         $group: {
-          _id: "$senderId", // group by customer
+          _id: "$senderId",
           lastMessage: { $first: "$message" },
           timestamp: { $first: "$createdAt" },
           unreadCount: {
             $sum: {
-              $cond: [{ $eq: ["$isRead", false] }, 1, 0]
-            }
-          }
+              $cond: [{ $eq: ["$isRead", false] }, 1, 0],
+            },
+          },
         },
       },
       {
@@ -77,28 +118,26 @@ exports.getFarmerChatList = async (req, res) => {
           as: "customer",
         },
       },
-      {
-        $unwind: "$customer",
-      },
-      {
-        $project: {
-          customerId: "$_id",
-          name: "$customer.name",
-          avatar: "$customer.profileImage",
-          lastMessage: 1,
-          timestamp: 1,
-          unreadCount: 1, // send unreadCount
-        },
-      },
+      { $unwind: "$customer" },
     ]);
 
+    // Decrypt lastMessage before sending
+    const decryptedList = chatList.map((chat) => ({
+      customerId: chat._id,
+      name: chat.customer.name,
+      avatar: chat.customer.profileImage,
+      lastMessage: decrypt(chat.lastMessage),
+      timestamp: chat.timestamp,
+      unreadCount: chat.unreadCount,
+    }));
 
-    res.json(chatList);
+    res.json(decryptedList);
   } catch (error) {
     console.error("Get Chat List Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 // Get chat details between farmer and customer
@@ -109,17 +148,33 @@ exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
 
     const messages = await ChatMessage.find({
       $or: [
-        { senderId: farmerId, senderType: 'farmer', receiverId: customerId, receiverType: 'customer' },
-        { senderId: customerId, senderType: 'customer', receiverId: farmerId, receiverType: 'farmer' },
+        {
+          senderId: farmerId,
+          senderType: "farmer",
+          receiverId: customerId,
+          receiverType: "customer",
+        },
+        {
+          senderId: customerId,
+          senderType: "customer",
+          receiverId: farmerId,
+          receiverType: "farmer",
+        },
       ],
-    }).sort({ createdAt: 1 }); // oldest to newest
+    }).sort({ createdAt: 1 });
 
-    res.status(200).json(messages);
+    const decryptedMessages = messages.map((msg) => ({
+      ...msg.toObject(),
+      message: msg.getDecryptedMessage(), // use instance method from model
+    }));
+
+    res.status(200).json(decryptedMessages);
   } catch (error) {
-    console.error('Get Chat Details Error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get Chat Details Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // mark as read unread message for farmer 
 
@@ -127,8 +182,13 @@ exports.markMessagesAsRead = async (req, res) => {
   try {
     const { customerId, farmerId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(customerId) || !mongoose.Types.ObjectId.isValid(farmerId)) {
-      return res.status(400).json({ success: false, message: "Invalid customerId or farmerId" });
+    if (
+      !mongoose.Types.ObjectId.isValid(customerId) ||
+      !mongoose.Types.ObjectId.isValid(farmerId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid customerId or farmerId" });
     }
 
     const result = await ChatMessage.updateMany(
