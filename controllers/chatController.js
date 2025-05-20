@@ -1,13 +1,15 @@
 // controllers/chatController.js
+const { default: mongoose } = require("mongoose");
 const ChatMessage = require("../models/ChatMessage");
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
 const { sendPushNotification } = require("../utils/fcm");
 
+
 exports.sendMessage = async (req, res) => {
 
-  const { senderId, senderType, receiverId, receiverType, message } = req.body;
 
+  const { senderId, senderType, receiverId, receiverType, message } = req.body;
 
   console.log("Message Body:", {
     senderId,
@@ -43,7 +45,10 @@ exports.sendMessage = async (req, res) => {
 exports.getFarmerChatList = async (req, res) => {
 
   try {
-    const {farmerId} = req.params;
+
+    const { farmerId } = req.params;
+
+    console.log("farmer id", farmerId);
 
     const chatList = await ChatMessage.aggregate([
       {
@@ -85,12 +90,12 @@ exports.getFarmerChatList = async (req, res) => {
       },
     ]);
 
-    // Optional: Populate customer or farmer info
-    // You can loop and fetch name, image from Farmer or Customer models
 
     res.json(chatList);
+
   } catch (error) {
     console.error("Get Chat List Error:", error);
     res.status(500).json({ message: "Server error" });
   }
+
 };
