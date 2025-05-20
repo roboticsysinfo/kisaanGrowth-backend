@@ -79,7 +79,7 @@ exports.getFarmerChatList = async (req, res) => {
         $project: {
           customerId: "$_id",
           name: "$customer.name",
-          avatar: "$customer.avatar",
+          avatar: "$customer.profileImage",
           lastMessage: 1,
           timestamp: 1,
         },
