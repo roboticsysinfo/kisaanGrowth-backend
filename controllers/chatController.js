@@ -43,12 +43,8 @@ exports.sendMessage = async (req, res) => {
 // Get Farmer Chats List
 
 exports.getFarmerChatList = async (req, res) => {
-
   try {
-
     const { farmerId } = req.params;
-
-    console.log("farmer id", farmerId);
 
     const chatList = await ChatMessage.aggregate([
       {
@@ -68,13 +64,6 @@ exports.getFarmerChatList = async (req, res) => {
               "$senderId",
             ],
           },
-          otherUserType: {
-            $cond: [
-              { $eq: ["$senderType", "farmer"] },
-              "$receiverType",
-              "$senderType",
-            ],
-          },
         },
       },
       {
@@ -85,17 +74,34 @@ exports.getFarmerChatList = async (req, res) => {
           _id: "$otherUserId",
           lastMessage: { $first: "$message" },
           timestamp: { $first: "$createdAt" },
-          otherUserType: { $first: "$otherUserType" },
+        },
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "_id",
+          foreignField: "_id",
+          as: "customer",
+        },
+      },
+      {
+        $unwind: "$customer",
+      },
+      {
+        $project: {
+          customerId: "$_id",
+          name: "$customer.name",
+          avatar: "$customer.avatar",
+          lastMessage: 1,
+          timestamp: 1,
         },
       },
     ]);
 
-
     res.json(chatList);
-
   } catch (error) {
     console.error("Get Chat List Error:", error);
     res.status(500).json({ message: "Server error" });
   }
-
 };
+
