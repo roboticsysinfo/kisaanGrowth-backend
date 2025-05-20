@@ -43,7 +43,7 @@ exports.sendMessage = async (req, res) => {
 exports.getFarmerChatList = async (req, res) => {
 
   try {
-    const farmerId = req.user.id;
+    const {farmerId} = req.params;
 
     const chatList = await ChatMessage.aggregate([
       {
