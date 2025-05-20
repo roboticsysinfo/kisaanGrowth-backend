@@ -120,3 +120,27 @@ exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// mark as read unread message for farmer 
+
+exports.markMessagesAsRead = async (req, res) => {
+  try {
+    const { farmerId, customerId } = req.params;
+
+    await ChatMessage.updateMany(
+      {
+        senderId: customerId,
+        receiverId: farmerId,
+        receiverType: "farmer",
+        senderType: "customer",
+        isRead: false,
+      },
+      { $set: { isRead: true } }
+    );
+
+    res.json({ success: true, message: "Messages marked as read" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

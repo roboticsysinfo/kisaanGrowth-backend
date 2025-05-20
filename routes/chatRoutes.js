@@ -13,4 +13,12 @@ router.get("/farmer/chats/:farmerId", chatController.getFarmerChatList);
 // Chat between a farmer and customer
 router.get('/farmer/chat-details/:farmerId/:customerId', chatController.getChatBetweenFarmerAndCustomer);
 
+
+// PUT route to mark messages as read
+router.put(
+  "/mark-read/:farmerId/:customerId",
+  chatController.markMessagesAsRead
+);
+
+
 module.exports = router;
