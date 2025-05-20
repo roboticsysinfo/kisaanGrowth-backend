@@ -62,6 +62,11 @@ exports.getFarmerChatList = async (req, res) => {
           _id: "$senderId", // group by customer
           lastMessage: { $first: "$message" },
           timestamp: { $first: "$createdAt" },
+          unreadCount: {
+            $sum: {
+              $cond: [{ $eq: ["$isRead", false] }, 1, 0]
+            }
+          }
         },
       },
       {
@@ -82,9 +87,11 @@ exports.getFarmerChatList = async (req, res) => {
           avatar: "$customer.profileImage",
           lastMessage: 1,
           timestamp: 1,
+          unreadCount: 1, // send unreadCount
         },
       },
     ]);
+
 
     res.json(chatList);
   } catch (error) {
