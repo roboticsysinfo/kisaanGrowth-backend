@@ -94,3 +94,22 @@ exports.getFarmerChatList = async (req, res) => {
 };
 
 
+// Get chat details between farmer and customer
+
+exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
+  try {
+    const { farmerId, customerId } = req.params;
+
+    const messages = await ChatMessage.find({
+      $or: [
+        { senderId: farmerId, senderType: 'farmer', receiverId: customerId, receiverType: 'customer' },
+        { senderId: customerId, senderType: 'customer', receiverId: farmerId, receiverType: 'farmer' },
+      ],
+    }).sort({ createdAt: 1 }); // oldest to newest
+
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error('Get Chat Details Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
