@@ -49,21 +49,9 @@ exports.getFarmerChatList = async (req, res) => {
     const chatList = await ChatMessage.aggregate([
       {
         $match: {
-          $or: [
-            { senderId: new mongoose.Types.ObjectId(farmerId), senderType: "farmer" },
-            { receiverId: new mongoose.Types.ObjectId(farmerId), receiverType: "farmer" },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          otherUserId: {
-            $cond: [
-              { $eq: ["$senderType", "farmer"] },
-              "$receiverId",
-              "$senderId",
-            ],
-          },
+          receiverId: new mongoose.Types.ObjectId(farmerId),
+          receiverType: "farmer",
+          senderType: "customer",
         },
       },
       {
@@ -71,7 +59,7 @@ exports.getFarmerChatList = async (req, res) => {
       },
       {
         $group: {
-          _id: "$otherUserId",
+          _id: "$senderId", // group by customer
           lastMessage: { $first: "$message" },
           timestamp: { $first: "$createdAt" },
         },
@@ -104,4 +92,5 @@ exports.getFarmerChatList = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
