@@ -9,6 +9,7 @@ const chatMessageSchema = new mongoose.Schema(
     receiverType: { type: String, enum: ["customer", "farmer"], required: true },
     message: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
+    isRead: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
