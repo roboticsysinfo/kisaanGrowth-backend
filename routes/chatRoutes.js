@@ -11,6 +11,6 @@ router.post("/chat/send", chatController.sendMessage);
 router.get("/farmer/chats/:farmerId", chatController.getFarmerChatList);
 
 // Chat between a farmer and customer
-router.get('/farmer/chat-details/:farmerId/:customerId', chatController.getChatBetweenFarmerAndCustomertweenFarmerAndCustomer);
+router.get('/farmer/chat-details/:farmerId/:customerId', chatController.getChatBetweenFarmerAndCustomer);
 
 module.exports = router;
