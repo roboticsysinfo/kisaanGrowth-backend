@@ -123,27 +123,45 @@ exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
 
 // mark as read unread message for farmer 
 
+const mongoose = require("mongoose");
+const ChatMessage = require("../models/ChatMessage");
+
 exports.markMessagesAsRead = async (req, res) => {
   try {
-    const { farmerId, customerId } = req.params;
+    const { customerId, farmerId } = req.params;
 
-    console.log("farmerid", farmerId);
-    console.log("customerId", customerId);
+    if (!mongoose.Types.ObjectId.isValid(customerId) || !mongoose.Types.ObjectId.isValid(farmerId)) {
+      return res.status(400).json({ success: false, message: "Invalid customerId or farmerId" });
+    }
 
-    await ChatMessage.updateMany(
+    const result = await ChatMessage.updateMany(
       {
-        senderId: mongoose.Types.ObjectId(customerId),
-        receiverId: mongoose.Types.ObjectId(farmerId),
-        receiverType: "farmer",
-        senderType: "customer",
+        $or: [
+          {
+            senderId: new mongoose.Types.ObjectId(customerId),
+            senderType: "customer",
+            receiverId: new mongoose.Types.ObjectId(farmerId),
+            receiverType: "farmer",
+          },
+          {
+            senderId: new mongoose.Types.ObjectId(farmerId),
+            senderType: "farmer",
+            receiverId: new mongoose.Types.ObjectId(customerId),
+            receiverType: "customer",
+          },
+        ],
         isRead: false,
       },
       { $set: { isRead: true } }
     );
 
-    res.json({ success: true, message: "Messages marked as read" });
+    res.json({
+      success: true,
+      message: "All messages marked as read between customer and farmer",
+      modifiedCount: result.modifiedCount,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error in markMessagesAsRead:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
