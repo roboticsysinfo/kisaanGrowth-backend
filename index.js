@@ -82,7 +82,7 @@ app.use('/api', familyFarmerRoutes)
 app.use('/api', customerRedeemProductRoutes);
 app.use('/api', CustomerHelpSupportRoutes)
 app.use('/api', fcmRoutes);
-app.use('.api', chatRoutes)
+app.use('/api', chatRoutes)
 
 // ========= Routes end=============
 

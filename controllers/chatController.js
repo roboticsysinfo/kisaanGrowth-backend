@@ -8,9 +8,21 @@ exports.sendMessage = async (req, res) => {
 
   const { senderId, senderType, receiverId, receiverType, message } = req.body;
 
+
+  console.log("Message Body:", {
+    senderId,
+    senderType,
+    receiverId,
+    receiverType,
+    message,
+  });
+
   const chat = await ChatMessage.create({ senderId, senderType, receiverId, receiverType, message });
 
+  console.log("chat create", chat);
+
   let receiver;
+
   if (receiverType === "customer") {
     receiver = await Customer.findById(receiverId);
   } else {
