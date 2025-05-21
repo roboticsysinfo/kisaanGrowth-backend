@@ -4,4 +4,5 @@ const { saveFcmToken } = require('../controllers/fcmController');
 
 router.post('/save-fcm-token', saveFcmToken);
 
+
 module.exports = router;

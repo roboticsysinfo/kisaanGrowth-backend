@@ -176,9 +176,6 @@ exports.markMessagesAsRead = async (req, res) => {
   }
 };
 
-
-
-
 // =================== Customer Functions ========================
 
 

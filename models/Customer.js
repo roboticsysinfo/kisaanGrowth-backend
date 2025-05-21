@@ -51,6 +51,7 @@ const customerSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  
   fcmToken: { type: String },
   isOnline: { type: Boolean, default: false },
 

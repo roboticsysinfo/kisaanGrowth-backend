@@ -99,6 +99,6 @@ app.use((req, res, next) => {
 setupSocket(io); // ✅ Initialize socket handling
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running successfully on ${port}`);
 });
