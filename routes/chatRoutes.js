@@ -4,11 +4,15 @@ const router = express.Router();
 const chatController = require("../controllers/chatController");
 
 
-// chat send
+
+// chat send // for both farmer and customer 
+
 router.post("/chat/send", chatController.sendMessage);
+
 
 // get farmer chats list
 router.get("/farmer/chats/:farmerId", chatController.getFarmerChatList);
+
 
 // Chat between a farmer and customer
 router.get('/farmer/chat-details/:farmerId/:customerId', chatController.getChatBetweenFarmerAndCustomer);
@@ -20,5 +24,22 @@ router.put(
   chatController.markMessagesAsRead
 );
 
+
+// ============== Customer Chat Route ==============
+
+
+// get customer chats list
+router.get("/customer/chats/:customer", chatController.getCustomerChatList);
+
+
+// chat details between customer and farmer
+router.get('/customer/chat-details/:customerId/:farmerId', chatController.getChatBetweenCustomerAndFarmer);
+
+
+// PUT route to mark messages as read
+router.put(
+  "/customer-messages/mark-read/:customerId/:farmerId",
+  chatController.markMessagesAsReadByCustomer
+);
 
 module.exports = router;
