@@ -29,7 +29,7 @@ router.put(
 
 
 // get customer chats list
-router.get("/customer/chats/:customer", chatController.getCustomerChatList);
+router.get("/customer/chats/:customerId", chatController.getCustomerChatList);
 
 
 // chat details between customer and farmer
