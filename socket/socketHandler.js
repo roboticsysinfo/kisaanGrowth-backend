@@ -15,7 +15,6 @@ exports.setupSocket = (io) => {
     socket.on("register", async ({ userId, userType }) => {
       const userKey = `${userId}_${userType}`;
 
-      console.log("userkey", userkey)
 
       onlineUsers[userKey] = socket.id;
       console.log("✅ Registered:", userKey);
