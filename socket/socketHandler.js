@@ -1,7 +1,7 @@
 const ChatMessage = require("../models/ChatMessage");
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
-const { getChatRoomId } = require("../helpers/chatRoom");
+const { getChatRoomId } = require("../helper/chatRoom");
 const { decrypt } = require("../utils/encryption");
 
 const onlineUsers = {}; // { userId_userType: socket.id }
