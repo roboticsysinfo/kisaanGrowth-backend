@@ -1,18 +1,22 @@
 const ChatMessage = require("../models/ChatMessage");
-
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
+
 
 const onlineUsers = {};
 
 
 exports.setupSocket = (io) => {
+
   io.on("connection", (socket) => {
     console.log("🔌 New client connected");
 
     // Register user (for online status)
     socket.on("register", async ({ userId, userType }) => {
       const userKey = `${userId}_${userType}`;
+
+      console.log("userkey", userkey)
+
       onlineUsers[userKey] = socket.id;
       console.log("✅ Registered:", userKey);
 
@@ -100,7 +104,10 @@ exports.setupSocket = (io) => {
         // Broadcast updated status
         io.emit("user_status", { userId, userType, isOnline: false });
       }
+
     });
+
   });
+
 };
 
