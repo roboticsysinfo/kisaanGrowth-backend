@@ -1,103 +1,118 @@
 const ChatMessage = require("../models/ChatMessage");
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
-const { getChatRoomId } = require("../helper/chatRoom");
+const { getChatRoomId } = require("../helpers/chatRoom");
+const { decrypt } = require("../utils/encryption");
 
-const onlineUsers = {};
+const onlineUsers = {}; // { userId_userType: socket.id }
 
 exports.setupSocket = (io) => {
   io.on("connection", (socket) => {
-    console.log("🔌 नया client जुड़ा");
+    console.log("🔌 नया client जुड़ा", socket.id);
 
-    // ✅ Register & Join personal room
-    socket.on("register", async ({ userId, userType }) => {
+    // ✅ Register user and track online status
+    socket.on("register", ({ userId, userType }) => {
       const userKey = `${userId}_${userType}`;
       onlineUsers[userKey] = socket.id;
-      socket.join(userKey); // 👉 हर यूज़र का खुद का एक room भी
+      socket.userKey = userKey;
 
-      console.log("✅ Registered:", userKey);
-
-      // DB में ऑनलाइन स्टेटस अपडेट करें
-      if (userType === "farmer") {
-        await Farmer.findByIdAndUpdate(userId, { isOnline: true });
-      } else if (userType === "customer") {
-        await Customer.findByIdAndUpdate(userId, { isOnline: true });
-      }
-
-      io.emit("user_status", { userId, userType, isOnline: true });
+      // Notify others
+      io.emit("userOnline", { userId, userType });
+      console.log(`✅ ${userKey} registered and online`);
     });
 
-    // ✅ Message भेजना (Chat Room के ज़रिए)
-    socket.on("sendMessage", async (data) => {
-      const {
-        senderId,
-        senderType,
-        receiverId,
-        receiverType,
-        message,
-        timestamp,
-      } = data;
+    // ✅ Join a chat room
+    socket.on("joinRoom", ({ user1Id, user1Type, user2Id, user2Type }) => {
+      const roomId = getChatRoomId(user1Id, user1Type, user2Id, user2Type);
+      socket.join(roomId);
+      console.log(`📥 Joined room ${roomId}`);
+    });
 
-      const newMessage = new ChatMessage({
+    // ✅ Handle typing indicator
+    socket.on("typing", ({ senderId, senderType, receiverId, receiverType }) => {
+      const roomId = getChatRoomId(senderId, senderType, receiverId, receiverType);
+      socket.to(roomId).emit("typing", {
         senderId,
         senderType,
         receiverId,
         receiverType,
-        message,
-        timestamp,
       });
-
-      await newMessage.save();
-
-      const decryptedMessage = {
-        ...newMessage.toObject(),
-        message: newMessage.getDecryptedMessage(),
-      };
-
-      const chatRoom = getChatRoomId(senderId, senderType, receiverId, receiverType);
-
-      // 👉 Ensure both users are in the same chatRoom
-      socket.join(chatRoom); // sender को जोड़ा
-
-      const receiverSocketId = onlineUsers[`${receiverId}_${receiverType}`];
-      if (receiverSocketId) {
-        io.sockets.sockets.get(receiverSocketId)?.join(chatRoom); // receiver को जोड़ा
-      }
-
-      // 🔁 Emit to both users in room
-      io.to(chatRoom).emit("newMessage", decryptedMessage);
     });
 
-    // ✅ Typing Indicator
-    socket.on("typing", ({ toUserId, toRole, fromUserId, fromRole }) => {
-      const room = getChatRoomId(toUserId, toRole, fromUserId, fromRole);
-      socket.to(room).emit("user_typing", { fromUserId });
-    });
+    // ✅ Send and broadcast message
+    socket.on("sendMessage", async ({ senderId, senderType, receiverId, receiverType, message }) => {
+      try {
+        const newMsg = await ChatMessage.create({
+          senderId,
+          senderType,
+          receiverId,
+          receiverType,
+          message,
+        });
 
-    socket.on("stop_typing", ({ toUserId, toRole, fromUserId, fromRole }) => {
-      const room = getChatRoomId(toUserId, toRole, fromUserId, fromRole);
-      socket.to(room).emit("user_stop_typing", { fromUserId });
-    });
+        const decrypted = decrypt(newMsg.message);
+        const roomId = getChatRoomId(senderId, senderType, receiverId, receiverType);
 
-    // ✅ Disconnect
-    socket.on("disconnect", async () => {
-      console.log("❌ यूज़र डिस्कनेक्ट हुआ");
+        const payload = {
+          _id: newMsg._id,
+          senderId,
+          senderType,
+          receiverId,
+          receiverType,
+          message: decrypted,
+          timestamp: newMsg.timestamp,
+          createdAt: newMsg.createdAt,
+        };
 
-      const userKey = Object.keys(onlineUsers).find(
-        (key) => onlineUsers[key] === socket.id
-      );
+        // Emit to all users in room
+        io.to(roomId).emit("newMessage", payload);
+        console.log(`📨 Message sent in room ${roomId}`);
 
-      if (userKey) {
-        const [userId, userType] = userKey.split("_");
-        delete onlineUsers[userKey];
-
-        if (userType === "farmer") {
-          await Farmer.findByIdAndUpdate(userId, { isOnline: false });
-        } else if (userType === "customer") {
-          await Customer.findByIdAndUpdate(userId, { isOnline: false });
+        // Also notify receiver if they’re online
+        const receiverKey = `${receiverId}_${receiverType}`;
+        const receiverSocketId = onlineUsers[receiverKey];
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessageNotification", payload);
         }
+      } catch (error) {
+        console.error("❌ Error sending message:", error);
+        socket.emit("error", { message: "Message send failed" });
+      }
+    });
 
-        io.emit("user_status", { userId, userType, isOnline: false });
+    // ✅ Mark messages as read in room
+    socket.on("markAsRead", async ({ senderId, senderType, receiverId, receiverType }) => {
+      try {
+        const result = await ChatMessage.updateMany(
+          {
+            senderId,
+            senderType,
+            receiverId,
+            receiverType,
+            isRead: false,
+          },
+          { $set: { isRead: true } }
+        );
+
+        const roomId = getChatRoomId(senderId, senderType, receiverId, receiverType);
+        io.to(roomId).emit("messagesRead", {
+          senderId,
+          receiverId,
+          count: result.modifiedCount,
+        });
+      } catch (err) {
+        console.error("❌ Error marking messages as read:", err);
+      }
+    });
+
+    // ✅ Disconnect handler
+    socket.on("disconnect", () => {
+      const userKey = socket.userKey;
+      if (userKey) {
+        delete onlineUsers[userKey];
+        const [userId, userType] = userKey.split("_");
+        io.emit("userOffline", { userId, userType });
+        console.log(`🚫 ${userKey} disconnected`);
       }
     });
   });
