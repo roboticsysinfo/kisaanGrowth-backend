@@ -5,40 +5,6 @@ const CustomerPointsTransactions = require("../models/customerPointsTransactions
 const { sendNotification } = require("../helper/sendNotification");
 
 
-// Send request (Customer → Farmer)
-// const sendFamilyRequest = async (req, res) => {
-//   try {
-//     const { fromCustomer, toFarmer } = req.body;
-
-//     if (!fromCustomer || !toFarmer) {
-//       return res.status(400).json({ message: 'Customer and Farmer are required.' });
-//     }
-
-//     // Optional: Check if request already exists
-//     const existing = await FamilyFarmerRequest.findOne({ fromCustomer, toFarmer });
-//     if (existing) {
-//       return res.status(409).json({ message: 'Request already sent.' });
-//     }
-
-//     const newRequest = await FamilyFarmerRequest.create({ fromCustomer, toFarmer });
-
-//     // ✅ Send notification to the farmer
-//     const message = "Congratulations! You received a new Family Request.";
-//     await sendNotification(
-//       toFarmer,          // userId (farmer who should get notified)
-//       "farmer",          // userType
-//       "familyRequest",   // type of notification (family Request)
-//       message,           // message to display
-//       fromCustomer,      // actorId (customer who made the request)
-//       "customer"         // actorType
-//     );
-
-//     res.status(201).json({ message: 'Request sent successfully.', request: newRequest });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Something went wrong.', error: error.message });
-//   }
-// };
-
 const sendFamilyRequest = async (req, res) => {
   try {
     const { fromCustomer, toFarmer } = req.body;
@@ -57,7 +23,7 @@ const sendFamilyRequest = async (req, res) => {
         await existing.save();
 
         // Send notification again
-        const message = "You received a new Family Request (resent).";
+        const message = "Congratulations! You received a new Family Request.";
         await sendNotification(
           toFarmer,
           "farmer",
