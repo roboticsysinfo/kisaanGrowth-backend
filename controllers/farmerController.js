@@ -378,44 +378,11 @@ const getAllFarmers = async (req, res) => {
 };
 
 // mock otp 123
-const sendOTPToFarmer = async (req, res) => {
-  const { phoneNumber } = req.body;
-
-  try {
-
-    if (!phoneNumber) {
-      return res.status(400).json({ message: "Phone number is required" });
-    }
-
-    // Check if farmer exists
-    const farmer = await Farmer.findOne({ phoneNumber });
-    if (!farmer) {
-      return res.status(404).json({ message: "Farmer not found" });
-    }
-
-    // Fixed Dummy OTP
-    const otp = "1234";
-
-    // Normally, you would send OTP via SMS here
-    res.status(200).json({
-      message: "OTP sent successfully",
-      otp,
-      isKYCVerified: farmer.isKYCVerified,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-
-};
-
-
-// real otp function - fast 2 sms
-
 // const sendOTPToFarmer = async (req, res) => {
-
 //   const { phoneNumber } = req.body;
 
 //   try {
+
 //     if (!phoneNumber) {
 //       return res.status(400).json({ message: "Phone number is required" });
 //     }
@@ -426,107 +393,73 @@ const sendOTPToFarmer = async (req, res) => {
 //       return res.status(404).json({ message: "Farmer not found" });
 //     }
 
-//     // Generate random 4-digit OTP
-//     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+//     // Fixed Dummy OTP
+//     const otp = "1234";
 
-//     // Save OTP with 1 minute expiry
-//     const expiresAt = new Date(Date.now() + 60 * 1000); // 1 min later
-//     await FarmerOTPModel.create({ phone: phoneNumber, otp, expiresAt });
-
-//     // Send OTP via Fast2SMS
-//     const fast2smsRes = await axios.post(
-//       "https://www.fast2sms.com/dev/bulkV2",
-//       {
-//         route: "dlt",
-//         sender_id: "KSGROW", //  approved sender ID
-//         message: "185274",   // approved DLT Template ID
-//         variables_values: otp,
-//         numbers: phoneNumber,
-//       },
-//       {
-//         headers: {
-//           authorization: process.env.FAST2SMS_API_KEY,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
+//     // Normally, you would send OTP via SMS here
 //     res.status(200).json({
 //       message: "OTP sent successfully",
+//       otp,
 //       isKYCVerified: farmer.isKYCVerified,
 //     });
 //   } catch (error) {
-//     console.error("Farmer OTP Send Error:", error.message);
 //     res.status(500).json({ message: "Server error", error: error.message });
 //   }
+
 // };
 
-const farmerLoginWithOTP = async (req, res) => {
-  const { phoneNumber, otp } = req.body;
+
+// real otp function - fast 2 sms
+
+const sendOTPToFarmer = async (req, res) => {
+
+  const { phoneNumber } = req.body;
 
   try {
-    if (!phoneNumber || !otp) {
-      return res.status(400).json({ message: "Phone number and OTP are required" });
+    if (!phoneNumber) {
+      return res.status(400).json({ message: "Phone number is required" });
     }
 
-    // Dummy OTP check
-    if (otp !== "1234") {
-      return res.status(401).json({ message: "Invalid OTP" });
-    }
-
+    // Check if farmer exists
     const farmer = await Farmer.findOne({ phoneNumber });
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    if (!farmer.isKYCVerified) {
-      return res.status(403).json({ message: "Your KYC is not verified yet" });
-    }
+    // Generate random 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // ✅ Daily Login Logic
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Save OTP with 1 minute expiry
+    const expiresAt = new Date(Date.now() + 60 * 1000); // 1 min later
+    await FarmerOTPModel.create({ phone: phoneNumber, otp, expiresAt });
 
-    const alreadyGiven = await PointTransaction.findOne({
-      farmer: farmer._id,
-      type: "daily_login",
-      createdAt: { $gte: today },
-    });
-
-    if (!alreadyGiven) {
-      const points = 1;
-      farmer.points += points;
-      await farmer.save();
-
-      await PointTransaction.create({
-        farmer: farmer._id,
-        points,
-        type: "daily_login",
-        description: "Daily login reward",
-      });
-    }
-
-    // Token generate
-    const token = generateToken(farmer._id, "farmer");
+    // Send OTP via Fast2SMS
+    const fast2smsRes = await axios.post(
+      "https://www.fast2sms.com/dev/bulkV2",
+      {
+        route: "dlt",
+        sender_id: "KSGROW", //  approved sender ID
+        message: "185274",   // approved DLT Template ID
+        variables_values: otp,
+        numbers: phoneNumber,
+      },
+      {
+        headers: {
+          authorization: process.env.FAST2SMS_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     res.status(200).json({
-      message: "Farmer login successful",
-      token,
-      farmer: {
-        id: farmer._id,
-        name: farmer.name,
-        phoneNumber: farmer.phoneNumber,
-        role: "farmer",
-        points: farmer.points, // optional: frontend ko current points bhejne ke liye
-
-      },
+      message: "OTP sent successfully",
+      isKYCVerified: farmer.isKYCVerified,
     });
   } catch (error) {
+    console.error("Farmer OTP Send Error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-// Verify OTP Fast 2 sms
 
 // const farmerLoginWithOTP = async (req, res) => {
 //   const { phoneNumber, otp } = req.body;
@@ -536,19 +469,10 @@ const farmerLoginWithOTP = async (req, res) => {
 //       return res.status(400).json({ message: "Phone number and OTP are required" });
 //     }
 
-//     // Find latest OTP
-//     const latestOtp = await FarmerOTPModel.findOne({ phone: phoneNumber }).sort({ createdAt: -1 });
-
-//     if (
-//       !latestOtp ||
-//       latestOtp.otp !== otp ||
-//       new Date(latestOtp.expiresAt) < new Date()
-//     ) {
-//       return res.status(401).json({ message: "Invalid or expired OTP" });
+//     // Dummy OTP check
+//     if (otp !== "1234") {
+//       return res.status(401).json({ message: "Invalid OTP" });
 //     }
-
-//     // OTP is valid — delete it
-//     await FarmerOTPModel.deleteMany({ phone: phoneNumber });
 
 //     const farmer = await Farmer.findOne({ phoneNumber });
 //     if (!farmer) {
@@ -582,7 +506,7 @@ const farmerLoginWithOTP = async (req, res) => {
 //       });
 //     }
 
-//     // Generate JWT token
+//     // Token generate
 //     const token = generateToken(farmer._id, "farmer");
 
 //     res.status(200).json({
@@ -593,14 +517,90 @@ const farmerLoginWithOTP = async (req, res) => {
 //         name: farmer.name,
 //         phoneNumber: farmer.phoneNumber,
 //         role: "farmer",
-//         points: farmer.points,
+//         points: farmer.points, // optional: frontend ko current points bhejne ke liye
+
 //       },
 //     });
 //   } catch (error) {
-//     console.error("Farmer OTP Login Error:", error.message);
 //     res.status(500).json({ message: "Server error", error: error.message });
 //   }
 // };
+
+// Verify OTP Fast 2 sms
+
+const farmerLoginWithOTP = async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  try {
+    if (!phoneNumber || !otp) {
+      return res.status(400).json({ message: "Phone number and OTP are required" });
+    }
+
+    // Find latest OTP
+    const latestOtp = await FarmerOTPModel.findOne({ phone: phoneNumber }).sort({ createdAt: -1 });
+
+    if (
+      !latestOtp ||
+      latestOtp.otp !== otp ||
+      new Date(latestOtp.expiresAt) < new Date()
+    ) {
+      return res.status(401).json({ message: "Invalid or expired OTP" });
+    }
+
+    // OTP is valid — delete it
+    await FarmerOTPModel.deleteMany({ phone: phoneNumber });
+
+    const farmer = await Farmer.findOne({ phoneNumber });
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    if (!farmer.isKYCVerified) {
+      return res.status(403).json({ message: "Your KYC is not verified yet" });
+    }
+
+    // ✅ Daily Login Logic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyGiven = await PointTransaction.findOne({
+      farmer: farmer._id,
+      type: "daily_login",
+      createdAt: { $gte: today },
+    });
+
+    if (!alreadyGiven) {
+      const points = 1;
+      farmer.points += points;
+      await farmer.save();
+
+      await PointTransaction.create({
+        farmer: farmer._id,
+        points,
+        type: "daily_login",
+        description: "Daily login reward",
+      });
+    }
+
+    // Generate JWT token
+    const token = generateToken(farmer._id, "farmer");
+
+    res.status(200).json({
+      message: "Farmer login successful",
+      token,
+      farmer: {
+        id: farmer._id,
+        name: farmer.name,
+        phoneNumber: farmer.phoneNumber,
+        role: "farmer",
+        points: farmer.points,
+      },
+    });
+  } catch (error) {
+    console.error("Farmer OTP Login Error:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 
 // Daily 5 min stay reward points function
