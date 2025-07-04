@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, getFarmerInvoiceByFarmerId, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, getFarmerInvoiceByFarmerId, deleteFarmerById, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -33,8 +33,10 @@ router.post("/farmer-login-otp-verify", farmerLoginWithOTP);
 router.get('/farmer/get/:farmerId', authorize(["farmer", "admin"]), getFarmerById);
 
 
-router.put('/farmer/update/:farmerId', authorize(["farmer"]), upload.single('profileImg'), updateFarmerById);
+router.put('/farmer/update/:farmerId', authorize(["farmer", "admin"]), upload.single('profileImg'), updateFarmerById);
 
+
+router.delete('/admin/delete-farmer/:farmerId', authorize(["admin"]),  deleteFarmerById);
 
 router.get('/get/farmer-details/:farmerId', getFarmerDetailsById);
 

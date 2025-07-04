@@ -335,6 +335,36 @@ const updateFarmerById = async (req, res) => {
 };
 
 
+const deleteFarmerById = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+
+    const deletedFarmer = await Farmer.findByIdAndDelete(farmerId);
+
+    if (!deletedFarmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Farmer deleted successfully",
+      data: deletedFarmer,
+    });
+  } catch (error) {
+    console.error("Delete farmer error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting farmer",
+      error: error.message,
+    });
+  }
+};
+
+
+
 const requestKYC = async (req, res) => {
 
   try {
@@ -898,6 +928,7 @@ module.exports = {
   getAllFarmers,
   getFarmerById,
   updateFarmerById,
+  deleteFarmerById,
   farmerLoginWithOTP,
   sendOTPToFarmer,
   rewardDailyPoints,
