@@ -64,7 +64,6 @@ const createProduct = async (req, res) => {
 };
 
 
-
 const getAllProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -75,22 +74,24 @@ const getAllProducts = async (req, res) => {
       .populate('farmer_id', 'name')
       .populate('category_id', 'name')
       .populate('shop_id', 'shop_name')
+      .sort({ createdAt: -1 }) // ✅ Sort latest first
       .skip(skip)
       .limit(Number(limit))
       .lean();
 
-
     const totalCount = await Product.countDocuments();
+
     res.status(200).json({
       products,
-      totalCount,
+      total: totalCount, // ✅ frontend expects `total`
       totalPages: Math.ceil(totalCount / limit),
-      currentPage: page,
+      currentPage: Number(page),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 // Get a product by ID
