@@ -391,21 +391,57 @@ const requestKYC = async (req, res) => {
 };
 
 
-const getAllFarmers = async (req, res) => {
+// const getAllFarmers = async (req, res) => {
 
+//   try {
+//     const farmers = await Farmer.find({}, '-password')
+//       .populate({
+//         path: 'referredBy',
+//         select: 'name',
+//       });
+
+//     res.status(200).json(farmers);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+
+// };
+
+
+const getAllFarmers = async (req, res) => {
   try {
-    const farmers = await Farmer.find({}, '-password')
+    const { page = 1, limit = 10, search = '' } = req.query;
+
+    // Create search query if search term exists
+    const query = {
+      name: { $regex: search, $options: 'i' }, // case-insensitive search
+    };
+
+    // Count total for pagination
+    const total = await Farmer.countDocuments(query);
+
+    // Fetch paginated data
+    const farmers = await Farmer.find(query, '-password')
       .populate({
         path: 'referredBy',
         select: 'name',
-      });
+      })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
 
-    res.status(200).json(farmers);
+    res.status(200).json({
+      total,
+      currentPage: Number(page),
+      totalPages: Math.ceil(total / limit),
+      farmers,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
-
 };
+
+
+
 
 // mock otp 123
 // const sendOTPToFarmer = async (req, res) => {
