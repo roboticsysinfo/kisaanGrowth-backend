@@ -3,12 +3,12 @@ const Shop = require("../models/Shop");
 const PointTransaction = require("../models/pointsTransactionHistory");
 const generateToken = require("../utils/jwtGenerator");
 const { ObjectId } = require('mongodb');
-const axios = require("axios")
+const axios = require("axios");
 require('dotenv').config();
 const FarmerOTPModel = require("../models/FarmerOTPModel");
 const imagekit = require("../utils/imagekit");
 const fs = require("fs");
-const FarmerRedeemBill = require("../models/FarmerRedeemBill")
+const FarmerRedeemBill = require("../models/FarmerRedeemBill");
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -16,7 +16,6 @@ const generateReferralCode = () => {
   const randomNumber = Math.floor(100000 + Math.random() * 900000); // ensures a 6-digit number
   return `KG${randomNumber}`;
 };
-
 
 // Farmer Registration Controller
 const registerFarmer = async (req, res) => {
@@ -38,6 +37,7 @@ const registerFarmer = async (req, res) => {
   const uploadAadharCard = req.file?.path;
 
   try {
+
     if (!name || !email || !password || !phoneNumber || !address || !aadharCard || !uploadAadharCard || !state || !city_district) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
@@ -47,15 +47,18 @@ const registerFarmer = async (req, res) => {
     });
 
     if (existingFarmer) {
+
       let duplicateField = '';
       if (existingFarmer.email === email) duplicateField = "Email";
       else if (existingFarmer.aadharCard === aadharCard) duplicateField = "Aadhar Card";
       else if (existingFarmer.phoneNumber === phoneNumber) duplicateField = "Phone Number";
 
       return res.status(409).json({ message: `${duplicateField} already exists` });
+
     }
 
     let referringFarmer = null;
+
     if (referralCode) {
       referringFarmer = await Farmer.findOne({ referralCode });
       if (!referringFarmer) {
@@ -109,7 +112,6 @@ const registerFarmer = async (req, res) => {
     });
   }
 };
-
 
 // const registerFarmer = async (req, res) => {
 //   const {
@@ -412,20 +414,18 @@ const getAllFarmers = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query;
 
-    // Create search query if search term exists
     const query = {
-      name: { $regex: search, $options: 'i' }, // case-insensitive search
+      name: { $regex: search, $options: 'i' },
     };
 
-    // Count total for pagination
     const total = await Farmer.countDocuments(query);
 
-    // Fetch paginated data
     const farmers = await Farmer.find(query, '-password')
       .populate({
         path: 'referredBy',
         select: 'name',
       })
+      .sort({ createdAt: -1 }) // ✅ Sort by newest first
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
@@ -439,6 +439,7 @@ const getAllFarmers = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 
 
