@@ -582,9 +582,13 @@ const getCustomerPointsTransactions = async (req, res) => {
 
 
 // ✅ Get All Customers
+
 const getAllCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find().select("-password");
+    const customers = await Customer.find()
+      .select("-password")
+      .sort({ createdAt: -1 }); // ✅ newest first
+
     res.status(200).json(customers);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
