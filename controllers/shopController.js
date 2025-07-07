@@ -156,21 +156,24 @@ const getShopByFarmerId = async (req, res) => {
 
 
 // Get all shops for a farmer
+// Get all shops for a farmer (sorted by createdAt DESC)
 const getAllShops = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
+    const { page = 1, limit = 10 } = req.query;
+
     const shops = await Shop.find()
+      .sort({ createdAt: -1 }) // 🔁 Newest first
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    const totalShops = await Shop.countDocuments(); // Count the total number of shops
+    const totalShops = await Shop.countDocuments();
 
     res.status(200).json({
       success: true,
       data: shops,
       pagination: {
         totalShops,
-        currentPage: page,
+        currentPage: Number(page),
         totalPages: Math.ceil(totalShops / limit),
       },
     });
@@ -178,8 +181,8 @@ const getAllShops = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-  
 };
+
 
 
 // -------------------- Update Shop --------------------
