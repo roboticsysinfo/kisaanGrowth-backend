@@ -6,7 +6,9 @@ const Blog = require('../models/Blog');
 const slugify = require("../utils/slugify");
 require('dotenv').config();
 
+
 const baseUrl = process.env.REACT_APP_URI;
+
 
 const generateXml = (urls) => {
   const root = create({ version: '1.0' }).ele('urlset', { xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9' });
