@@ -809,8 +809,6 @@ const getFarmerInvoiceByOrderId = async (req, res) => {
     const { orderId } = req.params;
     const trimmedOrderId = orderId.trim();
 
-    console.log("🔍 Searching Bill with Order ID:", trimmedOrderId);
-
     const bill = await FarmerRedeemBill.findOne({ orderId: trimmedOrderId })
       .populate('farmerId')
       .populate('redeemProductId');

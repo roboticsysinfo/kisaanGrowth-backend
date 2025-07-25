@@ -31,7 +31,7 @@ const farmingTipsRoutes = require('./routes/farmingTipsRoutes')
 const familyFarmerRoutes = require('./routes/familyFarmerRoutes')
 const customerRedeemProductRoutes = require('./routes/customerRedeemProductRoutes')
 const CustomerHelpSupportRoutes = require('./routes/CustomerHelpSupportRoutes')
-const sitemapRoutes = require("./routes/sitemapRoutes");
+// const sitemapRoutes = require("./routes/sitemapRoutes");
 const fcmRoutes = require('./routes/fcmRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
@@ -56,7 +56,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 connectDB();
 
 // ========= Routes=============
-app.use('/api', sitemapRoutes)
+// app.use('/api', sitemapRoutes)
 app.use('/api', stateCityRoutes)
 app.use('/api', adminRoutes);
 app.use('/api', categoryRoutes);
