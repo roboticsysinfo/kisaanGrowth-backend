@@ -167,13 +167,9 @@ exports.getBlogById = async (req, res) => {
     try {
         const { blogId } = req.params;
 
-        console.log("blogId params", blogId)
-
         const blog = await Blog.findById(blogId)
             .populate("author", "name")
             .populate("blog_category", "Blog_category_name");
-
-        console.log("blog found", blog)
 
         if (!blog) {
             return res.status(404).json({
