@@ -1,9 +1,13 @@
 const { default: mongoose } = require("mongoose");
 const Blog = require("../models/Blog");
 const uploadToImageKit = require("../utils/uploadToImageKit");
+const { indexURL } = require("../helper/googleIndexing");
+const slugify = require("slugify");
 
 
 // ----------- Create BLog -----------
+
+
 
 exports.createBlog = async (req, res) => {
     try {
@@ -31,6 +35,9 @@ exports.createBlog = async (req, res) => {
             blogImageUrl = result.url;
         }
 
+        // ✅ Slug generate
+        const slug = slugify(blog_title, { lower: true, strict: true });
+
         const newBlog = new Blog({
             blog_title,
             blog_content,
@@ -40,15 +47,86 @@ exports.createBlog = async (req, res) => {
             imageAltText,
             metaTitle,
             metaDescription,
-            metaKeywords
+            metaKeywords,
+            slug // save slug in DB
         });
 
         await newBlog.save();
-        res.status(201).json({ message: "Blog created successfully", blog: newBlog });
+
+        // ✅ URL format: domain.com/slug/id
+        const blogUrl = `https://kissangrowth.com/${slug}/${newBlog._id}`;
+
+        console.log("blogUrl", blogUrl)
+
+        // ✅ Google Indexing API call
+        indexURL(blogUrl);
+
+        return res.status(201).json({
+            message: "Blog created successfully",
+            blog: newBlog,
+            blogUrl
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        return res.status(500).json({ message: error.message });
     }
 };
+
+
+
+
+
+
+
+
+// exports.createBlog = async (req, res) => {
+//     try {
+//         const {
+//             blog_title,
+//             blog_content,
+//             blog_category,
+//             imageAltText,
+//             metaTitle,
+//             metaDescription,
+//             metaKeywords
+//         } = req.body;
+
+//         if (!blog_title || !blog_content || !blog_category) {
+//             return res.status(400).json({ message: "All required fields must be provided" });
+//         }
+
+//         if (!mongoose.Types.ObjectId.isValid(blog_category)) {
+//             return res.status(400).json({ message: "Invalid category ID" });
+//         }
+
+//         let blogImageUrl = "";
+//         if (req.file) {
+//             const result = await uploadToImageKit(req.file.buffer, req.file.originalname);
+//             blogImageUrl = result.url;
+//         }
+
+//         const newBlog = new Blog({
+//             blog_title,
+//             blog_content,
+//             author: req.user.userId,
+//             blog_category: new mongoose.Types.ObjectId(blog_category),
+//             blog_image: blogImageUrl,
+//             imageAltText,
+//             metaTitle,
+//             metaDescription,
+//             metaKeywords
+//         });
+
+//         await newBlog.save();
+//         res.status(201).json({ message: "Blog created successfully", blog: newBlog });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
+
+
 
 
 // ✅ Get All Blogs with Pagination
