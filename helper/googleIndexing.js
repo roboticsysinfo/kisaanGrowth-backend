@@ -4,7 +4,7 @@ const path = require("path");
 async function indexURL(url) {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(__dirname, "kissan-growth-service-account"), // JSON key file ka path
+      keyFile: path.join(__dirname, "kissan-growth-service-account.json"), // JSON key file ka path
       scopes: ["https://www.googleapis.com/auth/indexing"]
     });
 
