@@ -573,8 +573,8 @@ const getAllFarmers = async (req, res) => {
 
 // ------------------------------------------
 
-// Test/Review phone numbers (App Access me diye hue)
-const reviewNumbers = ["8708477017", "7027677771"]; // <-- change to your reviewer numbers
+// Test/Review phone numbers (App Access play store)
+const reviewNumbers = ["1122334455", "9876543210"]; // <-- change to your reviewer numbers
 
 // Real OTP function - Fast2SMS
 const sendOTPToFarmer = async (req, res) => {
@@ -595,7 +595,7 @@ const sendOTPToFarmer = async (req, res) => {
     if (reviewNumbers.includes(phoneNumber)) {
       // ✅ Review Mode - fixed OTP
       otp = "1234";
-      console.log(`📢 Review Mode OTP for ${phoneNumber}: ${otp}`);
+      // console.log(`📢 Review Mode OTP for ${phoneNumber}: ${otp}`);
     } else {
       // ✅ Real OTP
       otp = Math.floor(1000 + Math.random() * 9000).toString();
