@@ -23,15 +23,18 @@ router.delete('/admin/user/:id', authorize(["admin"]), deleteAdmin)
 
 
 // Admin route to get all KYC requests
+
 router.get("/admin/kyc-requests", authorize(["admin"]), getKYCRequests);
 
 
 // Admin route to approve KYC
+
 router.put("/admin/kyc-request/approve/:id", authorize(["admin"]), approveKYC);
 
 
 // Admin route to reject KYC
-router.put("/admin/kyc-request/reject/:id", authorize(["admin"]), rejectKYC);
+
+router.put("/farmer/kyc-request/reject-by-admin/:id", authorize(["admin"]), rejectKYC);
 
 
 router.post("/createPlanOrder", createPlanOrder);
