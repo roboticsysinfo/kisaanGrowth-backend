@@ -574,7 +574,7 @@ const getAllFarmers = async (req, res) => {
 // ------------------------------------------
 
 // Test/Review phone numbers (App Access me diye hue)
-const reviewNumbers = ["9876543210", "9998887777"]; // <-- change to your reviewer numbers
+const reviewNumbers = ["8708477017", "7027677771"]; // <-- change to your reviewer numbers
 
 // Real OTP function - Fast2SMS
 const sendOTPToFarmer = async (req, res) => {

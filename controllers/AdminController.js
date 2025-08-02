@@ -192,7 +192,7 @@ const rejectKYC = async (req, res) => {
 
   try {
 
-    const farmer = await Farmer.findById(req.params.farmerId);
+    const farmer = await Farmer.findById(req.params.id);
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
