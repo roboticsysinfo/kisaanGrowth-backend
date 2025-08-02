@@ -13,13 +13,13 @@ router.post('/admin/register', registerAdmin);
 router.post('/admin/login', loginAdmin);
 
 
-router.get('/admin/users', authorize(["admin"]), getAllAdmins)
+router.get('/admin/users', authorize(["admin"]), getAllAdmins);
 
 
-router.put('/admin/user/:id', authorize(["admin"]), updateAdmin)
+router.put('/admin/user/:id', authorize(["admin"]), updateAdmin);
 
 
-router.delete('/admin/user/:id', authorize(["admin"]), deleteAdmin)
+router.delete('/admin/user/:id', authorize(["admin"]), deleteAdmin);
 
 
 // Admin route to get all KYC requests
