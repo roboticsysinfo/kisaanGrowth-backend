@@ -404,8 +404,6 @@ const verifyCustomerOtp = async (req, res) => {
   }
 };
 
-
-
 // Search Api - fined shop, farmers, products based on city
 const searchByNameAndCity = async (req, res) => {
   const { query, filter, city } = req.query;
@@ -430,8 +428,7 @@ const searchByNameAndCity = async (req, res) => {
   }
 };
 
-
-// Daily 5 min stay reward points function
+// Daily 15 min stay reward points function
 const rewardDailyPointsCustomer = async (req, res) => {
   const customerId = req.user.id; // assuming auth middleware adds user info
 
@@ -464,7 +461,6 @@ const rewardDailyPointsCustomer = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // Customer Refer Share Detail Count ( How Many Share Farmer did )
 
@@ -516,7 +512,6 @@ const incrementReferralShareCustomer = async (req, res) => {
 
 
 // Get Referral Details of Single Customer
-
 const getCustomerReferralDetails = async (req, res) => {
 
   try {
