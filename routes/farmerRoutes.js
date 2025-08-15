@@ -88,7 +88,7 @@ router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
 router.get('/farmer/invoice/:orderId', getFarmerInvoiceByOrderId);
 
 
-router.get("/leaderboard/farmers", getFarmerLeaderboard);
+router.get("/leaderboard/farmers/:currentUserId", getFarmerLeaderboard);
 
 
 module.exports = router;

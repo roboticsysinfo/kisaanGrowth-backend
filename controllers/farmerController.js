@@ -9,6 +9,7 @@ const FarmerOTPModel = require("../models/FarmerOTPModel");
 const imagekit = require("../utils/imagekit");
 const fs = require("fs");
 const FarmerRedeemBill = require("../models/FarmerRedeemBill");
+const { log } = require("console");
 
 
 // 🔐 Helper to generate referral code like "KG123456"
@@ -1010,18 +1011,17 @@ const getFarmerInvoiceByOrderId = async (req, res) => {
 };
 
 
-// 📌 Get Paginated Farmer Leaderboard
 const getFarmerLeaderboard = async (req, res) => {
   try {
-    // Page and limit from query params, default page=1, limit=10
+    const currentUserId = req.params.currentUserId; // from URL param
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Fetch total count for pagination info
+    // Total farmers count
     const totalFarmers = await Farmer.countDocuments();
 
-    // Fetch leaderboard
+    // Paginated leaderboard
     const leaderboard = await Farmer.find({}, {
       name: 1,
       profileImg: 1,
@@ -1029,9 +1029,21 @@ const getFarmerLeaderboard = async (req, res) => {
       state: 1,
       points: 1
     })
-      .sort({ points: -1 }) // highest points first
+      .sort({ points: -1 })
       .skip(skip)
       .limit(limit);
+
+    // ✅ Calculate rank only if user exists
+    let currentUserRank = null;
+    if (currentUserId) {
+      const userDoc = await Farmer.findById(currentUserId).select("points");
+      if (userDoc) {
+        const rankIndex = await Farmer.countDocuments({
+          points: { $gt: userDoc.points }
+        });
+        currentUserRank = rankIndex + 1;
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -1039,6 +1051,7 @@ const getFarmerLeaderboard = async (req, res) => {
       limit,
       totalPages: Math.ceil(totalFarmers / limit),
       totalFarmers,
+      currentUserRank,
       data: leaderboard
     });
 
@@ -1050,7 +1063,6 @@ const getFarmerLeaderboard = async (req, res) => {
     });
   }
 };
-
 
 
 // mock otp 123
