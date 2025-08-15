@@ -1,5 +1,5 @@
 const express = require('express');
-const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, getFarmerInvoiceByFarmerId, deleteFarmerById, } = require('../controllers/farmerController');
+const { farmerLogin, registerFarmer, requestKYC, getAllFarmers, sendOTPToFarmer, farmerLoginWithOTP, getFarmerById, updateFarmerById, rewardDailyPoints, incrementReferralShare, getFarmerReferralDetails, getPointTransactions, getFarmerByIdForAdmin, getFarmersByCity, getFarmerDetailsById, upgradeFarmerPoints, getFarmerInvoiceByOrderId, getFarmerInvoiceByFarmerId, deleteFarmerById, getFarmerLeaderboard, } = require('../controllers/farmerController');
 const { authorize } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 const router = express.Router();
@@ -47,21 +47,16 @@ router.post('/farmer/reward-daily', authorize(["farmer"]), rewardDailyPoints);
 // POST /api/farmer/referral-share
 router.post('/farmer/referral-share', authorize(["farmer"]), incrementReferralShare);
 
-
 // get /api/farmer/referral-details
 router.get('/farmer/referral-details/:id', authorize(["farmer", "admin"]), getFarmerReferralDetails);
-
 
 // get /api/farmer/points transaction history
 router.get('/farmer/points-transaction/:farmerId', authorize(["admin", "farmer"]), getPointTransactions);
 
-
 router.get('/farmer/getbyadmin/:farmerId', authorize(["admin"]), getFarmerByIdForAdmin);
-
 
 // get farmer active plans
 router.get("/farmer/active-plans/:farmerId", authorize(["admin", "farmer"]), getActiveFarmerPlanById);
-
 
 // Route to get farmers by city_district
 router.get("/farmers/by-city", getFarmersByCity);
@@ -91,6 +86,9 @@ router.get('/farmers/upgrade-plans/transactions', getAllFarmerPlans);
 
 
 router.get('/farmer/invoice/:orderId', getFarmerInvoiceByOrderId);
+
+
+router.get("/leaderboard/farmers", getFarmerLeaderboard);
 
 
 module.exports = router;

@@ -1010,6 +1010,49 @@ const getFarmerInvoiceByOrderId = async (req, res) => {
 };
 
 
+// 📌 Get Paginated Farmer Leaderboard
+const getFarmerLeaderboard = async (req, res) => {
+  try {
+    // Page and limit from query params, default page=1, limit=10
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Fetch total count for pagination info
+    const totalFarmers = await Farmer.countDocuments();
+
+    // Fetch leaderboard
+    const leaderboard = await Farmer.find({}, {
+      name: 1,
+      profileImg: 1,
+      city_district: 1,
+      state: 1,
+      points: 1
+    })
+      .sort({ points: -1 }) // highest points first
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      page,
+      limit,
+      totalPages: Math.ceil(totalFarmers / limit),
+      totalFarmers,
+      data: leaderboard
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching leaderboard",
+      error: error.message
+    });
+  }
+};
+
+
+
 // mock otp 123
 
 // const sendOTPToFarmer = async (req, res) => {
@@ -1125,5 +1168,6 @@ module.exports = {
   getFarmersByCity,
   getFarmerDetailsById,
   upgradeFarmerPoints,
-  getFarmerInvoiceByOrderId
+  getFarmerInvoiceByOrderId,
+  getFarmerLeaderboard
 };
