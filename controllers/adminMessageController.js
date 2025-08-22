@@ -1,7 +1,7 @@
 const AdminMessage = require("../models/AdminMessage");
 const Farmer = require("../models/Farmer");
 const User = require("../models/User");
-const sendPushNotification = require("../utils/fcm")
+const { sendPushNotification } = require("../utils/fcm");
 
 
 // ✅ Create Message

@@ -4,8 +4,8 @@ const uploadToImageKit = require("../utils/uploadToImageKit");
 const { indexURL } = require("../helper/googleIndexing");
 const slugify = require("slugify");
 const User = require("../models/User")
-const sendPushNotification = require("../utils/fcm");
 const Farmer = require("../models/Farmer");
+const { sendPushNotification } = require("../utils/fcm");
 
 
 // ----------- Create BLog -----------
