@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Admin Only Routes
 router.post("/admin/message", authorize(["admin"]), createMessage);
-router.get("/admin/messages", authorize(["admin", "farmer"]), getAllMessages);
+router.get("/admin/messages", getAllMessages);
 router.put("/admin/message/:id", authorize(["admin"]), updateMessage);
 router.delete("/admin/message/:id", authorize(["admin"]), deleteMessage);
 
