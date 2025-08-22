@@ -128,6 +128,9 @@ exports.createBlog = async (req, res) => {
         // ✅ Push Notification to all users
         const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
 
+        console.log("users", users);
+        
+
         for (const user of users) {
             await sendPushNotification(
                 user.fcmToken,
