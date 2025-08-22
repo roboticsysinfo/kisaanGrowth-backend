@@ -70,7 +70,7 @@ const getAllProducts = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const products = await Product.find()
-      .select('name price_per_unit quantity category_id farmer_id shop_id product_image description season harvest_date')
+      .select('name price_per_unit  quantity unit category_id farmer_id shop_id product_image description season harvest_date')
       .populate('farmer_id', 'name')
       .populate('category_id', 'name')
       .populate('shop_id', 'shop_name')
