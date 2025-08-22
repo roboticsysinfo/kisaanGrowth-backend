@@ -126,16 +126,13 @@ exports.createBlog = async (req, res) => {
         indexURL(blogUrl);
 
         // ✅ Push Notification to all users
-        const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
-
+        const users = await User.find({ fcmToken: { $type: "string" } });
         console.log("users", users);
-        
+
 
         for (const user of users) {
             await sendPushNotification(
                 user.fcmToken,
-                // "📝 New Blog Published!",
-                // `${blog_title} - Tap to read now.`
 
                 "📰 नया लेख आया है!",   // Title
                 `👉 ${blog_title} पढ़ें और लाभ उठाएँ 🌾`   // Body
@@ -153,7 +150,7 @@ exports.createBlog = async (req, res) => {
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
-    
+
 };
 
 
