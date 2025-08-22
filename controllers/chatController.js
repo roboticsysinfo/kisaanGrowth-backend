@@ -308,14 +308,20 @@ exports.markMessagesAsReadByCustomer = async (req, res) => {
 
 
 // Delete chat (soft delete)
+// Delete chat (soft delete)
 exports.deleteChat = async (req, res) => {
   try {
-    
-    const { chatId } = req.params;
-    const { userId, userType } = req.body; 
-    // userType = "farmer" or "customer"
+    const { chatId } = req.params; // अब यह customerId होगा
+    const { userId, userType } = req.body; // userType = "farmer" or "customer"
 
-    const chat = await ChatMessage.findById(chatId);
+    // chatId की जगह हम customerId से ढूँढेंगे
+    const chat = await ChatMessage.findOne({
+      $or: [
+        { senderId: userId, receiverId: chatId },
+        { senderId: chatId, receiverId: userId }
+      ]
+    });
+
     if (!chat) {
       return res.status(404).json({ success: false, message: "Chat not found" });
     }
@@ -335,7 +341,7 @@ exports.deleteChat = async (req, res) => {
 
     // If both deleted, remove permanently
     if (chat.deletedBySender && chat.deletedByReceiver) {
-      await ChatMessage.findByIdAndDelete(chatId);
+      await ChatMessage.findByIdAndDelete(chat._id);
     }
 
     res.json({ success: true, message: "Chat deleted successfully" });
@@ -344,4 +350,6 @@ exports.deleteChat = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
 
