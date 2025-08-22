@@ -1,4 +1,7 @@
 const AdminMessage = require("../models/AdminMessage");
+const User = require("../models/User");
+const sendPushNotification = require("../utils/fcm")
+
 
 // ✅ Create Message
 const createMessage = async (req, res) => {
@@ -13,15 +16,56 @@ const createMessage = async (req, res) => {
       return res.status(400).json({ message: "Type must be either 'farmer' or 'customer'" });
     }
 
+    // ✅ Save message in DB
     const newMessage = new AdminMessage({ title, message, type });
     await newMessage.save();
 
-    res.status(201).json({ message: "Message created successfully" });
+    // ✅ Find users according to type
+    const users = await User.find({
+      role: type,
+      fcmToken: { $exists: true, $ne: null }
+    });
+
+    // ✅ Send push to each user
+    for (const user of users) {
+      await sendPushNotification(
+        user.fcmToken,
+        `📢 नया संदेश आया है!`,   // Notification Title
+        `${title} - ${message}`   // Notification Body
+      );
+    }
+
+    res.status(201).json({ message: "Message created and sent successfully" });
+
   } catch (err) {
     console.error("Error creating message:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+// ✅ Create Message
+// const createMessage = async (req, res) => {
+//   try {
+//     const { title, message, type } = req.body;
+
+//     if (!title || !message || !type) {
+//       return res.status(400).json({ message: "Title, message, and type are required" });
+//     }
+
+//     if (!['farmer', 'customer'].includes(type)) {
+//       return res.status(400).json({ message: "Type must be either 'farmer' or 'customer'" });
+//     }
+
+//     const newMessage = new AdminMessage({ title, message, type });
+//     await newMessage.save();
+
+//     res.status(201).json({ message: "Message created successfully" });
+//   } catch (err) {
+//     console.error("Error creating message:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 // ✅ Get All Messages (optionally filter by type)
 const getAllMessages = async (req, res) => {
