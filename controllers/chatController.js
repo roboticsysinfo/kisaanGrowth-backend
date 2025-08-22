@@ -39,6 +39,63 @@ exports.sendMessage = async (req, res) => {
 };
 
 
+// exports.getFarmerChatList = async (req, res) => {
+//   try {
+//     const { farmerId } = req.params;
+
+//     const chatList = await ChatMessage.aggregate([
+//       {
+//         $match: {
+//           receiverId: new mongoose.Types.ObjectId(farmerId),
+//           receiverType: "farmer",
+//           senderType: "customer",
+//         },
+//       },
+//       { $sort: { createdAt: -1 } },
+//       {
+//         $group: {
+//           _id: "$senderId",
+//           lastMessage: { $first: "$message" },
+//           timestamp: { $first: "$createdAt" },
+//           unreadCount: {
+//             $sum: {
+//               $cond: [{ $eq: ["$isRead", false] }, 1, 0],
+//             },
+//           },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "customers",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "customer",
+//         },
+//       },
+//       { $unwind: "$customer" },
+//     ]);
+
+//     // Decrypt lastMessage before sending
+//     const decryptedList = chatList.map((chat) => ({
+//       customerId: chat._id,
+//       name: chat.customer.name,
+//       avatar: chat.customer.profileImage,
+//       lastMessage: decrypt(chat.lastMessage),
+//       timestamp: chat.timestamp,
+//       unreadCount: chat.unreadCount,
+//     }));
+
+//     res.json(decryptedList);
+//   } catch (error) {
+//     console.error("Get Chat List Error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
+// Get chat details between farmer and customer
+
+
 exports.getFarmerChatList = async (req, res) => {
   try {
     const { farmerId } = req.params;
@@ -49,6 +106,7 @@ exports.getFarmerChatList = async (req, res) => {
           receiverId: new mongoose.Types.ObjectId(farmerId),
           receiverType: "farmer",
           senderType: "customer",
+          deletedByReceiver: { $ne: true }   // 👈 Soft delete filter
         },
       },
       { $sort: { createdAt: -1 } },
@@ -93,7 +151,6 @@ exports.getFarmerChatList = async (req, res) => {
 };
 
 
-// Get chat details between farmer and customer
 
 exports.getChatBetweenFarmerAndCustomer = async (req, res) => {
   try {
