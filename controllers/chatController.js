@@ -307,3 +307,41 @@ exports.markMessagesAsReadByCustomer = async (req, res) => {
 };
 
 
+// Delete chat (soft delete)
+exports.deleteChat = async (req, res) => {
+  try {
+    
+    const { chatId } = req.params;
+    const { userId, userType } = req.body; 
+    // userType = "farmer" or "customer"
+
+    const chat = await ChatMessage.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ success: false, message: "Chat not found" });
+    }
+
+    // If user is sender
+    if (chat.senderId.toString() === userId && chat.senderType === userType) {
+      chat.deletedBySender = true;
+    }
+    // If user is receiver
+    else if (chat.receiverId.toString() === userId && chat.receiverType === userType) {
+      chat.deletedByReceiver = true;
+    } else {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this chat" });
+    }
+
+    await chat.save();
+
+    // If both deleted, remove permanently
+    if (chat.deletedBySender && chat.deletedByReceiver) {
+      await ChatMessage.findByIdAndDelete(chatId);
+    }
+
+    res.json({ success: true, message: "Chat deleted successfully" });
+  } catch (error) {
+    console.error("Delete Chat Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+

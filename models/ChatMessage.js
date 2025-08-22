@@ -10,6 +10,11 @@ const chatMessageSchema = new mongoose.Schema(
     message: { type: String, required: true }, // This will be encrypted
     timestamp: { type: Date, default: Date.now },
     isRead: { type: Boolean, default: false },
+
+    // new fields for soft delete
+    deletedBySender: { type: Boolean, default: false },
+    deletedByReceiver: { type: Boolean, default: false },
+
   },
   { timestamps: true }
 );
