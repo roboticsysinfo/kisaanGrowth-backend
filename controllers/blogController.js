@@ -4,7 +4,8 @@ const uploadToImageKit = require("../utils/uploadToImageKit");
 const { indexURL } = require("../helper/googleIndexing");
 const slugify = require("slugify");
 const User = require("../models/User")
-const sendPushNotification = require("../utils/fcm")
+const sendPushNotification = require("../utils/fcm");
+const Farmer = require("../models/Farmer");
 
 
 // ----------- Create BLog -----------
@@ -126,13 +127,15 @@ exports.createBlog = async (req, res) => {
         indexURL(blogUrl);
 
         // ✅ Push Notification to all users
-        const users = await User.find({ fcmToken: { $type: "string" } });
-        console.log("users", users);
+        const users = await Farmer.find({ fcmToken: { $exists: true, $ne: null } });
 
+        console.log("users", users);
+        
 
         for (const user of users) {
             await sendPushNotification(
                 user.fcmToken,
+
 
                 "📰 नया लेख आया है!",   // Title
                 `👉 ${blog_title} पढ़ें और लाभ उठाएँ 🌾`   // Body
@@ -150,7 +153,7 @@ exports.createBlog = async (req, res) => {
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
-
+    
 };
 
 

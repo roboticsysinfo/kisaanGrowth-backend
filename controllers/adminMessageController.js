@@ -1,4 +1,5 @@
 const AdminMessage = require("../models/AdminMessage");
+const Farmer = require("../models/Farmer");
 const User = require("../models/User");
 const sendPushNotification = require("../utils/fcm")
 
@@ -21,14 +22,14 @@ const createMessage = async (req, res) => {
     await newMessage.save();
 
     // ✅ Find users according to type
-    const users = await User.find({
+    const users = await Farmer.find({
       role: type,
       fcmToken: { $exists: true, $ne: null }
     });
 
     console.log("users", users);
     
-    
+
     // ✅ Send push to each user
     for (const user of users) {
       await sendPushNotification(
