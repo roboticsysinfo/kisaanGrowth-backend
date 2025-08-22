@@ -131,7 +131,6 @@ exports.createBlog = async (req, res) => {
 
         console.log("users", users);
         
-
         for (const user of users) {
             await sendPushNotification(
                 user.fcmToken,

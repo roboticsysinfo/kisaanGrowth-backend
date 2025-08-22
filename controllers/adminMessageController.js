@@ -23,7 +23,6 @@ const createMessage = async (req, res) => {
 
     // ✅ Find users according to type
     const users = await Farmer.find({
-      role: type,
       fcmToken: { $exists: true, $ne: null }
     });
 
