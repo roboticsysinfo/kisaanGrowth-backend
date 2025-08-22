@@ -16,6 +16,6 @@ router.put("/admin/message/:id", authorize(["admin"]), updateMessage);
 router.delete("/admin/message/:id", authorize(["admin"]), deleteMessage);
 
 // For app (farmer or customer can view messages)
-router.get("/messages", getAllMessages); // Public route for app
+// router.get("/messages", getAllMessages); // Public route for app
 
 module.exports = router;
