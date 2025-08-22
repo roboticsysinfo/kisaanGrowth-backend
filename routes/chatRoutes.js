@@ -24,6 +24,8 @@ router.put(
   chatController.markMessagesAsRead
 );
 
+// 🗑️ Soft delete chat
+router.delete("/delete-chat/:chatId", chatController.deleteChat);
 
 // ============== Customer Chat Route ==============
 
