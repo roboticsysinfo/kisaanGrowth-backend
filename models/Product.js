@@ -40,7 +40,7 @@ const productSchema = new mongoose.Schema(
     },
     unit: {
       type: String,
-      enum: ['kg', 'liters', 'tons', 'pieces'], // Adjust units based on your requirements
+      enum: ['quintal', 'kg', 'liters', 'tons', 'pieces'], // Adjust units based on your requirements
       required: true,
     },
     description: {
@@ -61,5 +61,6 @@ const productSchema = new mongoose.Schema(
 );
 
 const Product = mongoose.model('Product', productSchema);
+
 
 module.exports = Product;
