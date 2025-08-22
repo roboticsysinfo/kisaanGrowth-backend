@@ -465,7 +465,7 @@ const rewardDailyPointsCustomer = async (req, res) => {
 // Customer Refer Share Detail Count ( How Many Share Farmer did )
 
 const incrementReferralShareCustomer = async (req, res) => {
-  
+
   try {
     const { customerId } = req.body;
     const customer = await Customer.findById(customerId);
@@ -659,6 +659,76 @@ const upgradeCustomerPoints = async (req, res) => {
 };
 
 
+const getCustomerLeaderboard = async (req, res) => {
+  try {
+    const currentUserId = req.params.currentUserId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+
+    // search filter name
+    const searchQuery = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    // leaderboard points  descending order  fetch 
+    const leaderboard = await Customer.find(searchQuery, {
+      name: 1,
+      profileImage: 1,
+      city: 1,
+      state: 1,
+      points: 1,
+    })
+      .sort({ points: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // find global rank for every user
+    const withRanks = await Promise.all(
+      leaderboard.map(async (customer) => {
+        const higherCount = await Customer.countDocuments({
+          points: { $gt: customer.points },
+        });
+        return {
+          ...customer.toObject(),
+          rank: higherCount + 1,
+        };
+      })
+    );
+
+    // current user का global rank निकालें
+    let currentUserRank = null;
+    if (currentUserId) {
+      const userDoc = await Customer.findById(currentUserId).select("points");
+      if (userDoc) {
+        const rankIndex = await Customer.countDocuments({
+          points: { $gt: userDoc.points },
+        });
+        currentUserRank = rankIndex + 1;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      page,
+      limit,
+      totalPages: Math.ceil(
+        (await Customer.countDocuments(searchQuery)) / limit
+      ),
+      totalCustomers: await Customer.countDocuments(searchQuery),
+      currentUserRank,
+      data: withRanks,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching customer leaderboard",
+      error: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   registerCustomer,
@@ -674,5 +744,6 @@ module.exports = {
   incrementReferralShareCustomer,
   getAllCustomers,
   deleteCustomer,
-  upgradeCustomerPoints
+  upgradeCustomerPoints,
+  getCustomerLeaderboard
 };

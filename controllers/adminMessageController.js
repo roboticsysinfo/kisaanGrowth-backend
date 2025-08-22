@@ -26,8 +26,6 @@ const createMessage = async (req, res) => {
       fcmToken: { $exists: true, $ne: null }
     });
 
-    console.log("users", users);
-    
 
     // ✅ Send push to each user
     for (const user of users) {

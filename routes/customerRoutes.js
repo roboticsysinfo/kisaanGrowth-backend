@@ -19,7 +19,7 @@ router.post('/auth/customer_register', CustomerController.registerCustomer);
 
 
 // Get Customer by ID
-router.get("/customer/:id", authorize(['customer', 'admin']),  CustomerController.getCustomerById);
+router.get("/customer/:id", authorize(['customer', 'admin']), CustomerController.getCustomerById);
 
 
 
@@ -38,6 +38,8 @@ router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
 
 router.get('/search', CustomerController.searchByNameAndCity);
 
+
+router.get('/get/customers/leaderboard/:currentUserId', CustomerController.getCustomerLeaderboard);
 
 
 // GET /api/search/products?city=city_district
@@ -65,7 +67,7 @@ router.get('/customer/points-transaction/:customerId', authorize(["admin", "cust
 
 
 
-router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCustomers );
+router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCustomers);
 
 
 

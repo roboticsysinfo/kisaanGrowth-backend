@@ -9,71 +9,6 @@ const { sendPushNotification } = require("../utils/fcm");
 
 
 // ----------- Create BLog -----------
-
-// exports.createBlog = async (req, res) => {
-//     try {
-//         const {
-//             blog_title,
-//             blog_content,
-//             blog_category,
-//             imageAltText,
-//             metaTitle,
-//             metaDescription,
-//             metaKeywords
-//         } = req.body;
-
-//         if (!blog_title || !blog_content || !blog_category) {
-//             return res.status(400).json({ message: "All required fields must be provided" });
-//         }
-
-//         if (!mongoose.Types.ObjectId.isValid(blog_category)) {
-//             return res.status(400).json({ message: "Invalid category ID" });
-//         }
-
-//         let blogImageUrl = "";
-//         if (req.file) {
-//             const result = await uploadToImageKit(req.file.buffer, req.file.originalname);
-//             blogImageUrl = result.url;
-//         }
-
-//         // ✅ Slug generate
-//         const slug = slugify(blog_title, { lower: true, strict: true });
-
-//         const newBlog = new Blog({
-//             blog_title,
-//             blog_content,
-//             author: req.user.userId,
-//             blog_category: new mongoose.Types.ObjectId(blog_category),
-//             blog_image: blogImageUrl,
-//             imageAltText,
-//             metaTitle,
-//             metaDescription,
-//             metaKeywords,
-//             slug // save slug in DB
-//         });
-
-//         await newBlog.save();
-
-//         // ✅ URL format: domain.com/slug/id
-//         const blogUrl = `https://kissangrowth.com/${slug}/${newBlog._id}`;
-
-//         console.log("blogUrl", blogUrl)
-
-//         // ✅ Google Indexing API call
-//         indexURL(blogUrl);
-
-//         return res.status(201).json({
-//             message: "Blog created successfully",
-//             blog: newBlog,
-//             blogUrl
-//         });
-
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: error.message });
-//     }
-// };
-
 exports.createBlog = async (req, res) => {
     try {
         const {
@@ -121,20 +56,15 @@ exports.createBlog = async (req, res) => {
         // ✅ URL format: domain.com/slug/id
         const blogUrl = `https://kissangrowth.com/${slug}/${newBlog._id}`;
 
-        console.log("blogUrl", blogUrl);
-
         // ✅ Google Indexing API call
         indexURL(blogUrl);
 
         // ✅ Push Notification to all users
         const users = await Farmer.find({ fcmToken: { $exists: true, $ne: null } });
 
-        console.log("users", users);
-        
         for (const user of users) {
             await sendPushNotification(
                 user.fcmToken,
-
 
                 "📰 नया लेख आया है!",   // Title
                 `👉 ${blog_title} पढ़ें और लाभ उठाएँ 🌾`   // Body
