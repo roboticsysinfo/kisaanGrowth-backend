@@ -3,11 +3,11 @@ const ChatMessage = require("../models/ChatMessage");
 const Customer = require("../models/Customer");
 const Farmer = require("../models/Farmer");
 const { sendPushNotification } = require("../utils/fcm");
-const { decrypt } = require("../utils/encryption"); 
+const { decrypt } = require("../utils/encryption");
 
 
 exports.sendMessage = async (req, res) => {
-  
+
   const { senderId, senderType, receiverId, receiverType, message } = req.body;
 
   const chat = await ChatMessage.create({
@@ -106,18 +106,22 @@ exports.getFarmerChatList = async (req, res) => {
           receiverId: new mongoose.Types.ObjectId(farmerId),
           receiverType: "farmer",
           senderType: "customer",
-          deletedByReceiver: { $ne: true }   // 👈 Soft delete filter
+          deletedByReceiver: { $ne: true }   // ✅ exclude deleted by farmer
         },
       },
-      { $sort: { createdAt: -1 } },
+      { $sort: { createdAt: -1 } }, // ✅ latest first
       {
         $group: {
           _id: "$senderId",
-          lastMessage: { $first: "$message" },
+          lastMessage: { $first: "$message" },   // only latest message after sort
           timestamp: { $first: "$createdAt" },
           unreadCount: {
             $sum: {
-              $cond: [{ $eq: ["$isRead", false] }, 1, 0],
+              $cond: [
+                { $and: [{ $eq: ["$isRead", false] }, { $ne: ["$deletedByReceiver", true] }] },
+                1,
+                0,
+              ],
             },
           },
         },
