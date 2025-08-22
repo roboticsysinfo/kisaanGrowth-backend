@@ -1017,12 +1017,18 @@ const getFarmerLeaderboard = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const search = req.query.search || ""; // ✅ search param
 
-    // Total farmers count
-    const totalFarmers = await Farmer.countDocuments();
+    // ✅ Search filter
+    const query = search
+      ? { name: { $regex: search, $options: "i" } } // case-insensitive
+      : {};
 
-    // Paginated leaderboard
-    const leaderboard = await Farmer.find({}, {
+    // Total farmers count (with filter)
+    const totalFarmers = await Farmer.countDocuments(query);
+
+    // Paginated leaderboard (with filter)
+    const leaderboard = await Farmer.find(query, {
       name: 1,
       profileImg: 1,
       city_district: 1,
@@ -1033,7 +1039,7 @@ const getFarmerLeaderboard = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // ✅ Calculate rank only if user exists
+    // ✅ Calculate rank of current user
     let currentUserRank = null;
     if (currentUserId) {
       const userDoc = await Farmer.findById(currentUserId).select("points");
@@ -1063,6 +1069,7 @@ const getFarmerLeaderboard = async (req, res) => {
     });
   }
 };
+
 
 
 // mock otp 123
