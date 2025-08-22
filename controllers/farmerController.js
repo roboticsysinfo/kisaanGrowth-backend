@@ -1019,33 +1019,44 @@ const getFarmerLeaderboard = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || ""; // ✅ search param
 
-    // ✅ Search filter
-    const query = search
-      ? { name: { $regex: search, $options: "i" } } // case-insensitive
+    // ✅ Always sort by points globally
+    let baseQuery = {};
+    const searchQuery = search
+      ? { name: { $regex: search, $options: "i" } }
       : {};
 
-    // Total farmers count (with filter)
-    const totalFarmers = await Farmer.countDocuments(query);
-
-    // Paginated leaderboard (with filter)
-    const leaderboard = await Farmer.find(query, {
+    // 🔹 Leaderboard results (with search filter, but maintain rank globally)
+    const leaderboard = await Farmer.find(searchQuery, {
       name: 1,
       profileImg: 1,
       city_district: 1,
       state: 1,
-      points: 1
+      points: 1,
     })
-      .sort({ points: -1 })
+      .sort({ points: -1 }) // global order
       .skip(skip)
       .limit(limit);
 
-    // ✅ Calculate rank of current user
+    // 🔹 Now assign global rank to each farmer
+    const withRanks = await Promise.all(
+      leaderboard.map(async (farmer) => {
+        const higherCount = await Farmer.countDocuments({
+          points: { $gt: farmer.points },
+        });
+        return {
+          ...farmer.toObject(),
+          rank: higherCount + 1, // ✅ Correct global rank
+        };
+      })
+    );
+
+    // ✅ Calculate rank of current user (always global)
     let currentUserRank = null;
     if (currentUserId) {
       const userDoc = await Farmer.findById(currentUserId).select("points");
       if (userDoc) {
         const rankIndex = await Farmer.countDocuments({
-          points: { $gt: userDoc.points }
+          points: { $gt: userDoc.points },
         });
         currentUserRank = rankIndex + 1;
       }
@@ -1055,17 +1066,18 @@ const getFarmerLeaderboard = async (req, res) => {
       success: true,
       page,
       limit,
-      totalPages: Math.ceil(totalFarmers / limit),
-      totalFarmers,
+      totalPages: Math.ceil(
+        (await Farmer.countDocuments(searchQuery)) / limit
+      ),
+      totalFarmers: await Farmer.countDocuments(searchQuery),
       currentUserRank,
-      data: leaderboard
+      data: withRanks, // ✅ send rank with each farmer
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error fetching leaderboard",
-      error: error.message
+      error: error.message,
     });
   }
 };
