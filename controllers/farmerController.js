@@ -716,16 +716,7 @@ const farmerLoginWithOTP = async (req, res) => {
 };
 
 
-
 // ------------------------------------------------
-
-
-
-
-
-
-
-
 
 // Daily 5 min stay reward points function
 

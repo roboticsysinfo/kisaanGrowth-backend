@@ -48,32 +48,25 @@ router.post('/customer/reward-daily', authorize(["customer"]), CustomerControlle
 router.post('/customer/referral-share', authorize(["customer"]), CustomerController.incrementReferralShareCustomer);
 
 
-
 // get /api/customer/referral-details
 router.get('/customer/referral-details/:id', authorize(["customer", "admin"]), CustomerController.getCustomerReferralDetails);
-
 
 
 // get /api/customer/points transaction history
 router.get('/customer/points-transaction/:customerId', authorize(["admin", "customer"]), CustomerController.getCustomerPointsTransactions);
 
 
-
 router.get('/all-customers', authorize(["admin"]), CustomerController.getAllCustomers);
-
 
 
 router.delete('/delete/customer/:id', CustomerController.deleteCustomer);
 
 
-
 router.post('/customer/upgrade-points/:customerId', authorize(["customer"]), CustomerController.upgradeCustomerPoints);
-
 
 
 // Route for creating Razorpay order for customer upgrade points
 router.post('/customer/createRazorpayOrder', authorize(["customer"]), createRazorpayOrderForCustomerPoints);
-
 
 
 module.exports = router;

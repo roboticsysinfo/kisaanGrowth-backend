@@ -205,32 +205,56 @@ const updateCustomer = async (req, res) => {
 
 
 
-// // Send OTP (mocked as 1234)
-// const sendOtptoCustomer = async (req, res) => {
+// Send OTP to Customer Phone Number with FAST 2 SMS
 
+// const sendOtptoCustomer = async (req, res) => {
 //   const { phoneNumber } = req.body;
 
 //   if (!phoneNumber) {
-//     return res.status(400).json({ success: false, message: 'Phone number is required' });
+//     return res.status(400).json({ message: "Phone number is required" });
 //   }
 
-//   // ✅ Just check if user exists, don't register
-//   const existingUser = await Customer.findOne({ phoneNumber });
-//   if (!existingUser) {
-//     return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
-//   }
+//   const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
 
-//   // ✅ Send static OTP (1234)
-//   res.json({
-//     success: true,
-//     message: 'OTP sent successfully (use 1234 for testing)',
-//     otp: '1234' // You can remove this in production
-//   });
+//   try {
+//     // OTP Save in db - expire in 1 minute 
+//     await CustomerOTPModel.create({
+//       phone: phoneNumber,
+//       otp,
+//       expiresAt: Date.now() + 60 * 1000,
+//     });
+
+//     // Fast2SMS API call
+//     const response = await axios.post(
+//       "https://www.fast2sms.com/dev/bulkV2",
+//       {
+//         route: "dlt", // ✅ Important for DLT flow
+//         sender_id: "KSGROW", // ✅ Your DLT-approved sender ID
+//         message: "185274",   // ✅ Your DLT Template ID
+//         variables_values: otp, // ✅ Value to replace {#var#} in template
+//         flash: 0,
+//         numbers: phoneNumber, // ✅ 10-digit number
+//       },
+//       {
+//         headers: {
+//           authorization: process.env.FAST2SMS_API_KEY, // ✅ Secure key
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     return res.status(200).json({ message: "OTP sent successfully" });
+//   } catch (err) {
+//     console.error("Error sending OTP:", err.message);
+//     return res.status(500).json({ message: "Failed to send OTP" });
+//   }
 
 // };
 
+// Send OTP to Customer Phone Number with FAST 2 SMS end here
 
-// // Verify OTP
+// OTP Verify Real with FAST 2 SMS
+
 // const verifyCustomerOtp = async (req, res) => {
 //   const { phoneNumber, otp } = req.body;
 
@@ -238,35 +262,43 @@ const updateCustomer = async (req, res) => {
 //     return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
 //   }
 
-//   if (otp !== '1234') {
-//     return res.status(401).json({ success: false, message: 'Invalid OTP' });
-//   }
-
 //   try {
-//     const user = await Customer.findOne({ phoneNumber });
+//     // Find latest OTP for this phone
+//     const existingOtp = await CustomerOTPModel.findOne({ phone: phoneNumber }).sort({ createdAt: -1 });
 
+//     if (
+//       !existingOtp ||
+//       existingOtp.otp !== otp ||
+//       existingOtp.expiresAt < Date.now() // ✅ OTP Expired
+//     ) {
+//       return res.status(401).json({ success: false, message: 'Invalid or expired OTP' });
+//     }
+
+//     // OTP is valid — delete it (optional but good practice)
+//     await CustomerOTPModel.deleteMany({ phone: phoneNumber });
+
+//     const user = await Customer.findOne({ phoneNumber });
 //     if (!user) {
 //       return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
 //     }
 
-//     // ✅ Daily Login Logic
+//     // ✅ Daily Login Reward
 //     const today = new Date();
 //     today.setHours(0, 0, 0, 0);
 
 //     const alreadyGiven = await CustomerPointsTransactions.findOne({
-//       customer: user._id, // 👈 change here
+//       customer: user._id,
 //       type: "daily_login",
 //       createdAt: { $gte: today },
 //     });
 
-
 //     if (!alreadyGiven) {
 //       const points = 1;
-//       user.points += points;        // 👈 change here
+//       user.points += points;
 //       await user.save();
 
 //       await CustomerPointsTransactions.create({
-//         customer: user._id,         // 👈 change here
+//         customer: user._id,
 //         points,
 //         type: "daily_login",
 //         description: "Daily login reward",
@@ -282,15 +314,19 @@ const updateCustomer = async (req, res) => {
 //       user
 //     });
 
-
 //   } catch (error) {
+//     console.error("OTP Verify Error:", error.message);
 //     res.status(500).json({ success: false, message: 'Server error', error: error.message });
 //   }
 // };
 
 
-// Send OTP to Customer Phone Number with FAST 2 SMS
+// update api sms by pass for plya store review  
 
+// Test/Review phone numbers (App Access play store reviewers)
+const reviewNumbers = ["1122334455", "9876543210"]; // apne reviewer numbers yaha daal do
+
+// Send OTP to Customer Phone Number
 const sendOtptoCustomer = async (req, res) => {
   const { phoneNumber } = req.body;
 
@@ -298,47 +334,56 @@ const sendOtptoCustomer = async (req, res) => {
     return res.status(400).json({ message: "Phone number is required" });
   }
 
-  const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
-
   try {
-    // OTP Save in db - expire in 1 minute 
+    let otp;
+
+    if (reviewNumbers.includes(phoneNumber)) {
+      // ✅ Review Mode - fixed OTP
+      otp = "1234";
+      console.log(`📢 Review Mode OTP for ${phoneNumber}: ${otp}`);
+    } else {
+      // ✅ Real OTP
+      otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+      // Fast2SMS API call
+      await axios.post(
+        "https://www.fast2sms.com/dev/bulkV2",
+        {
+          route: "dlt",
+          sender_id: "KSGROW",
+          message: "185274",
+          variables_values: otp,
+          flash: 0,
+          numbers: phoneNumber,
+        },
+        {
+          headers: {
+            authorization: process.env.FAST2SMS_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    // OTP Save in db - expire in 1 minute
     await CustomerOTPModel.create({
       phone: phoneNumber,
       otp,
       expiresAt: Date.now() + 60 * 1000,
     });
 
-    // Fast2SMS API call
-    const response = await axios.post(
-      "https://www.fast2sms.com/dev/bulkV2",
-      {
-        route: "dlt", // ✅ Important for DLT flow
-        sender_id: "KSGROW", // ✅ Your DLT-approved sender ID
-        message: "185274",   // ✅ Your DLT Template ID
-        variables_values: otp, // ✅ Value to replace {#var#} in template
-        flash: 0,
-        numbers: phoneNumber, // ✅ 10-digit number
-      },
-      {
-        headers: {
-          authorization: process.env.FAST2SMS_API_KEY, // ✅ Secure key
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return res.status(200).json({ message: "OTP sent successfully" });
+    return res.status(200).json({
+      message: reviewNumbers.includes(phoneNumber)
+        ? "Review mode: OTP fixed to 1234"
+        : "OTP sent successfully",
+    });
   } catch (err) {
     console.error("Error sending OTP:", err.message);
     return res.status(500).json({ message: "Failed to send OTP" });
   }
-
 };
 
-// Send OTP to Customer Phone Number with FAST 2 SMS end here
-
-// OTP Verify Real with FAST 2 SMS
-
+// Verify Customer OTP
 const verifyCustomerOtp = async (req, res) => {
   const { phoneNumber, otp } = req.body;
 
@@ -353,12 +398,12 @@ const verifyCustomerOtp = async (req, res) => {
     if (
       !existingOtp ||
       existingOtp.otp !== otp ||
-      existingOtp.expiresAt < Date.now() // ✅ OTP Expired
+      existingOtp.expiresAt < Date.now()
     ) {
       return res.status(401).json({ success: false, message: 'Invalid or expired OTP' });
     }
 
-    // OTP is valid — delete it (optional but good practice)
+    // OTP is valid — delete it
     await CustomerOTPModel.deleteMany({ phone: phoneNumber });
 
     const user = await Customer.findOne({ phoneNumber });
@@ -393,9 +438,11 @@ const verifyCustomerOtp = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'OTP verified successfully. Logged in!',
+      message: reviewNumbers.includes(phoneNumber)
+        ? '✅ Review Mode: OTP bypass successful!'
+        : 'OTP verified successfully. Logged in!',
       token,
-      user
+      user,
     });
 
   } catch (error) {
@@ -403,6 +450,8 @@ const verifyCustomerOtp = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+
 
 // Search Api - fined shop, farmers, products based on city
 const searchByNameAndCity = async (req, res) => {
@@ -713,6 +762,91 @@ const getCustomerLeaderboard = async (req, res) => {
     });
   }
 };
+
+
+
+// // Send OTP (mocked as 1234)
+// const sendOtptoCustomer = async (req, res) => {
+
+//   const { phoneNumber } = req.body;
+
+//   if (!phoneNumber) {
+//     return res.status(400).json({ success: false, message: 'Phone number is required' });
+//   }
+
+//   // ✅ Just check if user exists, don't register
+//   const existingUser = await Customer.findOne({ phoneNumber });
+//   if (!existingUser) {
+//     return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+//   }
+
+//   // ✅ Send static OTP (1234)
+//   res.json({
+//     success: true,
+//     message: 'OTP sent successfully (use 1234 for testing)',
+//     otp: '1234' // You can remove this in production
+//   });
+
+// };
+
+
+// // Verify OTP
+// const verifyCustomerOtp = async (req, res) => {
+//   const { phoneNumber, otp } = req.body;
+
+//   if (!phoneNumber || !otp) {
+//     return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
+//   }
+
+//   if (otp !== '1234') {
+//     return res.status(401).json({ success: false, message: 'Invalid OTP' });
+//   }
+
+//   try {
+//     const user = await Customer.findOne({ phoneNumber });
+
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found. Please register first.' });
+//     }
+
+//     // ✅ Daily Login Logic
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const alreadyGiven = await CustomerPointsTransactions.findOne({
+//       customer: user._id, // 👈 change here
+//       type: "daily_login",
+//       createdAt: { $gte: today },
+//     });
+
+
+//     if (!alreadyGiven) {
+//       const points = 1;
+//       user.points += points;        // 👈 change here
+//       await user.save();
+
+//       await CustomerPointsTransactions.create({
+//         customer: user._id,         // 👈 change here
+//         points,
+//         type: "daily_login",
+//         description: "Daily login reward",
+//       });
+//     }
+
+//     const token = generateToken(user._id, 'customer');
+
+//     res.json({
+//       success: true,
+//       message: 'OTP verified successfully. Logged in!',
+//       token,
+//       user
+//     });
+
+
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: 'Server error', error: error.message });
+//   }
+// };
 
 
 module.exports = {
