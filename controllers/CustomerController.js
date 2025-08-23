@@ -667,58 +667,43 @@ const getCustomerLeaderboard = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
 
-    // search filter name
-    const searchQuery = search
-      ? { name: { $regex: search, $options: "i" } }
-      : {};
+    // ✅ Get all customers sorted by points (global ranking base)
+    const allCustomers = await Customer.find(
+      {},
+      { name: 1, profileImage: 1, city: 1, state: 1, points: 1 }
+    ).sort({ points: -1 });
 
-    // leaderboard points  descending order  fetch 
-    const leaderboard = await Customer.find(searchQuery, {
-      name: 1,
-      profileImage: 1,
-      city: 1,
-      state: 1,
-      points: 1,
-    })
-      .sort({ points: -1 })
-      .skip(skip)
-      .limit(limit);
+    // ✅ Assign unique rank based on index
+    const rankedCustomers = allCustomers.map((cust, index) => ({
+      ...cust.toObject(),
+      rank: index + 1, // row_number style (always unique)
+    }));
 
-    // find global rank for every user
-    const withRanks = await Promise.all(
-      leaderboard.map(async (customer) => {
-        const higherCount = await Customer.countDocuments({
-          points: { $gt: customer.points },
-        });
-        return {
-          ...customer.toObject(),
-          rank: higherCount + 1,
-        };
-      })
+    // ✅ Apply search filter
+    const filtered = rankedCustomers.filter((c) =>
+      c.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    // current user का global rank निकालें
+    // ✅ Apply pagination after ranking + search
+    const paginated = filtered.slice(skip, skip + limit);
+
+    // ✅ Current user rank (global rank)
     let currentUserRank = null;
     if (currentUserId) {
-      const userDoc = await Customer.findById(currentUserId).select("points");
-      if (userDoc) {
-        const rankIndex = await Customer.countDocuments({
-          points: { $gt: userDoc.points },
-        });
-        currentUserRank = rankIndex + 1;
-      }
+      const userRankObj = rankedCustomers.find(
+        (c) => c._id.toString() === currentUserId
+      );
+      currentUserRank = userRankObj ? userRankObj.rank : null;
     }
 
     res.status(200).json({
       success: true,
       page,
       limit,
-      totalPages: Math.ceil(
-        (await Customer.countDocuments(searchQuery)) / limit
-      ),
-      totalCustomers: await Customer.countDocuments(searchQuery),
+      totalPages: Math.ceil(filtered.length / limit),
+      totalCustomers: filtered.length,
       currentUserRank,
-      data: withRanks,
+      data: paginated,
     });
   } catch (error) {
     res.status(500).json({
