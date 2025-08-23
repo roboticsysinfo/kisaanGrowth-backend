@@ -324,7 +324,7 @@ const updateCustomer = async (req, res) => {
 // update api sms by pass for plya store review  
 
 // Test/Review phone numbers (App Access play store reviewers)
-const reviewNumbers = ["1122334455", "9876543210"]; // apne reviewer numbers yaha daal do
+const reviewNumbers = ["8708477017", "9876543210"]; // apne reviewer numbers yaha daal do
 
 // Send OTP to Customer Phone Number
 const sendOtptoCustomer = async (req, res) => {
