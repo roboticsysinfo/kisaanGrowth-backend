@@ -1013,65 +1013,49 @@ const getFarmerInvoiceByOrderId = async (req, res) => {
 
 const getFarmerLeaderboard = async (req, res) => {
   try {
-    const currentUserId = req.params.currentUserId; // from URL param
+    const currentUserId = req.params.currentUserId; 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const search = req.query.search || ""; // ✅ search param
+    const search = req.query.search || "";
 
-    // ✅ Always sort by points globally
-    let baseQuery = {};
+    // ✅ Base + Search Query
     const searchQuery = search
       ? { name: { $regex: search, $options: "i" } }
       : {};
 
-    // 🔹 Leaderboard results (with search filter, but maintain rank globally)
-    const leaderboard = await Farmer.find(searchQuery, {
-      name: 1,
-      profileImg: 1,
-      city_district: 1,
-      state: 1,
-      points: 1,
-    })
-      .sort({ points: -1 }) // global order
-      .skip(skip)
-      .limit(limit);
+    // ✅ Get all farmers sorted (for ranking)
+    const allFarmers = await Farmer.find({}, { name: 1, profileImg: 1, city_district: 1, state: 1, points: 1 })
+      .sort({ points: -1 });
 
-    // 🔹 Now assign global rank to each farmer
-    const withRanks = await Promise.all(
-      leaderboard.map(async (farmer) => {
-        const higherCount = await Farmer.countDocuments({
-          points: { $gt: farmer.points },
-        });
-        return {
-          ...farmer.toObject(),
-          rank: higherCount + 1, // ✅ Correct global rank
-        };
-      })
+    // ✅ Assign unique rank based on index
+    const rankedFarmers = allFarmers.map((farmer, index) => ({
+      ...farmer.toObject(),
+      rank: index + 1, // row_number style
+    }));
+
+    // ✅ Apply search + pagination after ranking
+    const filtered = rankedFarmers.filter(f =>
+      f.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    // ✅ Calculate rank of current user (always global)
+    const paginated = filtered.slice(skip, skip + limit);
+
+    // ✅ Current user rank
     let currentUserRank = null;
     if (currentUserId) {
-      const userDoc = await Farmer.findById(currentUserId).select("points");
-      if (userDoc) {
-        const rankIndex = await Farmer.countDocuments({
-          points: { $gt: userDoc.points },
-        });
-        currentUserRank = rankIndex + 1;
-      }
+      const userRankObj = rankedFarmers.find(f => f._id.toString() === currentUserId);
+      currentUserRank = userRankObj ? userRankObj.rank : null;
     }
 
     res.status(200).json({
       success: true,
       page,
       limit,
-      totalPages: Math.ceil(
-        (await Farmer.countDocuments(searchQuery)) / limit
-      ),
-      totalFarmers: await Farmer.countDocuments(searchQuery),
+      totalPages: Math.ceil(filtered.length / limit),
+      totalFarmers: filtered.length,
       currentUserRank,
-      data: withRanks, // ✅ send rank with each farmer
+      data: paginated,
     });
   } catch (error) {
     res.status(500).json({

@@ -12,28 +12,22 @@ const verifyCaptcha = require('../middlewares/verifyCaptcha');
 router.post('/auth/customer_login', CustomerController.loginCustomer);
 
 
-
 // Add a product to the cart (protected)
 router.post('/auth/customer_register', CustomerController.registerCustomer);
-
 
 
 // Get Customer by ID
 router.get("/customer/:id", authorize(['customer', 'admin']), CustomerController.getCustomerById);
 
 
-
 // Update Customer
 router.put("/update-customer/:id", upload.single('profileImage'), authorize(['customer']), CustomerController.updateCustomer);
-
 
 
 router.post('/customer/send-otp', CustomerController.sendOtptoCustomer);
 
 
-
 router.post('/customer/verify-otp', CustomerController.verifyCustomerOtp);
-
 
 
 router.get('/search', CustomerController.searchByNameAndCity);
@@ -46,10 +40,8 @@ router.get('/get/customers/leaderboard/:currentUserId', CustomerController.getCu
 router.get('/search/products', getProductsByCity);
 
 
-
 // Daily Reward
 router.post('/customer/reward-daily', authorize(["customer"]), CustomerController.rewardDailyPointsCustomer);
-
 
 
 // POST /api/customer/referral-share
